@@ -1,0 +1,65 @@
+plugins {
+    id 'maven-publish'
+    id 'java'
+}
+
+archivesBaseName = rootProject.archives_base_name
+version = rootProject.mod_version
+group = rootProject.maven_group
+
+repositories {
+    maven {
+        name "KosmX's maven"
+        url "https://maven.kosmx.dev"
+    }
+
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation 'com.github.mizosoft.methanol:methanol:1.7.0'
+
+    implementation "org.apache.logging.log4j:log4j-api:${project.log4j_version}"
+    implementation "org.apache.logging.log4j:log4j-core:${project.log4j_version}"
+    implementation "org.apache.logging.log4j:log4j-jul:${project.log4j_version}"
+
+    implementation "com.google.guava:guava:33.2.1-jre"
+    implementation "commons-io:commons-io:2.16.1"
+    implementation "com.google.code.gson:gson:2.10.1"
+
+    implementation "net.kyori:adventure-api:${project.adventure_version}"
+    implementation "net.kyori:adventure-text-serializer-legacy:${project.adventure_version}"
+    implementation "net.kyori:adventure-text-serializer-plain:${project.adventure_version}"
+    implementation "net.kyori:adventure-text-serializer-gson:${project.adventure_version}"
+    implementation "net.kyori:adventure-text-minimessage:${project.adventure_version}"
+
+    implementation "io.github.kosmx.emotes:emotesExecutor:2.2.7-b.build.50"
+    implementation "io.github.kosmx.emotes:emotesServer:2.2.7-b.build.50"
+    implementation "io.github.kosmx.emotes:emotesMain:2.2.7-b.build.50"
+    implementation "io.github.kosmx.emotes:emotesAPI:2.2.7-b.build.50"
+    implementation "dev.kosmx.player-anim:anim-core:99.99.99+1.20.4" // TODO
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.release.set 21
+}
+
+java {
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = rootProject.archives_base_name
+
+            from components.java
+        }
+    }
+
+    repositories {
+        mavenLocal()
+    }
+}

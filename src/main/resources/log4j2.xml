@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d{HH:mm:ss}] %highlight{[%t/%level]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=green, TRACE=blue, FINEST=cyan} %highlight{%msg}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=green, TRACE=blue, FINEST=cyan}%n" disableAnsi="false"/>
+            <Filters>
+                <MarkerFilter marker="JANSI" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+                <MarkerFilter marker="NOJANSI" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+            </Filters>
+        </Console>
+        <RandomAccessFile name="LogFile" fileName="log.txt" immediateFlush="false" append="false">
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] %msg%n"/>
+        </RandomAccessFile>
+    </Appenders>
+    <Loggers>
+        <Logger level="info" name="okhttp3.internal.http2.Http2"/>
+        <Logger level="info" name="org.jline"/>
+        <Logger level="info" name="io.netty"/>
+        <Logger level="info" name="org.javacord.core"/>
+        <Logger level="info" name="net.dv8tion.jda"/>
+        <Logger level="info" name="okhttp3"/>
+
+        <Root level="all">
+            <AppenderRef ref="Console" level="all"/>
+            <AppenderRef ref="LogFile" level="info"/>
+        </Root>
+    </Loggers>
+</Configuration>

@@ -2,14 +2,18 @@ package org.redlance.common.adventure;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.text.renderer.TranslatableComponentRenderer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
 
-import java.text.MessageFormat;
 import java.util.Locale;
 
 public class AdventureUtils {
+    public static final TranslatableComponentRenderer<Locale> RENDERER = TranslatableComponentRenderer.usingTranslationSource(
+            GlobalTranslator.translator()
+    );
+
     /**
      * <a href="https://docs.advntr.dev/migration/bungeecord-chat-api.html#chatcolor-stripcolor">...</a>
      */
@@ -25,16 +29,9 @@ public class AdventureUtils {
      * and translates {@link TranslatableComponent} if there is a
      * translation in {@link GlobalTranslator}
      */
-    public static String serializeToString(Component component, Locale locale, Object... args) {
-        if (component instanceof TranslatableComponent translatable) {
-            MessageFormat translated = GlobalTranslator.translator().translate(translatable.key(), locale);
-            if (translated != null) {
-                return translated.format(args);
-            }
-
-            return translatable.fallback();
-        }
-
-        return PlainTextComponentSerializer.plainText().serialize(component);
+    public static String serializeToString(Component component, Locale locale) {
+        return PlainTextComponentSerializer.plainText().serialize(
+                AdventureUtils.RENDERER.render(component, locale)
+        );
     }
 }

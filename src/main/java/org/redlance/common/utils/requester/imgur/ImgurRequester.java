@@ -27,7 +27,7 @@ public class ImgurRequester {
         }
 
         JsonObject data = response.getAsJsonObject("data");
-        if (!response.has("link")) {
+        if (!data.has("link")) {
             throw new NullPointerException(data.toString());
         }
 

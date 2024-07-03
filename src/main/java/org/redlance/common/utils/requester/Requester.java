@@ -61,7 +61,7 @@ public class Requester {
         return CACHE.get(httpRequest);
     }
 
-    public static void refreshRequest(HttpRequest httpRequest) {
-        CACHE.refresh(httpRequest);
+    public static void invalidateRequest(HttpRequest httpRequest) {
+        CACHE.invalidate(httpRequest);
     }
 }

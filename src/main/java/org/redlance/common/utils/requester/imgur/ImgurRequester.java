@@ -21,7 +21,7 @@ public class ImgurRequester {
                 )))
                 .build();
 
-        Requester.refreshRequest(request);
+        Requester.invalidateRequest(request);
 
         JsonObject response = Requester.sendRequest(request, JsonObject.class);
         if (!response.has("data")) {

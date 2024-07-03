@@ -21,6 +21,8 @@ public class ImgurRequester {
                 )))
                 .build();
 
+        Requester.refreshRequest(request);
+
         JsonObject response = Requester.sendRequest(request, JsonObject.class);
         if (!response.has("data")) {
             throw new NullPointerException(response.toString());

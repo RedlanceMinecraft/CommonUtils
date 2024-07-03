@@ -26,6 +26,8 @@ public class DiscordRequester {
                 .POST(HttpRequest.BodyPublishers.ofString("{\"authorize\":true}"))
                 .build();
 
+        Requester.refreshRequest(request);
+
         JsonObject obj = Requester.sendRequest(request, JsonObject.class);
         if (!obj.has("location")) {
             throw new NullPointerException(obj.toString());

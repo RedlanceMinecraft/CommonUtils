@@ -60,4 +60,8 @@ public class Requester {
     public static String sendRequest(HttpRequest httpRequest) throws ExecutionException {
         return CACHE.get(httpRequest);
     }
+
+    public static void refreshRequest(HttpRequest httpRequest) {
+        CACHE.refresh(httpRequest);
+    }
 }

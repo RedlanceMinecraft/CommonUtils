@@ -27,6 +27,15 @@ public class AdventureUtils {
                 );
     }
 
+    public static String serializeToString(String string, Locale locale) {
+        Component component = universalParse(string);
+        if (component == null) {
+            return null;
+        }
+
+        return serializeToString(component, locale);
+    }
+
     /**
      * Serialize the {@link Component} into a {@link String},
      * and translates {@link TranslatableComponent} if there is a

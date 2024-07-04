@@ -45,7 +45,6 @@ public class CacheTemplate<K, V> {
         CommonUtils.LOGGER.debug("{} created!", path);
 
         read();
-        fireListeners();
 
         EXECUTOR.scheduleAtFixedRate(
                 () -> reload(false, false), GAP_SECONDS_THRESHOLD, GAP_SECONDS_THRESHOLD, TimeUnit.SECONDS
@@ -130,6 +129,7 @@ public class CacheTemplate<K, V> {
     }
 
     public boolean subscrube(Consumer<CacheTemplate<K, V>> listener) {
+        listener.accept(this); // Begin fire
         return this.listeners.add(listener);
     }
 
@@ -141,6 +141,8 @@ public class CacheTemplate<K, V> {
         if (this.listeners.isEmpty()) {
             return;
         }
+
+        CommonUtils.LOGGER.info("Firing {} listeners for {}!", this.listeners.size(), this);
 
         for (Consumer<CacheTemplate<K, V>> listener : this.listeners) {
             listener.accept(this);
@@ -163,8 +165,6 @@ public class CacheTemplate<K, V> {
 
         CommonUtils.LOGGER.info("Reloading {}...", this.path);
         save();
-
-        fireListeners();
 
         return true;
     }
@@ -200,6 +200,7 @@ public class CacheTemplate<K, V> {
             this.caches.clear();
             this.caches.putAll((Map<? extends K, ? extends V>) Serializer.serializer.fromJson(reader, this.token));
 
+            fireListeners();
         } catch (Throwable e) {
             CommonUtils.LOGGER.warn("Failed to read caches!", e);
         }

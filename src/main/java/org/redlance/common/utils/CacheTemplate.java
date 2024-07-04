@@ -10,6 +10,8 @@ import java.io.BufferedWriter;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,6 +34,7 @@ public class CacheTemplate<K, V> {
     private final TypeToken<?> token;
     private final Path path;
 
+    private final List<Consumer<CacheTemplate<K, V>>> listeners = new ArrayList<>();
     private boolean dirty;
 
     public CacheTemplate(String path, Type... typeArguments) {
@@ -42,6 +45,7 @@ public class CacheTemplate<K, V> {
         CommonUtils.LOGGER.debug("{} created!", path);
 
         read();
+        fireListeners();
 
         EXECUTOR.scheduleAtFixedRate(
                 () -> reload(false, false), GAP_SECONDS_THRESHOLD, GAP_SECONDS_THRESHOLD, TimeUnit.SECONDS
@@ -121,6 +125,28 @@ public class CacheTemplate<K, V> {
         return this.caches;
     }
 
+    public List<Consumer<CacheTemplate<K, V>>> getListeners() {
+        return this.listeners;
+    }
+
+    public boolean subscrube(Consumer<CacheTemplate<K, V>> listener) {
+        return this.listeners.add(listener);
+    }
+
+    public boolean unsubscrube(Consumer<CacheTemplate<K, V>> listener) {
+        return this.listeners.remove(listener);
+    }
+
+    private void fireListeners() {
+        if (this.listeners.isEmpty()) {
+            return;
+        }
+
+        for (Consumer<CacheTemplate<K, V>> listener : this.listeners) {
+            listener.accept(this);
+        }
+    }
+
     protected boolean reload(boolean read, boolean force) {
         if (read & !this.dirty) {
             CommonUtils.LOGGER.info("Reading {}...", this.path);
@@ -137,6 +163,8 @@ public class CacheTemplate<K, V> {
 
         CommonUtils.LOGGER.info("Reloading {}...", this.path);
         save();
+
+        fireListeners();
 
         return true;
     }

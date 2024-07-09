@@ -166,6 +166,10 @@ public class CacheTemplate<K, V> {
         CommonUtils.LOGGER.info("Reloading {}...", this.path);
         save();
 
+        if (!read) {
+            fireListeners();
+        }
+
         return true;
     }
 

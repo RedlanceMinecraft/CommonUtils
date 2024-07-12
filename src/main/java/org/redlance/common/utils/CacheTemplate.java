@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -34,6 +35,8 @@ public class CacheTemplate<K, V> {
     private final TypeToken<?> token;
     private final Path path;
 
+    private CompletableFuture<Void> reader;
+
     private final List<Consumer<CacheTemplate<K, V>>> listeners = new ArrayList<>();
     private boolean dirty;
 
@@ -44,7 +47,7 @@ public class CacheTemplate<K, V> {
         TRACKED_CACHES.put(path, this);
         CommonUtils.LOGGER.debug("{} created!", path);
 
-        read();
+        this.reader = CompletableFuture.runAsync(this::read);
 
         EXECUTOR.scheduleAtFixedRate(
                 () -> reload(false, false), GAP_SECONDS_THRESHOLD, GAP_SECONDS_THRESHOLD, TimeUnit.SECONDS
@@ -64,6 +67,8 @@ public class CacheTemplate<K, V> {
     }
 
     public void write(K key, V value, boolean replace) {
+        waitReading();
+
         V prev;
         if (replace && this.caches.containsKey(key)) {
             prev = this.caches.replace(key, value);
@@ -71,11 +76,14 @@ public class CacheTemplate<K, V> {
             prev = this.caches.put(key, value);
         }
 
-        if (prev == null || prev != value)
+        if (prev == null || prev != value) {
             setDirty();
+        }
     }
 
     public V writeIfEmpty(K key, Function<? super K, ? extends V> mappingFunction) {
+        waitReading();
+
         return this.caches.computeIfAbsent(key, k -> {
             V map = mappingFunction.apply(k);
 
@@ -85,11 +93,14 @@ public class CacheTemplate<K, V> {
     }
 
     public void remove(K key) {
+        waitReading();
         this.caches.remove(key);
         setDirty();
     }
 
     public boolean hasKey(K key) {
+        waitReading();
+
         return this.caches.containsKey(key);
     }
 
@@ -98,6 +109,8 @@ public class CacheTemplate<K, V> {
     }
 
     public V getValueByKey(K key) {
+        waitReading();
+
         if (key == null || !this.caches.containsKey(key))
             return null;
 
@@ -109,8 +122,11 @@ public class CacheTemplate<K, V> {
     }
 
     public Optional<K> getKeyByValue(Object value, Predicate<Map.Entry<K, V>> predicate) {
-        if (value == null)
+        if (value == null) {
             return Optional.empty();
+        }
+
+        waitReading();
 
         return this.caches.entrySet()
                 .parallelStream()
@@ -121,6 +137,8 @@ public class CacheTemplate<K, V> {
     }
 
     public Map<K, V> getCacheDirect() {
+        waitReading();
+
         return this.caches;
     }
 
@@ -150,9 +168,11 @@ public class CacheTemplate<K, V> {
     }
 
     protected boolean reload(boolean read, boolean force) {
+        waitReading();
+
         if (read & !this.dirty) {
             CommonUtils.LOGGER.info("Reading {}...", this.path);
-            read();
+            this.reader = CompletableFuture.runAsync(this::read);
         }
 
         if (!force) {
@@ -194,6 +214,12 @@ public class CacheTemplate<K, V> {
 
         } catch (Throwable e) {
             CommonUtils.LOGGER.warn("Failed to save caches!", e);
+        }
+    }
+
+    public void waitReading() {
+        if (!this.reader.isDone()) {
+            this.reader.join();
         }
     }
 

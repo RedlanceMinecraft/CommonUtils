@@ -56,7 +56,7 @@ public class CacheTemplate<K, V> {
 
     public void setDirty() {
         if (!this.dirty) {
-            CommonUtils.LOGGER.info("{} is now dirty!", this.path);
+            CommonUtils.LOGGER.info("{} is now dirty!", this);
         }
 
         this.dirty = true;
@@ -171,7 +171,7 @@ public class CacheTemplate<K, V> {
         waitReading();
 
         if (read & !this.dirty) {
-            CommonUtils.LOGGER.info("Reading {}...", this.path);
+            CommonUtils.LOGGER.info("Reading {}...", this);
             this.reader = CompletableFuture.runAsync(this::read);
         }
 
@@ -183,7 +183,7 @@ public class CacheTemplate<K, V> {
             this.dirty = false;
         }
 
-        CommonUtils.LOGGER.info("Reloading {}...", this.path);
+        CommonUtils.LOGGER.info("Reloading {}...", this);
         save();
 
         if (!read) {
@@ -219,6 +219,7 @@ public class CacheTemplate<K, V> {
 
     public void waitReading() {
         if (!this.reader.isDone()) {
+            CommonUtils.LOGGER.debug("Blocking cache {} unit readed...", this);
             this.reader.join();
         }
     }
@@ -234,6 +235,11 @@ public class CacheTemplate<K, V> {
         } catch (Throwable e) {
             CommonUtils.LOGGER.warn("Failed to read caches!", e);
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("CacheTemplate{%s (%s)}", this.path, this.caches.size());
     }
 
     public static void reload(Consumer<Map.Entry<String, CacheTemplate<?, ?>>> reloader, boolean read, boolean force) {

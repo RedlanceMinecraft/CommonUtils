@@ -194,18 +194,23 @@ public class CacheTemplate<K, V> {
     }
 
     public Stream<Map.Entry<K, V>> getStream() {
+        waitReading();
         return this.caches.entrySet().parallelStream();
     }
 
     public Stream<V> getValuesStream() {
+        waitReading();
         return this.caches.values().parallelStream();
     }
 
     public Stream<K> getKeyStream() {
+        waitReading();
         return this.caches.keySet().parallelStream();
     }
 
     public void save() {
+        waitReading();
+
         try (BufferedWriter writer = Files.newBufferedWriter(this.path)) {
 
             Serializer.serializer.toJson(this.caches, this.token.getType(), writer);

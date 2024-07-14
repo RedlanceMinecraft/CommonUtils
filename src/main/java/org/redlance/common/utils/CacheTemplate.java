@@ -230,6 +230,14 @@ public class CacheTemplate<K, V> {
             Map<? extends K, ? extends V> newCaches = (Map<? extends K, ? extends V>)
                     Serializer.serializer.fromJson(reader, this.token);
 
+            if (newCaches == null || newCaches.isEmpty()) {
+                if (!this.caches.isEmpty()) {
+                    CommonUtils.LOGGER.fatal("Readed cache {} is null! Preverting data loss...", this);
+                }
+
+                return;
+            }
+
             this.caches.clear();
             this.caches.putAll(newCaches);
 

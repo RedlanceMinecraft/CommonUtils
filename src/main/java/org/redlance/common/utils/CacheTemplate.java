@@ -227,9 +227,11 @@ public class CacheTemplate<K, V> {
     @SuppressWarnings("unchecked")
     public void read() {
         try (BufferedReader reader = Files.newBufferedReader(this.path)) {
+            Map<? extends K, ? extends V> newCaches = (Map<? extends K, ? extends V>)
+                    Serializer.serializer.fromJson(reader, this.token);
 
             this.caches.clear();
-            this.caches.putAll((Map<? extends K, ? extends V>) Serializer.serializer.fromJson(reader, this.token));
+            this.caches.putAll(newCaches);
 
             fireListeners();
         } catch (Throwable e) {

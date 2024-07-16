@@ -6,6 +6,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.gson.reflect.TypeToken;
 import io.github.kosmx.emotes.server.config.Serializer;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.CookieManager;
@@ -29,7 +30,8 @@ public class Requester {
                     .send(httpRequest, HttpResponse.BodyHandlers.ofString())
                     .body();
 
-            if (response == null) {
+            if (StringUtils.isBlank(response)) {
+                invalidateRequest(httpRequest);
                 throw new NullPointerException("Invalid response!");
             }
 
@@ -51,6 +53,7 @@ public class Requester {
 
         T serialized = Serializer.serializer.fromJson(response, token); // serialize
         if (serialized == null) {
+            invalidateRequest(httpRequest);
             throw new NullPointerException("Invalid serialized result!");
         }
 

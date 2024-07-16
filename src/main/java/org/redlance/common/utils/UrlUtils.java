@@ -1,7 +1,9 @@
 package org.redlance.common.utils;
 
+import org.jetbrains.annotations.Nullable;
 import org.redlance.common.CommonUtils;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,14 +19,18 @@ public class UrlUtils {
         return URL_PATTERN.matcher(input);
     }
 
-    public static String filterUrls(String input, String replace) {
+    public static String filterUrls(@Nullable String input, @Nullable String replace) {
+        if (input == null) {
+            return null;
+        }
+
         Matcher matcher = matcher(input);
 
         while (matcher.find()) {
             String url = input.substring(matcher.start(), matcher.end());
 
             CommonUtils.LOGGER.trace("Found url {} in {}.", url, input);
-            input = input.replace(url, replace);
+            input = input.replace(url, Objects.requireNonNullElse(replace, ""));
         }
 
         return input;

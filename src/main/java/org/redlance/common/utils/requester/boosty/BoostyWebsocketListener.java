@@ -113,7 +113,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
                     return WebSocket.Listener.super.onText(webSocket, data, last);
                 }
 
-                this.listener.accept(message.data().getAsJsonObject("data"));
+                this.listener.accept(message.data());
             } else {
                 InboundAuthMessage message = Serializer.serializer.fromJson(reader, InboundAuthMessage.class);
 

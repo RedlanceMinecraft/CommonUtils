@@ -27,7 +27,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
     private final Map<Integer, CompletableFuture<JsonElement>> messages = new ConcurrentHashMap<>();
 
     private final String token;
-    private final String channel;
+    private final int userId;
 
     private final HttpClient httpClient;
     private final WebSocket.Builder webSocketBuilder;
@@ -36,9 +36,9 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
 
     protected Consumer<JsonObject> listener;
 
-    public BoostyWebsocketListener(String token, String channel) {
+    public BoostyWebsocketListener(String token, int userId) {
         this.token = token;
-        this.channel = channel;
+        this.userId = userId;
 
         this.httpClient = HttpClient.newBuilder()
                 .executor(Executors.newVirtualThreadPerTaskExecutor())
@@ -48,17 +48,23 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
                 .header("Origin", "https://boosty.to");
     }
 
-    public void connect(final Consumer<JsonObject> listener) {
-        this.webSocketBuilder.buildAsync(ENDPOINT, this).thenAccept((e) -> {
+    public CompletableFuture<Void> connect(final Consumer<JsonObject> listener) {
+        return this.webSocketBuilder.buildAsync(ENDPOINT, this).thenAccept((e) -> {
             this.webSocket = e;
 
             sendMessage(new OutboundAuthMessage.Auth("js", this.token))
                     .whenCompleteAsync((
-                            (element, throwable) -> sendMessage(new OutboundAuthMessage.Subscribe(this.channel))
-                                    .whenCompleteAsync((element1, throwable1) ->
-                                            this.listener = listener
-                                    )
-                    ));
+                            (element, throwable) ->  {
+                                sendMessage(new OutboundAuthMessage.Subscribe("users#" + this.userId))
+                                        .join();
+
+                                sendMessage(new OutboundAuthMessage.Subscribe("dialogs#" + this.userId))
+                                        .join();
+                            }
+                    )).whenCompleteAsync((element1, throwable1) -> {
+                        this.listener = listener;
+                        this.messages.clear();
+                    }).join();
         }).exceptionally((ex) -> {
             CommonUtils.LOGGER.error("Failed to connect!", ex);
             return null;
@@ -71,7 +77,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
         CompletableFuture<JsonElement> future = this.messages.compute(id, (k, v) -> new CompletableFuture<>());
 
         this.webSocket.sendText(new Gson().toJson( // Boosty don't accept pretty gson
-                new OutboundAuthMessage(id, Math.max(id - 1, 0), Serializer.serializer.toJsonTree(params))
+                new OutboundAuthMessage(id, id > 1 ? 1 : 0, Serializer.serializer.toJsonTree(params))
         ), true);
 
         return future;
@@ -93,7 +99,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
 
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-        CommonUtils.LOGGER.debug("Received message: {}", data);
+        CommonUtils.LOGGER.trace("Received message: {}", data);
 
         try (Reader reader = new CharSequenceReader(data)) {
             if (this.listener != null) {
@@ -102,11 +108,6 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
                                 .getAsJsonObject("result"),
                         InboundChannelMessage.class
                 );
-
-                if (!this.channel.equals(message.channel())) {
-                    CommonUtils.LOGGER.warn("Invalid channel {}!", message.channel());
-                    return WebSocket.Listener.super.onText(webSocket, data, last);
-                }
 
                 if (message.data() == null || !message.data().has("data")) {
                     CommonUtils.LOGGER.warn("Boosty new session??? {}", message.data());

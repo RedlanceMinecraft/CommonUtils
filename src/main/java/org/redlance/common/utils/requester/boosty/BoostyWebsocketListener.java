@@ -99,8 +99,6 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
 
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-        CommonUtils.LOGGER.trace("Received message: {}", data);
-
         try (Reader reader = new CharSequenceReader(data)) {
             if (this.listener != null) {
                 InboundChannelMessage message = Serializer.serializer.fromJson(

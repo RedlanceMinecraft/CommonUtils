@@ -65,5 +65,10 @@ public class BoostyUser {
     public static class ExternalApp {
         public boolean hasAccount;
         public String username;
+
+        @Override
+        public String toString() {
+            return "ExternalApp{" + this.username + "}";
+        }
     }
 }

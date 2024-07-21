@@ -17,16 +17,16 @@ public class BoostySessionStorage {
     private static final String ACCESS_TOKEN = "accessToken";
     private static final String REFRESH_TOKEN = "refreshToken";
     // private static final String EXPIRES_AT = "expiresAt";
-    private static final String DEVICE_ID = "deviceId";
 
     private final CacheTemplate<String, String> storage;
+    private final String deviceId;
 
     public BoostySessionStorage(String deviceId) {
         this.storage = new CacheTemplate<>(
                 String.format("boosty-%s.json", deviceId), String.class, String.class
         );
 
-        this.storage.write(DEVICE_ID, deviceId);
+        this.deviceId = deviceId;
 
         EXECUTOR.scheduleAtFixedRate(
                 this::refreshTokens, 0L, 1L, TimeUnit.DAYS
@@ -34,13 +34,13 @@ public class BoostySessionStorage {
     }
 
     public void refreshTokens() {
-        CommonUtils.LOGGER.debug("Refreshing boosty tokens for device {}...", getDeviceId());
+        CommonUtils.LOGGER.info("Refreshing boosty tokens for device {}...", this.deviceId);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.boosty.to/oauth/token/"))
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .POST(HttpRequest.BodyPublishers.ofString(
-                        String.format("device_id=%s&device_os=web&grant_type=refresh_token&refresh_token=%s", getDeviceId(), getRefreshToken())
+                        String.format("device_id=%s&device_os=web&grant_type=refresh_token&refresh_token=%s", this.deviceId, getRefreshToken())
                 ))
                 .build();
 
@@ -58,10 +58,10 @@ public class BoostySessionStorage {
             ), true);*/
 
         } catch (Throwable th) {
-            CommonUtils.LOGGER.error("Failed to refresh boosty tokens for device {}!", getDeviceId(), th);
+            CommonUtils.LOGGER.error("Failed to refresh boosty tokens for device {}!", this.deviceId, th);
         }
 
-        CommonUtils.LOGGER.debug("Refreshed boosty tokens for device {}!", getDeviceId());
+        CommonUtils.LOGGER.debug("Refreshed boosty tokens for device {}!", this.deviceId);
     }
 
     public String getAccessToken() {
@@ -75,8 +75,4 @@ public class BoostySessionStorage {
     /*public Long getExpiresAt() {
         return Long.parseLong(this.storage.getValueByKey(EXPIRES_AT));
     }*/
-
-    public String getDeviceId() {
-        return this.storage.getValueByKey(DEVICE_ID);
-    }
 }

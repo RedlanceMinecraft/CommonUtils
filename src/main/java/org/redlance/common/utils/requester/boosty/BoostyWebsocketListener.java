@@ -136,8 +136,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
 
             } else if (this.listener != null) {
                 InboundChannelMessage message = Serializer.serializer.fromJson(
-                        Serializer.serializer.fromJson(reader, JsonObject.class)
-                                .getAsJsonObject("result"),
+                        jsonObject.getAsJsonObject("result"),
                         InboundChannelMessage.class
                 );
 

@@ -7,13 +7,9 @@ import org.redlance.common.utils.requester.Requester;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class BoostySessionStorage {
-    private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
-
     private static final String ACCESS_TOKEN = "accessToken";
     private static final String REFRESH_TOKEN = "refreshToken";
     // private static final String EXPIRES_AT = "expiresAt";
@@ -28,7 +24,7 @@ public class BoostySessionStorage {
 
         this.deviceId = deviceId;
 
-        EXECUTOR.scheduleAtFixedRate(
+        CommonUtils.EXECUTOR.scheduleAtFixedRate(
                 this::refreshTokens, 0L, 1L, TimeUnit.DAYS
         );
     }

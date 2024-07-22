@@ -16,8 +16,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -26,7 +24,6 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 public class CacheTemplate<K, V> {
-    private static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor();
     public static final Map<String, CacheTemplate<?, ?>> TRACKED_CACHES = new ConcurrentHashMap<>();
 
     private static final long GAP_SECONDS_THRESHOLD = 30L;
@@ -49,7 +46,7 @@ public class CacheTemplate<K, V> {
 
         this.reader = CompletableFuture.runAsync(this::read);
 
-        EXECUTOR.scheduleAtFixedRate(
+        CommonUtils.EXECUTOR.scheduleAtFixedRate(
                 () -> reload(false, false), GAP_SECONDS_THRESHOLD, GAP_SECONDS_THRESHOLD, TimeUnit.SECONDS
         );
     }

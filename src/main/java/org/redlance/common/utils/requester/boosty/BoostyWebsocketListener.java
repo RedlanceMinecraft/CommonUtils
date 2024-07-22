@@ -124,7 +124,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
             JsonObject jsonObject = Serializer.serializer.fromJson(reader, JsonObject.class);
 
             if (jsonObject.has("id")) { // replied
-                InboundAuthMessage message = Serializer.serializer.fromJson(reader, InboundAuthMessage.class);
+                InboundAuthMessage message = Serializer.serializer.fromJson(jsonObject, InboundAuthMessage.class);
 
                 CompletableFuture<JsonObject> future = this.messages.get(message.id());
                 if (future == null) {
@@ -149,7 +149,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
                 this.listener.accept(message.data());
             }
         } catch (Throwable th) {
-            CommonUtils.LOGGER.error("Failed to handle!", th);
+            CommonUtils.LOGGER.error("Failed to handle {}!", data, th);
         }
 
         return WebSocket.Listener.super.onText(webSocket, data, last);

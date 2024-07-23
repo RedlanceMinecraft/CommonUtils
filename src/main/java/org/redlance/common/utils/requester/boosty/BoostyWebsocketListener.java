@@ -61,8 +61,14 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
      * Connecting to websocket.
      */
     public CompletableFuture<Void> connect() {
+        if (this.pinger != null) {
+            this.pinger.cancel(true);
+            this.pinger = null;
+        }
+
         return this.webSocketBuilder.buildAsync(ENDPOINT, this).thenAccept((e) -> {
             this.webSocket = e;
+            this.messages.clear();
 
             sendMessage(0, new OutboundAuthMessage.Auth("js", this.token))
                     .whenCompleteAsync((
@@ -102,11 +108,8 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
 
     @Override
     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-        CommonUtils.LOGGER.warn("Disconnected from boosty {}!", reason);
-
-        this.pinger.cancel(true);
-        this.messages.clear();
-        this.connect();
+        CommonUtils.LOGGER.warn("Disconnected from boosty: {}", reason);
+        connect();
 
         return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
     }
@@ -114,6 +117,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
         CommonUtils.LOGGER.error("WebSocket exception!", error);
+        connect(); // for connection reset
 
         WebSocket.Listener.super.onError(webSocket, error);
     }
@@ -121,24 +125,20 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
         try (Reader reader = new CharSequenceReader(data)) {
-            JsonObject jsonObject = Serializer.serializer.fromJson(reader, JsonObject.class);
+            InboundAuthMessage authMessage = Serializer.serializer.fromJson(reader, InboundAuthMessage.class);
 
-            if (jsonObject.has("id")) { // replied
-                InboundAuthMessage message = Serializer.serializer.fromJson(jsonObject, InboundAuthMessage.class);
-
-                CompletableFuture<JsonObject> future = this.messages.get(message.id());
+            if (authMessage.id() > 0) { // replied
+                CompletableFuture<JsonObject> future = this.messages.get(authMessage.id());
                 if (future == null) {
-                    CommonUtils.LOGGER.warn("Unknown message {}: {}!", message.id(), message.result());
+                    CommonUtils.LOGGER.warn("Unknown message {}: {}!", authMessage.id(), authMessage.result());
                     return WebSocket.Listener.super.onText(webSocket, data, last);
                 }
 
-                future.complete(message.result());
+                future.complete(authMessage.result());
 
-            } else if (this.listener != null) {
-                InboundChannelMessage message = Serializer.serializer.fromJson(
-                        jsonObject.getAsJsonObject("result"),
-                        InboundChannelMessage.class
-                );
+            } else if (authMessage.result() != null) {
+                InboundChannelMessage message = Serializer.serializer.fromJson(authMessage.result(),
+                        InboundChannelMessage.class);
 
                 if (message.data() == null || !message.data().has("data")) {
                     CommonUtils.LOGGER.warn("Boosty new session??? {}", message.data());

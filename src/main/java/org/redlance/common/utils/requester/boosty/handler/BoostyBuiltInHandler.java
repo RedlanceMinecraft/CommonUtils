@@ -33,7 +33,7 @@ public class BoostyBuiltInHandler implements Consumer<JsonObject> {
     }
 
     /**
-     * @param type Event type, known: dialog_message_counters, dialog_message_read, dialog_message
+     * @param type Event type, known: dialog_message_counters, dialog_message_read, dialog_message, standalone_notify_count, blog_subscriber_stat
      */
     public void addListener(String type, BoostyListener<?> listener) {
         this.listeners.computeIfAbsent(type, key -> new ArrayList<>())

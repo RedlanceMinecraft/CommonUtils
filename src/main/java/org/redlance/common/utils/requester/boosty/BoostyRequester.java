@@ -4,8 +4,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import io.github.kosmx.emotes.server.config.Serializer;
 import org.redlance.common.utils.requester.Requester;
-import org.redlance.common.utils.requester.boosty.obj.BoostyUser;
-import org.redlance.common.utils.requester.boosty.obj.PostSale;
+import org.redlance.common.utils.requester.boosty.obj.profile.BoostyProfile;
+import org.redlance.common.utils.requester.boosty.obj.user.BoostyUser;
+import org.redlance.common.utils.requester.boosty.obj.post.PostSale;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -55,7 +56,7 @@ public class BoostyRequester {
         );
     }
 
-    public static BoostyUser requestUserProfile(String blog, String token, int userId) throws ExecutionException {
+    public static BoostyProfile requestUserProfile(String blog, String token, int userId) throws ExecutionException {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.boosty.to/v1/blog/" + blog + "/subscriber/" + userId + "/profile"))
                 .header("Authorization", "Bearer " + token)
@@ -72,13 +73,8 @@ public class BoostyRequester {
             throw new NullPointerException(data.toString());
         }
 
-        JsonObject profile = data.getAsJsonObject("profile");
-        if (!profile.has("user")) {
-            throw new NullPointerException(profile.toString());
-        }
-
         return Serializer.serializer.fromJson(
-                profile.getAsJsonObject("user"), BoostyUser.class
+                data.getAsJsonObject("profile"), BoostyProfile.class
         );
     }
 

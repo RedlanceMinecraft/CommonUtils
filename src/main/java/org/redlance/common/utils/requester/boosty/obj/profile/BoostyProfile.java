@@ -1,0 +1,40 @@
+package org.redlance.common.utils.requester.boosty.obj.profile;
+
+import org.redlance.common.utils.requester.boosty.obj.user.BoostyUser;
+
+public class BoostyProfile {
+    /**
+     * If you can write to this user.
+     */
+    public boolean canWrite;
+
+    /**
+     * Idk.
+     */
+    public FinanceObj finance;
+
+    /**
+     * true if the user is on **your** blacklist.
+     */
+    public boolean isBlackListed;
+
+    /**
+     * true if you are blacklisted by a user.
+     */
+    public boolean isBlackListedByUser;
+
+    /**
+     * A note about the user.
+     */
+    public String note;
+
+    /**
+     * User subscription level.
+     */
+    public Subscription level;
+
+    /**
+     * I don't know why, but there are unique fields here too.
+     */
+    public BoostyUser user;
+}

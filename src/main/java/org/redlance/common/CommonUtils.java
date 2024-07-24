@@ -7,8 +7,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class CommonUtils {
-    public static final ScheduledExecutorService EXECUTOR = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual()
-            .name("common-executor")
+    public static final ScheduledExecutorService EXECUTOR = Executors.newScheduledThreadPool(Integer.MAX_VALUE, Thread.ofVirtual()
+            .name("common-executor-", 1)
             .factory()
     );
 

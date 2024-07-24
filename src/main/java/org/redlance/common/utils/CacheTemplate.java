@@ -44,7 +44,7 @@ public class CacheTemplate<K, V> {
         TRACKED_CACHES.put(path, this);
         CommonUtils.LOGGER.debug("{} created!", path);
 
-        this.reader = CompletableFuture.runAsync(this::read);
+        this.reader = CompletableFuture.runAsync(this::read, CommonUtils.EXECUTOR);
 
         CommonUtils.EXECUTOR.scheduleAtFixedRate(
                 () -> reload(false, false), GAP_SECONDS_THRESHOLD, GAP_SECONDS_THRESHOLD, TimeUnit.SECONDS
@@ -169,7 +169,7 @@ public class CacheTemplate<K, V> {
 
         if (read & !this.dirty) {
             CommonUtils.LOGGER.info("Reading {}...", this);
-            this.reader = CompletableFuture.runAsync(this::read);
+            this.reader = CompletableFuture.runAsync(this::read, CommonUtils.EXECUTOR);
         }
 
         if (!force) {

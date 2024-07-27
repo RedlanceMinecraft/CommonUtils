@@ -46,7 +46,7 @@ public class CacheTemplate<K, V> {
 
         this.reader = CompletableFuture.runAsync(this::read, CommonUtils.EXECUTOR);
 
-        CommonUtils.EXECUTOR.scheduleAtFixedRate(
+        CommonUtils.SCHEDULED_EXECUTOR.scheduleAtFixedRate(
                 () -> reload(false, false), GAP_SECONDS_THRESHOLD, GAP_SECONDS_THRESHOLD, TimeUnit.SECONDS
         );
     }

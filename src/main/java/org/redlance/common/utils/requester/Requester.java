@@ -8,6 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import io.github.kosmx.emotes.server.config.Serializer;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.redlance.common.CommonUtils;
 
 import java.net.CookieManager;
 import java.net.http.HttpClient;
@@ -18,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Requester {
     public static final HttpClient HTTP_CLIENT = Methanol.newBuilder()
+            .executor(CommonUtils.EXECUTOR)
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .userAgent("Java/21 (On dima_dencep's pc)")
             .cookieHandler(new CookieManager())

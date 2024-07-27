@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -50,7 +49,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
         this.userId = userId;
 
         this.httpClient = HttpClient.newBuilder()
-                .executor(Executors.newVirtualThreadPerTaskExecutor())
+                .executor(CommonUtils.EXECUTOR)
                 .build();
 
         this.webSocketBuilder = this.httpClient.newWebSocketBuilder()
@@ -81,7 +80,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
                             }
                     )).join();
 
-            this.pinger = CommonUtils.EXECUTOR.scheduleAtFixedRate(
+            this.pinger = CommonUtils.SCHEDULED_EXECUTOR.scheduleAtFixedRate(
                     () -> sendMessage(7, null), 30L, 30L, TimeUnit.SECONDS
             );
         }).exceptionally((ex) -> {

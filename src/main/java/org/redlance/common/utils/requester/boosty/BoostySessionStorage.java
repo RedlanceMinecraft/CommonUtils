@@ -24,7 +24,7 @@ public class BoostySessionStorage {
 
         this.deviceId = deviceId;
 
-        CommonUtils.EXECUTOR.scheduleAtFixedRate(
+        CommonUtils.SCHEDULED_EXECUTOR.scheduleAtFixedRate(
                 this::refreshTokens, 0L, 1L, TimeUnit.DAYS
         );
     }

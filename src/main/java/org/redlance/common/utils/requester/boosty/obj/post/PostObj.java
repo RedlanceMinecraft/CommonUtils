@@ -1,7 +1,5 @@
 package org.redlance.common.utils.requester.boosty.obj.post;
 
-import org.redlance.common.utils.requester.boosty.obj.user.BoostyUser;
-
 /**
  * @param id uuid-like post id.
  * @param title Post title.

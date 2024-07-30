@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 public class Requester {
     public static final HttpClient HTTP_CLIENT = Methanol.newBuilder()
             .executor(CommonUtils.EXECUTOR)
-            .connectTimeout(Duration.ofSeconds(30))
+            .connectTimeout(Duration.ofSeconds(15))
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .userAgent("Java/21 (On dima_dencep's pc)")
             .cookieHandler(new CookieManager())

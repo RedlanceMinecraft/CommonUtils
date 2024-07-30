@@ -14,12 +14,14 @@ import java.net.CookieManager;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class Requester {
     public static final HttpClient HTTP_CLIENT = Methanol.newBuilder()
             .executor(CommonUtils.EXECUTOR)
+            .connectTimeout(Duration.ofSeconds(30))
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .userAgent("Java/21 (On dima_dencep's pc)")
             .cookieHandler(new CookieManager())

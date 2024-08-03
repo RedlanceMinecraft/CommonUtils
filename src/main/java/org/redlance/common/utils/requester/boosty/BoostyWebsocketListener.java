@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class BoostyWebsocketListener implements WebSocket.Listener  {
     private static final URI ENDPOINT = URI.create("wss://pubsub.boosty.to/connection/websocket");
@@ -29,7 +30,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
     private final Map<Integer, CompletableFuture<JsonObject>> messages = new ConcurrentHashMap<>();
 
     private final Consumer<JsonObject> listener;
-    private final String token;
+    private final Supplier<String> token;
     private final int userId;
 
     private final HttpClient httpClient;
@@ -43,7 +44,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
      * @param token Boosty access token.
      * @param userId Boosty shelf user id.
      */
-    public BoostyWebsocketListener(Consumer<JsonObject> listener, String token, int userId) {
+    public BoostyWebsocketListener(Consumer<JsonObject> listener, Supplier<String> token, int userId) {
         this.listener = listener;
         this.token = token;
         this.userId = userId;
@@ -69,7 +70,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
             this.webSocket = e;
             this.messages.clear();
 
-            sendMessage(0, new OutboundAuthMessage.Auth("js", this.token))
+            sendMessage(0, new OutboundAuthMessage.Auth("js", this.token.get()))
                     .whenCompleteAsync((
                             (element, throwable) ->  {
                                 sendMessage(1, new OutboundAuthMessage.Subscribe("users#" + this.userId))

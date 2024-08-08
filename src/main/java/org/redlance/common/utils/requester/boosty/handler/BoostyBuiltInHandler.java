@@ -14,8 +14,6 @@ public class BoostyBuiltInHandler implements Consumer<JsonObject> {
 
     @Override
     public void accept(JsonObject jsonObject) {
-        CommonUtils.LOGGER.info("Handling {}!", jsonObject);
-
         String type = jsonObject.getAsJsonObject("data").get("type").getAsString();
         if (type == null) {
             return;
@@ -27,13 +25,15 @@ public class BoostyBuiltInHandler implements Consumer<JsonObject> {
             return;
         }
 
+        CommonUtils.LOGGER.debug("Handling {}!", jsonObject);
+
         for (BoostyListener<?> listener : this.listeners.get(type)) {
             listener.handle(jsonObject);
         }
     }
 
     /**
-     * @param type Event type, known: dialog_message_counters, dialog_message_read, dialog_message, standalone_notify_count, blog_subscriber_stat
+     * @param type Event type, known: dialog_message_counters, dialog_message_read, dialog_message, standalone_notify_count, blog_subscriber_stat, upload
      */
     public void addListener(String type, BoostyListener<?> listener) {
         this.listeners.computeIfAbsent(type, key -> new ArrayList<>())

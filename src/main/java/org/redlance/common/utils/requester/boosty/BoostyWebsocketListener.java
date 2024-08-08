@@ -141,7 +141,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
                         InboundChannelMessage.class);
 
                 if (message.data() == null || !message.data().has("data")) {
-                    CommonUtils.LOGGER.warn("Boosty new session??? {}", message.data());
+                    CommonUtils.LOGGER.debug("Invalid object: {}", message.data());
                     return WebSocket.Listener.super.onText(webSocket, data, last);
                 }
 

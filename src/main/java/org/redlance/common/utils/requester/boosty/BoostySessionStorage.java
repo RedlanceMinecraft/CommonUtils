@@ -1,25 +1,23 @@
 package org.redlance.common.utils.requester.boosty;
 
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import org.redlance.common.CommonUtils;
-import org.redlance.common.utils.CacheTemplate;
+import org.redlance.common.utils.cache.BaseCache;
 import org.redlance.common.utils.requester.Requester;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 public class BoostySessionStorage {
-    private static final String ACCESS_TOKEN = "accessToken";
-    private static final String REFRESH_TOKEN = "refreshToken";
-    // private static final String EXPIRES_AT = "expiresAt";
-
-    private final CacheTemplate<String, String> storage;
+    private final BaseCache<Storage> storage;
     private final String deviceId;
 
     public BoostySessionStorage(String deviceId) {
-        this.storage = new CacheTemplate<>(
-                String.format("boosty-%s.json", deviceId), String.class, String.class
+        this.storage = new BaseCache<>(String.format("boosty-%s.json", deviceId),
+                () -> new Storage(null, null, 0L), TypeToken.get(Storage.class)
         );
 
         this.deviceId = deviceId;
@@ -46,13 +44,7 @@ public class BoostySessionStorage {
                 throw new NullPointerException(object.toString());
             }
 
-            this.storage.write(ACCESS_TOKEN, object.get("access_token").getAsString(), true);
-            this.storage.write(REFRESH_TOKEN, object.get("refresh_token").getAsString(), true);
-
-            /*this.storage.write(EXPIRES_AT, Long.toString(
-                    Instant.now().getEpochSecond() + object.get("expires_in").getAsLong()
-            ), true);*/
-
+            this.storage.setObj(new Storage(object));
         } catch (Throwable th) {
             CommonUtils.LOGGER.error("Failed to refresh boosty tokens for device {}!", this.deviceId, th);
         }
@@ -61,14 +53,24 @@ public class BoostySessionStorage {
     }
 
     public String getAccessToken() {
-        return this.storage.getValueByKey(ACCESS_TOKEN);
+        return this.storage.getObj().accessToken;
     }
 
-    protected String getRefreshToken() {
-        return this.storage.getValueByKey(REFRESH_TOKEN);
+    public String getRefreshToken() {
+        return this.storage.getObj().refreshToken;
     }
 
-    /*public Long getExpiresAt() {
-        return Long.parseLong(this.storage.getValueByKey(EXPIRES_AT));
-    }*/
+    public long getExpiresAt() {
+        return this.storage.getObj().expiresAt;
+    }
+
+    private record Storage(String accessToken, String refreshToken, long expiresAt) {
+        public Storage(JsonObject object) {
+            this(
+                    object.get("access_token").getAsString(),
+                    object.get("refresh_token").getAsString(),
+                    Instant.now().getEpochSecond() + object.get("expires_in").getAsLong()
+            );
+        }
+    }
 }

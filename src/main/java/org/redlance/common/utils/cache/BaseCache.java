@@ -1,6 +1,7 @@
 package org.redlance.common.utils.cache;
 
 import com.google.gson.reflect.TypeToken;
+import io.github.kosmx.emotes.executor.EmoteInstance;
 import io.github.kosmx.emotes.server.config.Serializer;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.CacheTemplate;
@@ -18,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class BaseCache<T> {
+public class BaseCache<T> {
     public static final Map<Path, BaseCache<?>> TRACKED_CACHES = new ConcurrentHashMap<>();
 
     static {
@@ -39,7 +40,11 @@ public abstract class BaseCache<T> {
     private CompletableFuture<T> obj;
     private boolean dirty;
 
-    protected BaseCache(Path path, Supplier<T> defaultObj, TypeToken<T> token) {
+    public BaseCache(String path, Supplier<T> defaultObj, TypeToken<T> token) {
+        this(EmoteInstance.instance.getGameDirectory().resolve(path), defaultObj, token);
+    }
+
+    public BaseCache(Path path, Supplier<T> defaultObj, TypeToken<T> token) {
         this.path = path;
         this.defaultObj = defaultObj;
         this.token = token;
@@ -87,12 +92,21 @@ public abstract class BaseCache<T> {
         }
     }
 
-    protected T getObj() {
+    public T getObj() {
         if (!this.obj.isDone()) {
             CommonUtils.LOGGER.debug("Blocking thread '{}' until the {} is read!", Thread.currentThread().getName(), this);
         }
 
         return this.obj.join();
+    }
+
+    public void setObj(T obj) {
+        setObj(CompletableFuture.completedFuture(obj));
+    }
+
+    public void setObj(CompletableFuture<T> obj) {
+        this.obj = obj;
+        setDirty();
     }
 
     protected boolean reload(boolean read) {

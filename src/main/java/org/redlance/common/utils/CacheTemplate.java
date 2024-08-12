@@ -1,7 +1,6 @@
 package org.redlance.common.utils;
 
 import com.google.gson.reflect.TypeToken;
-import io.github.kosmx.emotes.executor.EmoteInstance;
 import org.redlance.common.utils.cache.BaseCache;
 
 import java.lang.reflect.Type;
@@ -17,9 +16,8 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
 
     @SuppressWarnings("unchecked")
     public CacheTemplate(String path, Type... typeArguments) {
-        super(EmoteInstance.instance.getGameDirectory().resolve(path), ConcurrentHashMap::new,
-                (TypeToken<Map<K, V>>) TypeToken.getParameterized(Map.class, typeArguments)
-        );
+        super(path, ConcurrentHashMap::new, (TypeToken<Map<K, V>>)
+                TypeToken.getParameterized(Map.class, typeArguments));
     }
 
     public void write(K key, V value) {
@@ -91,10 +89,6 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
                 .filter(predicate)
                 .map(Map.Entry::getKey)
                 .findAny();
-    }
-
-    public Map<K, V> getCacheDirect() {
-        return getObj();
     }
 
     public Stream<Map.Entry<K, V>> getStream() {

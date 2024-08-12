@@ -2,61 +2,24 @@ package org.redlance.common.utils;
 
 import com.google.gson.reflect.TypeToken;
 import io.github.kosmx.emotes.executor.EmoteInstance;
-import io.github.kosmx.emotes.server.config.Serializer;
-import org.redlance.common.CommonUtils;
+import org.redlance.common.utils.cache.BaseCache;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
-public class CacheTemplate<K, V> {
-    public static final Map<String, CacheTemplate<?, ?>> TRACKED_CACHES = new ConcurrentHashMap<>();
+public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
 
-    private static final long GAP_SECONDS_THRESHOLD = 30L;
-
-    private final Map<K, V> caches = new ConcurrentHashMap<>();
-    private final TypeToken<?> token;
-    private final Path path;
-
-    private CompletableFuture<Void> reader;
-
-    private final List<Consumer<CacheTemplate<K, V>>> listeners = new ArrayList<>();
-    private boolean dirty;
-
+    @SuppressWarnings("unchecked")
     public CacheTemplate(String path, Type... typeArguments) {
-        this.token = TypeToken.getParameterized(Map.class, typeArguments);
-        this.path = EmoteInstance.instance.getGameDirectory().resolve(path);
-
-        TRACKED_CACHES.put(path, this);
-        CommonUtils.LOGGER.debug("{} created!", path);
-
-        this.reader = CompletableFuture.runAsync(this::read, CommonUtils.EXECUTOR);
-
-        CommonUtils.SCHEDULED_EXECUTOR.scheduleAtFixedRate(
-                () -> reload(false, false), GAP_SECONDS_THRESHOLD, GAP_SECONDS_THRESHOLD, TimeUnit.SECONDS
+        super(EmoteInstance.instance.getGameDirectory().resolve(path), ConcurrentHashMap::new,
+                (TypeToken<Map<K, V>>) TypeToken.getParameterized(Map.class, typeArguments)
         );
-    }
-
-    public void setDirty() {
-        if (!this.dirty) {
-            CommonUtils.LOGGER.info("{} is now dirty!", this);
-        }
-
-        this.dirty = true;
     }
 
     public void write(K key, V value) {
@@ -64,13 +27,13 @@ public class CacheTemplate<K, V> {
     }
 
     public void write(K key, V value, boolean replace) {
-        waitReading();
+        Map<K, V> caches = getObj();
 
         V prev;
-        if (replace && this.caches.containsKey(key)) {
-            prev = this.caches.replace(key, value);
+        if (replace && caches.containsKey(key)) {
+            prev = caches.replace(key, value);
         } else {
-            prev = this.caches.put(key, value);
+            prev = caches.put(key, value);
         }
 
         if (prev == null || prev != value) {
@@ -79,9 +42,7 @@ public class CacheTemplate<K, V> {
     }
 
     public V writeIfEmpty(K key, Function<? super K, ? extends V> mappingFunction) {
-        waitReading();
-
-        return this.caches.computeIfAbsent(key, k -> {
+        return getObj().computeIfAbsent(key, k -> {
             V map = mappingFunction.apply(k);
 
             setDirty();
@@ -90,15 +51,12 @@ public class CacheTemplate<K, V> {
     }
 
     public void remove(K key) {
-        waitReading();
-        this.caches.remove(key);
+        getObj().remove(key);
         setDirty();
     }
 
     public boolean hasKey(K key) {
-        waitReading();
-
-        return this.caches.containsKey(key);
+        return getObj().containsKey(key);
     }
 
     public Optional<V> getOptionalValueByKey(K key) {
@@ -106,12 +64,17 @@ public class CacheTemplate<K, V> {
     }
 
     public V getValueByKey(K key) {
-        waitReading();
-
-        if (key == null || !this.caches.containsKey(key))
+        if (key == null) {
             return null;
+        }
 
-        return this.caches.get(key);
+        Map<K, V> caches = getObj();
+
+        if (!caches.containsKey(key)) {
+            return null;
+        }
+
+        return caches.get(key);
     }
 
     public Optional<K> getKeyByValue(Object value) {
@@ -123,10 +86,7 @@ public class CacheTemplate<K, V> {
             return Optional.empty();
         }
 
-        waitReading();
-
-        return this.caches.entrySet()
-                .parallelStream()
+        return getObj().entrySet().parallelStream()
                 .filter(kvEntry -> kvEntry.getValue().equals(value))
                 .filter(predicate)
                 .map(Map.Entry::getKey)
@@ -134,138 +94,18 @@ public class CacheTemplate<K, V> {
     }
 
     public Map<K, V> getCacheDirect() {
-        waitReading();
-
-        return this.caches;
-    }
-
-    public List<Consumer<CacheTemplate<K, V>>> getListeners() {
-        return this.listeners;
-    }
-
-    public boolean subscrube(Consumer<CacheTemplate<K, V>> listener) {
-        listener.accept(this); // Begin fire
-        return this.listeners.add(listener);
-    }
-
-    public boolean unsubscrube(Consumer<CacheTemplate<K, V>> listener) {
-        return this.listeners.remove(listener);
-    }
-
-    private void fireListeners() {
-        if (this.listeners.isEmpty()) {
-            return;
-        }
-
-        CommonUtils.LOGGER.info("Firing {} listeners for {}!", this.listeners.size(), this);
-
-        for (Consumer<CacheTemplate<K, V>> listener : this.listeners) {
-            listener.accept(this);
-        }
-    }
-
-    protected boolean reload(boolean read, boolean force) {
-        waitReading();
-
-        if (read & !this.dirty) {
-            CommonUtils.LOGGER.info("Reading {}...", this);
-            this.reader = CompletableFuture.runAsync(this::read, CommonUtils.EXECUTOR);
-        }
-
-        if (!force) {
-            if (!this.dirty) { // Never accessed
-                return false;
-            }
-
-            this.dirty = false;
-        }
-
-        CommonUtils.LOGGER.info("Reloading {}...", this);
-        save();
-
-        if (!read) {
-            fireListeners();
-        }
-
-        return true;
+        return getObj();
     }
 
     public Stream<Map.Entry<K, V>> getStream() {
-        waitReading();
-        return this.caches.entrySet().parallelStream();
+        return getObj().entrySet().parallelStream();
     }
 
     public Stream<V> getValuesStream() {
-        waitReading();
-        return this.caches.values().parallelStream();
+        return getObj().values().parallelStream();
     }
 
     public Stream<K> getKeyStream() {
-        waitReading();
-        return this.caches.keySet().parallelStream();
-    }
-
-    public void save() {
-        waitReading();
-
-        try (BufferedWriter writer = Files.newBufferedWriter(this.path)) {
-
-            Serializer.serializer.toJson(this.caches, this.token.getType(), writer);
-
-            writer.flush();
-
-        } catch (Throwable e) {
-            CommonUtils.LOGGER.warn("Failed to save caches!", e);
-        }
-    }
-
-    public void waitReading() {
-        if (!this.reader.isDone()) {
-            CommonUtils.LOGGER.debug("Blocking cache {} unit readed...", this);
-            this.reader.join();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public void read() {
-        try (BufferedReader reader = Files.newBufferedReader(this.path)) {
-            Map<? extends K, ? extends V> newCaches = (Map<? extends K, ? extends V>)
-                    Serializer.serializer.fromJson(reader, this.token);
-
-            if (newCaches == null || newCaches.isEmpty()) {
-                if (!this.caches.isEmpty()) {
-                    CommonUtils.LOGGER.fatal("Readed cache {} is null! Preverting data loss...", this);
-                }
-
-                return;
-            }
-
-            this.caches.clear();
-            this.caches.putAll(newCaches);
-
-            fireListeners();
-        } catch (Throwable e) {
-            CommonUtils.LOGGER.warn("Failed to read caches!", e);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return String.format("CacheTemplate{%s (%s)}", this.path, this.caches.size());
-    }
-
-    public static void reload(Consumer<Map.Entry<String, CacheTemplate<?, ?>>> reloader, boolean read, boolean force) {
-        for (var cacheEntry : CacheTemplate.TRACKED_CACHES.entrySet()) {
-            if (cacheEntry.getValue().reload(read, force) && reloader != null) {
-                reloader.accept(cacheEntry);
-            }
-        }
-    }
-
-    static {
-        CommonUtils.LOGGER.debug("Save hook added!");
-        Runtime.getRuntime().addShutdownHook(new Thread(() ->
-                CacheTemplate.reload(null, false, true), "SaveThread"
-        ));
+        return getObj().keySet().parallelStream();
     }
 }

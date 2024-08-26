@@ -14,6 +14,8 @@ public class BoostyBuiltInHandler implements Consumer<JsonObject> {
 
     @Override
     public void accept(JsonObject jsonObject) {
+        CommonUtils.LOGGER.info("Handling {}!", jsonObject);
+
         String type = jsonObject.getAsJsonObject("data").get("type").getAsString();
         if (type == null) {
             return;
@@ -24,8 +26,6 @@ public class BoostyBuiltInHandler implements Consumer<JsonObject> {
 
             return;
         }
-
-        CommonUtils.LOGGER.debug("Handling {}!", jsonObject);
 
         for (BoostyListener<?> listener : this.listeners.get(type)) {
             listener.handle(jsonObject);

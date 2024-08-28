@@ -78,6 +78,9 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
 
                                 sendMessage(1, new OutboundAuthMessage.Subscribe("dialogs#" + this.userId))
                                         .join();
+
+                                sendMessage(1, new OutboundAuthMessage.Subscribe("blogger#" + this.userId))
+                                        .join();
                             }
                     )).join();
 
@@ -91,7 +94,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
     }
 
     /**
-     * @param method 0 - default, 1 - channel subscribe, 7 - ping
+     * @param method 0 - default, 1 - channel subscribe, 2 - channel unsubscribe, 7 - ping
      * @param params Payload, null for ping.
      */
     public CompletableFuture<JsonObject> sendMessage(int method, @Nullable Object params) {

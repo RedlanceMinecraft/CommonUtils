@@ -21,7 +21,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 public class BoostyWebsocketListener implements WebSocket.Listener  {
@@ -29,7 +29,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
 
     private final Map<Integer, CompletableFuture<JsonObject>> messages = new ConcurrentHashMap<>();
 
-    private final Consumer<JsonObject> listener;
+    private final BiConsumer<String, JsonObject> listener;
     private final Supplier<String> token;
     private final int userId;
 
@@ -44,7 +44,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
      * @param token Boosty access token.
      * @param userId Boosty shelf user id.
      */
-    public BoostyWebsocketListener(Consumer<JsonObject> listener, Supplier<String> token, int userId) {
+    public BoostyWebsocketListener(BiConsumer<String, JsonObject> listener, Supplier<String> token, int userId) {
         this.listener = listener;
         this.token = token;
         this.userId = userId;
@@ -148,7 +148,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
                     return WebSocket.Listener.super.onText(webSocket, data, last);
                 }
 
-                this.listener.accept(message.data());
+                this.listener.accept(message.channel(), message.data());
             }
         } catch (Throwable th) {
             CommonUtils.LOGGER.error("Failed to handle {}!", data, th);

@@ -8,16 +8,20 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 public interface BoostyListener<T> {
-    default void handle(T type) {
+    default String getName() {
+        return getClass().getName();
+    }
+
+    default void handle(String channel, T type) {
         throw new NotImplementedException();
     }
 
-    default void handle(JsonObject object, T type) {
-        handle(type);
+    default void handle(String channel, JsonObject object, T type) {
+        handle(channel, type);
     }
 
-    default void handle(JsonObject object) {
-        handle(object, Serializer.serializer.fromJson(
+    default void handle(String channel, JsonObject object) {
+        handle(channel, object, Serializer.serializer.fromJson(
                 object.getAsJsonObject("data").getAsJsonObject("data"),
                 Objects.requireNonNull(parseObject())
         ));

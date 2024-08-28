@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
-public class BoostyBuiltInHandler implements Consumer<JsonObject> {
+public class BoostyBuiltInHandler implements BiConsumer<String, JsonObject> {
     private final Map<String, List<BoostyListener<?>>> listeners = new HashMap<>();
 
     @Override
-    public void accept(JsonObject jsonObject) {
+    public void accept(String channel, JsonObject jsonObject) {
         CommonUtils.LOGGER.info("Handling {}!", jsonObject);
 
         String type = jsonObject.getAsJsonObject("data").get("type").getAsString();
@@ -21,22 +21,31 @@ public class BoostyBuiltInHandler implements Consumer<JsonObject> {
             return;
         }
 
-        if (!this.listeners.containsKey(type)) {
+        List<BoostyListener<?>> listenerList = this.listeners.getOrDefault(type, this.listeners.get(""));
+        if (listenerList == null) {
             CommonUtils.LOGGER.warn("No listeners for {}!", type);
 
             return;
         }
 
-        for (BoostyListener<?> listener : this.listeners.get(type)) {
-            listener.handle(jsonObject);
+        for (BoostyListener<?> listener : listenerList) {
+            listener.handle(channel, jsonObject);
         }
+    }
+
+    public boolean addListener(BoostyListener<?> listener) {
+        return addListener("", listener);
     }
 
     /**
      * @param type Event type, known: dialog_message_counters, dialog_message_read, dialog_message, standalone_notify_count, blog_subscriber_stat, upload
      */
-    public void addListener(String type, BoostyListener<?> listener) {
-        this.listeners.computeIfAbsent(type, key -> new ArrayList<>())
+    public boolean addListener(String type, BoostyListener<?> listener) {
+        CommonUtils.LOGGER.debug("Subscribed listener ({}) for type '{}'!",
+                listener.getName(), type
+        );
+
+        return this.listeners.computeIfAbsent(type, key -> new ArrayList<>())
                 .add(listener);
     }
 }

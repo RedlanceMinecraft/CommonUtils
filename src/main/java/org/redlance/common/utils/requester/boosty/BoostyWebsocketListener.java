@@ -144,7 +144,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
                         InboundChannelMessage.class);
 
                 if (message.data() == null || !message.data().has("data")) {
-                    CommonUtils.LOGGER.debug("Invalid object: {}", message.data());
+                    CommonUtils.LOGGER.debug("Invalid object from channel {}! ({})", message.channel(), message.data());
                     return WebSocket.Listener.super.onText(webSocket, data, last);
                 }
 

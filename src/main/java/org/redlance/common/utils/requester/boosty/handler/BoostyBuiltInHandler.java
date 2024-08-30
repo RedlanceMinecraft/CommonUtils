@@ -14,7 +14,7 @@ public class BoostyBuiltInHandler implements BiConsumer<String, JsonObject> {
 
     @Override
     public void accept(String channel, JsonObject jsonObject) {
-        CommonUtils.LOGGER.info("Handling {}!", jsonObject);
+        CommonUtils.LOGGER.info("Handling {} from channel {}!", jsonObject, channel);
 
         String type = jsonObject.getAsJsonObject("data").get("type").getAsString();
         if (type == null) {
@@ -23,7 +23,7 @@ public class BoostyBuiltInHandler implements BiConsumer<String, JsonObject> {
 
         List<BoostyListener<?>> listenerList = this.listeners.getOrDefault(type, this.listeners.get(""));
         if (listenerList == null) {
-            CommonUtils.LOGGER.warn("No listeners for {}!", type);
+            CommonUtils.LOGGER.warn("No listeners for {} in channel {}!", type, channel);
 
             return;
         }

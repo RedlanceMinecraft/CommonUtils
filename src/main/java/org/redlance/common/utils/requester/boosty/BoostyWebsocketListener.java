@@ -70,22 +70,25 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
             this.webSocket = e;
             this.messages.clear();
 
-            sendMessage(0, new OutboundAuthMessage.Auth("js", this.token.get()))
-                    .whenCompleteAsync((
-                            (element, throwable) ->  {
-                                sendMessage(1, new OutboundAuthMessage.Subscribe("users#" + this.userId))
-                                        .join();
+            JsonObject responseObj = sendMessage(0, new OutboundAuthMessage.Auth("js", this.token.get()))
+                    .whenCompleteAsync(((element, throwable) ->  {
+                        sendMessage(1, new OutboundAuthMessage.Subscribe("users#" + this.userId))
+                                .join();
 
-                                sendMessage(1, new OutboundAuthMessage.Subscribe("dialogs#" + this.userId))
-                                        .join();
+                        sendMessage(1, new OutboundAuthMessage.Subscribe("dialogs#" + this.userId))
+                                .join();
 
-                                sendMessage(1, new OutboundAuthMessage.Subscribe("blogger#" + this.userId))
-                                        .join();
-                            }
-                    )).join();
+                        sendMessage(1, new OutboundAuthMessage.Subscribe("blogger#" + this.userId))
+                                .join();
+                    }))
+                    .join();
 
             this.pinger = CommonUtils.SCHEDULED_EXECUTOR.scheduleAtFixedRate(
                     () -> sendMessage(7, null), 30L, 30L, TimeUnit.SECONDS
+            );
+
+            CommonUtils.LOGGER.info("Connected to boosty! (Backend version: {})",
+                    responseObj.has("version") ? responseObj.get("version").getAsString() : responseObj
             );
         }).exceptionally((ex) -> {
             CommonUtils.LOGGER.error("Failed to connect!", ex);
@@ -144,7 +147,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
                         InboundChannelMessage.class);
 
                 if (message.data() == null || !message.data().has("data")) {
-                    CommonUtils.LOGGER.debug("Invalid object from channel {}! ({})", message.channel(), message.data());
+                    CommonUtils.LOGGER.debug("Invalid object in channel {}! ({})", message.channel(), message.data());
                     return WebSocket.Listener.super.onText(webSocket, data, last);
                 }
 

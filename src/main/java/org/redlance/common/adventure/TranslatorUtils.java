@@ -1,7 +1,11 @@
 package org.redlance.common.adventure;
 
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TranslatableComponent;
+import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.TranslationRegistry;
+import net.kyori.adventure.translation.Translator;
 import org.apache.commons.io.FilenameUtils;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.ResourceUtils;
@@ -14,7 +18,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
 
-public class Translator {
+public class TranslatorUtils {
     public static final Map<String, List<String>> LOCALE_FALLBACK = Map.of(
             "ru", List.of("ua", "kz", "by")
     );
@@ -50,5 +54,23 @@ public class Translator {
         }
 
         return translationRegistry;
+    }
+
+    public static Translator findTranslatorSource(Component component, Locale locale) {
+        if (component instanceof TranslatableComponent translatable) {
+            return findTranslatorSource(translatable.key(), locale);
+        }
+
+        return null;
+    }
+
+    public static Translator findTranslatorSource(String key, Locale locale) {
+        for (Translator source : GlobalTranslator.translator().sources()) {
+            if (source.translate(key, locale) != null) {
+                return source;
+            }
+        }
+
+        return null;
     }
 }

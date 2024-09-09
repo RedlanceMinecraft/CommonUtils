@@ -11,6 +11,7 @@ import java.io.BufferedWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -68,7 +69,7 @@ public class BaseCache<T> {
     }
 
     public List<Consumer<BaseCache<T>>> getListeners() {
-        return this.listeners;
+        return Collections.unmodifiableList(this.listeners);
     }
 
     public boolean subscrube(Consumer<BaseCache<T>> listener) {
@@ -114,8 +115,6 @@ public class BaseCache<T> {
             if (read) {
                 CommonUtils.LOGGER.info("Reading {}...", this);
                 this.obj = CompletableFuture.supplyAsync(this::read, CommonUtils.EXECUTOR);
-
-                fireListeners();
             }
 
             return false; // Never accessed
@@ -124,7 +123,12 @@ public class BaseCache<T> {
         CommonUtils.LOGGER.info("Saving {}...", this);
         this.dirty = false;
 
-        return save();
+        boolean saved = save();
+        if (saved) {
+            fireListeners();
+        }
+
+        return saved;
     }
 
     private T read() {

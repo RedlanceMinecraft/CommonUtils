@@ -45,9 +45,9 @@ public class RedlanceSerializer<T extends SerializableConfig> extends Serializer
     }
 
     @Override
-    protected SerializableConfig readConfig(BufferedReader reader) throws JsonSyntaxException, JsonIOException {
+    protected T readConfig(BufferedReader reader) throws JsonSyntaxException, JsonIOException {
         if (reader != null) {
-            SerializableConfig config = serializer.fromJson(reader, this.configClass);
+            T config = serializer.fromJson(reader, this.configClass);
 
             if (config == null) {
                 throw new JsonParseException("Json is empty");

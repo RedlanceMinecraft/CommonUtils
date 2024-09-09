@@ -15,6 +15,7 @@ import java.io.Reader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -26,6 +27,10 @@ import java.util.function.Supplier;
 
 public class BoostyWebsocketListener implements WebSocket.Listener  {
     private static final URI ENDPOINT = URI.create("wss://pubsub.boosty.to/connection/websocket");
+
+    public static final List<String> KNOWN_CHANNEL_PREFIXES = List.of(
+            "users#", "dialogs#", "blogger:"//, "$dialog:"
+    );
 
     private final Map<Integer, CompletableFuture<JsonObject>> messages = new ConcurrentHashMap<>();
 
@@ -72,14 +77,10 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
 
             JsonObject responseObj = sendMessage(0, new OutboundAuthMessage.Auth("js", this.token.get()))
                     .whenCompleteAsync(((element, throwable) ->  {
-                        sendMessage(1, new OutboundAuthMessage.Subscribe("users#" + this.userId))
-                                .join();
-
-                        sendMessage(1, new OutboundAuthMessage.Subscribe("dialogs#" + this.userId))
-                                .join();
-
-                        sendMessage(1, new OutboundAuthMessage.Subscribe("blogger#" + this.userId))
-                                .join();
+                        for (String channel : KNOWN_CHANNEL_PREFIXES) {
+                            sendMessage(1, new OutboundAuthMessage.Subscribe(channel + this.userId))
+                                    .join();
+                        }
                     }))
                     .join();
 

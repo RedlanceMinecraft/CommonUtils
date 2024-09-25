@@ -1,5 +1,6 @@
 plugins {
     id 'maven-publish'
+    id 'java-library'
     id 'java'
 }
 
@@ -18,27 +19,28 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.mizosoft.methanol:methanol:1.7.0'
+    implementation api("com.github.mizosoft.methanol:methanol:1.7.0")
 
-    implementation "org.apache.logging.log4j:log4j-api:${project.log4j_version}"
+    implementation api("org.apache.logging.log4j:log4j-api:${project.log4j_version}")
     implementation "org.apache.logging.log4j:log4j-core:${project.log4j_version}"
     implementation "org.apache.logging.log4j:log4j-jul:${project.log4j_version}"
+    runtimeOnly "com.lmax:disruptor:4.0.0"
 
-    implementation "org.apache.commons:commons-lang3:3.14.0"
-    implementation "com.google.guava:guava:33.2.1-jre"
-    implementation "commons-io:commons-io:2.16.1"
-    implementation "com.google.code.gson:gson:2.10.1"
+    implementation api("org.apache.commons:commons-lang3:3.17.0")
+    implementation api("com.google.guava:guava:33.3.1-jre")
+    implementation api("commons-io:commons-io:2.17.0")
+    implementation api("com.google.code.gson:gson:2.11.0")
 
-    implementation "net.kyori:adventure-api:${project.adventure_version}"
-    implementation "net.kyori:adventure-text-serializer-legacy:${project.adventure_version}"
-    implementation "net.kyori:adventure-text-serializer-plain:${project.adventure_version}"
-    implementation "net.kyori:adventure-text-serializer-gson:${project.adventure_version}"
+    implementation api("net.kyori:adventure-api:${project.adventure_version}")
+    implementation api("net.kyori:adventure-text-serializer-legacy:${project.adventure_version}")
+    implementation api("net.kyori:adventure-text-serializer-plain:${project.adventure_version}")
+    implementation api("net.kyori:adventure-text-serializer-gson:${project.adventure_version}")
 
-    implementation "io.github.kosmx.emotes:emotesExecutor:2.2.7-b.build.50"
-    implementation "io.github.kosmx.emotes:emotesServer:2.2.7-b.build.50"
-    implementation "io.github.kosmx.emotes:emotesMain:2.2.7-b.build.50"
-    implementation "io.github.kosmx.emotes:emotesAPI:2.2.7-b.build.50"
-    implementation "dev.kosmx.player-anim:anim-core:99.99.99+1.21" // TODO
+    implementation api("io.github.kosmx.emotes:emotesExecutor:2.2.7-b.build.50")
+    implementation api("io.github.kosmx.emotes:emotesServer:2.2.7-b.build.50")
+    implementation api("io.github.kosmx.emotes:emotesMain:2.2.7-b.build.50")
+    implementation api("io.github.kosmx.emotes:emotesAPI:2.2.7-b.build.50")
+    implementation api("dev.kosmx.player-anim:anim-core:99.99.99+1.21") // TODO
 }
 
 tasks.withType(JavaCompile).configureEach {

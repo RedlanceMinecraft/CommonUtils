@@ -91,6 +91,11 @@ public class BoostyUser {
     public int price;
 
     /**
+     * Subscription Discount (Or Gift Link).
+     */
+    public BoostyPromo promo;
+
+    /**
      * true if the user is subscribed right now, also see {@link #isSubscribed()}
      * Accessible only through {@link BoostyRequester#requestSubscribers(String, String, int)}
      */

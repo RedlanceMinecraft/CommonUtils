@@ -97,4 +97,19 @@ public class BoostyRequester {
 
         return chatmate.get("id").getAsInt();
     }
+
+    public static String requestSocketToken(String token) throws ExecutionException {
+        HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.boosty.to/v1/ws/connect"))
+                .header("Authorization", "Bearer " + token)
+                .GET()
+                .build();
+
+        JsonObject response = Requester.sendRequest(httpRequest, JsonObject.class);
+        if (!response.has("token")) {
+            throw new NullPointerException(response.toString());
+        }
+
+        return response.get("token").getAsString();
+    }
 }

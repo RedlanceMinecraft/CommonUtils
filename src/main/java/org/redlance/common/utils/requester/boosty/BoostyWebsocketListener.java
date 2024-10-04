@@ -11,7 +11,7 @@ import org.redlance.common.utils.requester.boosty.messages.auth.InboundAuthMessa
 import org.redlance.common.utils.requester.boosty.messages.auth.OutboundAuthMessage;
 import org.redlance.common.utils.requester.boosty.messages.generic.InboundChannelMessage;
 
-import java.io.Reader;
+import java.io.BufferedReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
@@ -131,28 +131,35 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
 
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-        try (Reader reader = new CharSequenceReader(data)) {
-            InboundAuthMessage authMessage = Serializer.serializer.fromJson(reader, InboundAuthMessage.class);
+        try (BufferedReader reader = new BufferedReader(new CharSequenceReader(data))) {
+            for (String line : reader.lines().toList()) {
+                InboundAuthMessage authMessage = Serializer.serializer.fromJson(line, InboundAuthMessage.class);
 
-            if (authMessage.id() > 0) { // replied
-                CompletableFuture<JsonObject> future = this.messages.get(authMessage.id());
-                if (future == null) {
-                    CommonUtils.LOGGER.warn("Unknown message {}: {}!", authMessage.id(), authMessage.result());
-                    return WebSocket.Listener.super.onText(webSocket, data, last);
+                if (authMessage.id() > 0) { // replied
+                    CompletableFuture<JsonObject> future = this.messages.get(authMessage.id());
+                    if (future == null) {
+                        CommonUtils.LOGGER.warn("Unknown message {}: {}!", authMessage.id(), authMessage.result());
+                        return WebSocket.Listener.super.onText(webSocket, data, last);
+                    }
+
+                    if (authMessage.error() != null) {
+                        future.completeExceptionally(new RuntimeException(
+                                authMessage.error().toString()
+                        ));
+                    } else {
+                        future.complete(authMessage.result());
+                    }
+                } else if (authMessage.result() != null) {
+                    InboundChannelMessage message = Serializer.serializer.fromJson(authMessage.result(),
+                            InboundChannelMessage.class);
+
+                    if (message.data() == null || !message.data().has("data")) {
+                        CommonUtils.LOGGER.debug("Invalid object in channel {}! ({})", message.channel(), message.data());
+                        return WebSocket.Listener.super.onText(webSocket, data, last);
+                    }
+
+                    this.listener.accept(message.channel(), message.data());
                 }
-
-                future.complete(authMessage.result());
-
-            } else if (authMessage.result() != null) {
-                InboundChannelMessage message = Serializer.serializer.fromJson(authMessage.result(),
-                        InboundChannelMessage.class);
-
-                if (message.data() == null || !message.data().has("data")) {
-                    CommonUtils.LOGGER.debug("Invalid object in channel {}! ({})", message.channel(), message.data());
-                    return WebSocket.Listener.super.onText(webSocket, data, last);
-                }
-
-                this.listener.accept(message.channel(), message.data());
             }
         } catch (Throwable th) {
             CommonUtils.LOGGER.error("Failed to handle {}!", data, th);

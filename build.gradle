@@ -13,7 +13,10 @@ repositories {
         name "KosmX's maven"
         url "https://maven.kosmx.dev"
     }
-
+    maven {
+        name "Redlance"
+        url "https://repo.redlance.org/public"
+    }
     mavenCentral()
     mavenLocal()
 }
@@ -36,11 +39,11 @@ dependencies {
     implementation api("net.kyori:adventure-text-serializer-plain:${project.adventure_version}")
     implementation api("net.kyori:adventure-text-serializer-gson:${project.adventure_version}")
 
-    implementation api("io.github.kosmx.emotes:emotesExecutor:2.2.7-b.build.50")
-    implementation api("io.github.kosmx.emotes:emotesServer:2.2.7-b.build.50")
-    implementation api("io.github.kosmx.emotes:emotesMain:2.2.7-b.build.50")
-    implementation api("io.github.kosmx.emotes:emotesAPI:2.2.7-b.build.50")
-    implementation api("dev.kosmx.player-anim:anim-core:99.99.99+1.21") // TODO
+    implementation api("io.github.kosmx.emotes:emotesExecutor:${project.emotecraft_version}")
+    implementation api("io.github.kosmx.emotes:emotesServer:${project.emotecraft_version}")
+    implementation api("io.github.kosmx.emotes:emotesMain:${project.emotecraft_version}")
+    implementation api("io.github.kosmx.emotes:emotesAPI:${project.emotecraft_version}")
+    implementation api("dev.kosmx.player-anim:anim-core:2.0.0-alpha3+1.21") // TODO
 }
 
 tasks.withType(JavaCompile).configureEach {

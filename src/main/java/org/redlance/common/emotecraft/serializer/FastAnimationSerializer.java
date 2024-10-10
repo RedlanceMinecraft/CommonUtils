@@ -19,8 +19,10 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.Base64;
+import java.util.HashMap;
 
 public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimation>, JsonSerializer<KeyframeAnimation> {
+    @SuppressWarnings("deprecation")
     public static final KeyframeAnimation INVALID = new KeyframeAnimation.AnimationBuilder(AnimationFormat.UNKNOWN)
             .setName("{\"color\":\"red\",\"text\":\"INVALID\"}")
             .build();
@@ -46,20 +48,56 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
     @Override
     public JsonElement serialize(KeyframeAnimation src, Type type, JsonSerializationContext context) {
         try {
-            ByteBuffer byteBuffer = new EmotePacket.Builder()
+            EmotePacket.Builder builder = new EmotePacket.Builder();
+
+            if (hasScaling(src)){
+                CommonUtils.LOGGER.warn("{} requires version 3, which is unsupported in most cases!", src);
+
+            } else {
+                HashMap<Byte, Byte> version = new HashMap<>();
+                version.put((byte) 0, (byte) 2); // Defailt is 3 for scaling
+
+                builder.setVersion(version);
+            }
+
+            ByteBuffer byteBuffer = builder
                     .configureToSaveEmote(src)
-                    .build()
+                    .build(Integer.MAX_VALUE)
                     .write();
 
-            String base64 = Base64.getEncoder().encodeToString(
+            return context.serialize(Base64.getEncoder().encodeToString(
                     AbstractNetworkInstance.safeGetBytesFromBuffer(byteBuffer)
-            );
-
-            return context.serialize(base64);
+            ));
         } catch (Throwable e) {
             CommonUtils.LOGGER.error("Failed to serialize animation {}!", src, e);
 
             return JsonNull.INSTANCE;
         }
+    }
+
+    private static boolean hasScaling(KeyframeAnimation animation) {
+        for (KeyframeAnimation.StateCollection part : animation.getBodyParts().values()) {
+            if (!part.isScalable()) {
+                continue;
+            }
+
+            if (hasScaling(part.scaleX)) {
+                return true;
+            }
+
+            if (hasScaling(part.scaleY)) {
+                return true;
+            }
+
+            if (hasScaling(part.scaleZ)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean hasScaling(KeyframeAnimation.StateCollection.State state) {
+        return state != null && !state.getKeyFrames().isEmpty() && state.isEnabled();
     }
 }

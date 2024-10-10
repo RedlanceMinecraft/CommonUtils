@@ -47,7 +47,8 @@ public class RedlanceConfigSerializer<T extends SerializableConfig> extends Conf
         return config;
     }
 
-    protected <T> void deserializeEntry(SerializableConfig.ConfigEntry<T> entry, JsonObject node) {
+    @SuppressWarnings("unchecked")
+    protected <E> void deserializeEntry(SerializableConfig.ConfigEntry<E> entry, JsonObject node) {
         String id = null;
         if (node.has(entry.getName())) {
             id = entry.getName();
@@ -61,7 +62,7 @@ public class RedlanceConfigSerializer<T extends SerializableConfig> extends Conf
 
         JsonElement element = node.get(id);
 
-        entry.set((T) Serializer.serializer.fromJson(element, entry.get().getClass()));
+        entry.set((E) Serializer.serializer.fromJson(element, entry.get().getClass()));
     }
 
     @Override

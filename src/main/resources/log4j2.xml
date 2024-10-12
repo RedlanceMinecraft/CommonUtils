@@ -19,6 +19,7 @@
         <Logger level="info" name="org.javacord.core"/>
         <Logger level="info" name="net.dv8tion.jda"/>
         <Logger level="info" name="okhttp3"/>
+        <Logger level="info" name="org.apache.http"/>
 
         <Root level="all">
             <AppenderRef ref="Console" level="all"/>

@@ -2,7 +2,7 @@ package org.redlance.common.adventure;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TranslatableComponent;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.kyori.adventure.translation.GlobalTranslator;
@@ -42,18 +42,11 @@ public class AdventureUtils {
         );
     }
 
-    public static Component universalParse(@Nullable String str) {
-        if (StringUtils.isBlank(str)) {
+    public static Component universalParse(@Nullable String string) {
+        if (StringUtils.isBlank(string)) {
             return null;
         }
 
-        try {
-            return GsonComponentSerializer.gson()
-                    .deserialize(str.trim());
-        } catch (Throwable ignored) {
-        }
-
-        return PlainTextComponentSerializer.plainText()
-                .deserialize(str.trim());
+        return JSONComponentSerializer.json().deserialize(string.trim());
     }
 }

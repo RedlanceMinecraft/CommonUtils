@@ -48,20 +48,9 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
     @Override
     public JsonElement serialize(KeyframeAnimation src, Type type, JsonSerializationContext context) {
         try {
-            EmotePacket.Builder builder = new EmotePacket.Builder();
-
-            if (hasScaling(src)){
-                CommonUtils.LOGGER.warn("{} requires version 3, which is unsupported in most cases!", src);
-
-            } else {
-                HashMap<Byte, Byte> version = new HashMap<>();
-                version.put((byte) 0, (byte) 2); // Defailt is 3 for scaling
-
-                builder.setVersion(version);
-            }
-
-            ByteBuffer byteBuffer = builder
+            ByteBuffer byteBuffer = new EmotePacket.Builder()
                     .configureToSaveEmote(src)
+                    .setVersion(getDowngradedHashMap(src))
                     .build(Integer.MAX_VALUE)
                     .write();
 
@@ -73,6 +62,18 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
 
             return JsonNull.INSTANCE;
         }
+    }
+
+    public static HashMap<Byte, Byte> getDowngradedHashMap(KeyframeAnimation animation) {
+        HashMap<Byte, Byte> version = new HashMap<>();
+
+        if (hasScaling(animation)) {
+            CommonUtils.LOGGER.warn("{} requires version 3, which is unsupported in most cases!", animation);
+        } else {
+            version.put((byte) 0, (byte) 2); // Defailt is 3 for scaling
+        }
+
+        return version;
     }
 
     private static boolean hasScaling(KeyframeAnimation animation) {

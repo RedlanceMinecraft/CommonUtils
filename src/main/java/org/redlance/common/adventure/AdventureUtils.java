@@ -47,6 +47,10 @@ public class AdventureUtils {
             return null;
         }
 
-        return JSONComponentSerializer.json().deserialize(string.trim());
+        try {
+            return JSONComponentSerializer.json().deserialize(string.trim());
+        } catch(Throwable th) {
+            return Component.text(string.replace("\"", "").trim());
+        }
     }
 }

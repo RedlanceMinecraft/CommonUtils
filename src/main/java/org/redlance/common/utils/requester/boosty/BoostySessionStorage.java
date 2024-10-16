@@ -45,11 +45,11 @@ public class BoostySessionStorage {
             }
 
             this.storage.setObj(new Storage(object));
+
+            CommonUtils.LOGGER.debug("Refreshed boosty tokens for device {}!", this.deviceId);
         } catch (Throwable th) {
             CommonUtils.LOGGER.error("Failed to refresh boosty tokens for device {}!", this.deviceId, th);
         }
-
-        CommonUtils.LOGGER.debug("Refreshed boosty tokens for device {}!", this.deviceId);
     }
 
     public String getAccessToken() {

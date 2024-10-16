@@ -1,61 +1,60 @@
 package org.redlance.common.utils.requester;
 
+import com.github.mizosoft.methanol.CacheControl;
+import com.github.mizosoft.methanol.HttpCache;
 import com.github.mizosoft.methanol.Methanol;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.gson.reflect.TypeToken;
-import io.github.kosmx.emotes.server.config.Serializer;
-import org.apache.commons.lang3.StringUtils;
+import com.github.mizosoft.methanol.MoreBodyHandlers;
+import com.github.mizosoft.methanol.MutableRequest;
+import com.github.mizosoft.methanol.TrackedResponse;
+import com.github.mizosoft.methanol.TypeRef;
 import org.jetbrains.annotations.NotNull;
 import org.redlance.common.CommonUtils;
 
+import java.io.IOException;
 import java.net.CookieManager;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 
 public class Requester {
-    public static final HttpClient HTTP_CLIENT = Methanol.newBuilder()
+    public static final Methanol HTTP_CLIENT = Methanol.newBuilder()
             .executor(CommonUtils.EXECUTOR)
-            .connectTimeout(Duration.ofSeconds(15))
+            .connectTimeout(Duration.ofMinutes(1))
+            .version(HttpClient.Version.HTTP_1_1)
             .followRedirects(HttpClient.Redirect.ALWAYS)
-            .userAgent("Java/21 (On dima_dencep's pc)")
+            .cache(HttpCache.newBuilder()
+                    .executor(CommonUtils.EXECUTOR)
+                    .cacheOnMemory(1000 * 1024 * 1024) // 1000 MBs
+                    .listener(new HttpCache.Listener() {
+                        @Override
+                        public void onRequest(HttpRequest request) {
+                            CommonUtils.LOGGER.info("Request received: {}", request);
+                        }
+
+                        @Override
+                        public void onNetworkUse(HttpRequest request, TrackedResponse<?> cacheResponse) {
+                            CommonUtils.LOGGER.info("Nework used: {}", request);
+                        }
+                    })
+                    .build()
+            )
+            .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36")
             .cookieHandler(new CookieManager())
             .build();
 
-    private static final CacheLoader<HttpRequest, String> CACHE_LOADER = new CacheLoader<>() {
-        @Override
-        public @NotNull String load(@NotNull HttpRequest httpRequest) throws Exception {
-            String response = Requester.HTTP_CLIENT // send request
-                    .send(httpRequest, HttpResponse.BodyHandlers.ofString())
-                    .body();
+    public static final CacheControl CACHE_CONTROL = CacheControl.newBuilder()
+            .maxAge(Duration.ofSeconds(15))
+            .build();
 
-            if (StringUtils.isBlank(response)) {
-                invalidateRequest(httpRequest);
-                throw new NullPointerException("Invalid response!");
-            }
-
-            return response;
-        }
-    };
-
-    private static final LoadingCache<HttpRequest, String> CACHE = CacheBuilder.newBuilder()
-            .maximumSize(10000)
-            .expireAfterWrite(5, TimeUnit.MINUTES)
-            .build(CACHE_LOADER);
-
-    public static <T> @NotNull T sendRequest(HttpRequest httpRequest, Class<T> token) throws ExecutionException {
-        return sendRequest(httpRequest, TypeToken.get(token));
+    public static <T> @NotNull T sendRequest(HttpRequest httpRequest, Class<T> token) throws IOException, InterruptedException {
+        return sendRequest(httpRequest, TypeRef.from(token));
     }
 
-    public static <T> @NotNull T sendRequest(HttpRequest httpRequest, TypeToken<T> token) throws ExecutionException {
-        String response = sendRequest(httpRequest);
+    public static <T> @NotNull T sendRequest(HttpRequest httpRequest, TypeRef<T> token) throws IOException, InterruptedException {
+        T serialized = sendRequest(httpRequest, MoreBodyHandlers.ofObject(token)); // serialize
 
-        T serialized = Serializer.serializer.fromJson(response, token); // serialize
         if (serialized == null) {
             invalidateRequest(httpRequest);
             throw new NullPointerException("Invalid serialized result!");
@@ -64,11 +63,36 @@ public class Requester {
         return serialized;
     }
 
-    public static String sendRequest(HttpRequest httpRequest) throws ExecutionException {
-        return CACHE.get(httpRequest);
+    public static <T> T sendRequest(HttpRequest httpRequest, HttpResponse.BodyHandler<T> bodyHandler) throws IOException, InterruptedException {
+        if (httpRequest.headers().firstValue("Cache-Control").isEmpty()) {
+            CommonUtils.LOGGER.warn("Request without cache, manual setting...");
+
+            httpRequest = MutableRequest.copyOf(httpRequest)
+                    .cacheControl(Requester.CACHE_CONTROL)
+                    .build();
+        }
+
+        return Requester.HTTP_CLIENT // send request
+                .send(httpRequest, bodyHandler)
+                .body();
     }
 
-    public static void invalidateRequest(HttpRequest httpRequest) {
-        CACHE.invalidate(httpRequest);
+    public static String sendRequest(HttpRequest httpRequest) throws IOException, InterruptedException {
+        return sendRequest(httpRequest, HttpResponse.BodyHandlers.ofString());
+    }
+
+    public static boolean invalidateRequest(HttpRequest httpRequest) {
+        try {
+            Optional<HttpCache> httpCache = Requester.HTTP_CLIENT.cache();
+
+            if (httpCache.isEmpty()) {
+                return false;
+            }
+
+            return httpCache.get().remove(httpRequest);
+        } catch (Throwable th) {
+            CommonUtils.LOGGER.warn("Failed to remove request from cache!", th);
+            return false;
+        }
     }
 }

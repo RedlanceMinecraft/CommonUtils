@@ -18,10 +18,9 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.Base64;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 public class MojangRequester {
-    public static BaseMojangProfile getBaseByName(String name) throws ExecutionException {
+    public static BaseMojangProfile getBaseByName(String name) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.mojang.com/users/profiles/minecraft/" + name))
                 .build();
@@ -29,7 +28,7 @@ public class MojangRequester {
         return Requester.sendRequest(request, BaseMojangProfile.class);
     }
 
-    public static String getIdByName(String name) throws ExecutionException {
+    public static String getIdByName(String name) throws IOException, InterruptedException {
         BaseMojangProfile response = getBaseByName(name.trim());
         if (response.id == null) {
             return null;
@@ -53,7 +52,7 @@ public class MojangRequester {
         return Optional.empty();
     }
 
-    public static Optional<MojangProfile> getMojangProfileById(String uuid) throws IOException, ExecutionException {
+    public static Optional<MojangProfile> getMojangProfileById(String uuid) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid))
                 .build();

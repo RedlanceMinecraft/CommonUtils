@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class SPWPublicRequester {
     public static Optional<MojangProfile> getMojangProfile(List<String> cards, long discordId) {
@@ -35,7 +34,7 @@ public class SPWPublicRequester {
                 .findFirst();
     }
 
-    public static Optional<MojangProfile> getMojangProfile(String card, long discordId) throws ExecutionException, IOException {
+    public static Optional<MojangProfile> getMojangProfile(String card, long discordId) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://spworlds.ru/api/public/users/" + discordId))
                 .header("Authorization", "Bearer " + Base64.getEncoder().encodeToString(card

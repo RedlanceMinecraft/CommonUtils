@@ -23,6 +23,7 @@ repositories {
 
 dependencies {
     implementation api("com.github.mizosoft.methanol:methanol:1.7.0")
+    implementation api("com.github.mizosoft.methanol:methanol-gson:1.7.0")
 
     implementation api("org.apache.logging.log4j:log4j-api:${project.log4j_version}")
     implementation "org.apache.logging.log4j:log4j-core:${project.log4j_version}"
@@ -30,7 +31,7 @@ dependencies {
     runtimeOnly "com.lmax:disruptor:4.0.0"
 
     implementation api("org.apache.commons:commons-lang3:3.17.0")
-    implementation api("com.google.guava:guava:33.3.1-jre")
+    // implementation api("com.google.guava:guava:33.3.1-jre")
     implementation api("commons-io:commons-io:2.17.0")
     implementation api("com.google.code.gson:gson:2.11.0")
 

@@ -8,15 +8,15 @@ import org.redlance.common.utils.requester.boosty.obj.profile.BoostyProfile;
 import org.redlance.common.utils.requester.boosty.obj.user.BoostyUser;
 import org.redlance.common.utils.requester.boosty.obj.post.PostSale;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class BoostyRequester {
 
     @SuppressWarnings("unchecked")
-    public static List<PostSale> requestPostSales(String blog, String token) throws ExecutionException {
+    public static List<PostSale> requestPostSales(String blog, String token) throws IOException, InterruptedException {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.boosty.to/v1/blog/" + blog + "/sales/post/?limit=300"))
                 .header("Authorization", "Bearer " + token)
@@ -39,7 +39,7 @@ public class BoostyRequester {
     }
 
     @SuppressWarnings("unchecked")
-    public static List<BoostyUser> requestSubscribers(String blog, String token, int levelId) throws ExecutionException {
+    public static List<BoostyUser> requestSubscribers(String blog, String token, int levelId) throws IOException, InterruptedException {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.boosty.to/v1/blog/" + blog + "/subscribers?limit=300&is_active=true&level_ids=" + levelId))
                 .header("Authorization", "Bearer " + token)
@@ -56,7 +56,7 @@ public class BoostyRequester {
         );
     }
 
-    public static BoostyProfile requestUserProfile(String blog, String token, int userId) throws ExecutionException {
+    public static BoostyProfile requestUserProfile(String blog, String token, int userId) throws IOException, InterruptedException {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.boosty.to/v1/blog/" + blog + "/subscriber/" + userId + "/profile"))
                 .header("Authorization", "Bearer " + token)
@@ -78,7 +78,7 @@ public class BoostyRequester {
         );
     }
 
-    public static int requestUserFromDialog(String token, int dialogId) throws ExecutionException {
+    public static int requestUserFromDialog(String token, int dialogId) throws IOException, InterruptedException {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.boosty.to/v1/dialog/" + dialogId))
                 .header("Authorization", "Bearer " + token)
@@ -98,7 +98,7 @@ public class BoostyRequester {
         return chatmate.get("id").getAsInt();
     }
 
-    public static String requestSocketToken(String token) throws ExecutionException {
+    public static String requestSocketToken(String token) throws IOException, InterruptedException {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.boosty.to/v1/ws/connect"))
                 .header("Authorization", "Bearer " + token)

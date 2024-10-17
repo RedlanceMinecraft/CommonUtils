@@ -1,6 +1,5 @@
 package org.redlance.common.utils.requester.mojang;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.kosmx.emotes.server.config.Serializer;
@@ -25,7 +24,12 @@ public class MojangRequester {
                 .uri(URI.create("https://api.mojang.com/users/profiles/minecraft/" + name))
                 .build();
 
-        return Requester.sendRequest(request, BaseMojangProfile.class);
+        BaseMojangProfile profile = Requester.sendRequest(request, BaseMojangProfile.class);
+        if (profile.errorMessage != null) {
+            throw new InterruptedException(profile.errorMessage);
+        }
+
+        return profile;
     }
 
     public static String getIdByName(String name) throws IOException, InterruptedException {
@@ -57,10 +61,13 @@ public class MojangRequester {
                 .uri(URI.create("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid))
                 .build();
 
-        JsonArray jsonArray = Requester.sendRequest(request, JsonObject.class)
-                .getAsJsonArray("properties");
+        JsonObject obj = Requester.sendRequest(request, JsonObject.class);
 
-        for (JsonElement elem : jsonArray) {
+        if (obj.has("errorMessage")) {
+            throw new InterruptedException(obj.get("errorMessage").getAsString());
+        }
+
+        for (JsonElement elem : obj.getAsJsonArray("properties")) {
             JsonObject jsonObject = elem.getAsJsonObject();
 
             if (!jsonObject.has("name") || !"textures".equals(jsonObject.get("name").getAsString())) {

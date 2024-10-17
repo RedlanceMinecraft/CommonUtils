@@ -8,4 +8,7 @@ public class BaseMojangProfile {
 
     @SerializedName(value = "id", alternate = "uuid")
     public String id;
+
+    @SerializedName(value = "errorMessage", alternate = "error")
+    public String errorMessage;
 }

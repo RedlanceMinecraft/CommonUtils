@@ -1,6 +1,5 @@
 package org.redlance.common.utils.requester.discord;
 
-import com.github.mizosoft.methanol.FormBodyPublisher;
 import com.google.gson.JsonObject;
 import org.redlance.common.utils.requester.Requester;
 

@@ -11,6 +11,7 @@ import org.redlance.common.utils.requester.boosty.obj.post.PostSale;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
+import java.time.Duration;
 import java.util.List;
 
 public class BoostyRequester {
@@ -61,6 +62,7 @@ public class BoostyRequester {
                 .uri(URI.create("https://api.boosty.to/v1/blog/" + blog + "/subscriber/" + userId + "/profile"))
                 .header("Authorization", "Bearer " + token)
                 .GET()
+                .timeout(Duration.ofSeconds(15))
                 .build();
 
         JsonObject response = Requester.sendRequest(httpRequest, JsonObject.class);

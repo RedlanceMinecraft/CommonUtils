@@ -6,6 +6,7 @@ import io.github.kosmx.emotes.server.config.Serializer;
 import org.apache.commons.io.input.CharSequenceReader;
 import org.jetbrains.annotations.Nullable;
 import org.redlance.common.CommonUtils;
+import org.redlance.common.utils.requester.Requester;
 import org.redlance.common.utils.requester.boosty.handler.BoostyBuiltInHandler;
 import org.redlance.common.utils.requester.boosty.messages.auth.InboundAuthMessage;
 import org.redlance.common.utils.requester.boosty.messages.auth.OutboundAuthMessage;
@@ -13,7 +14,6 @@ import org.redlance.common.utils.requester.boosty.messages.generic.InboundChanne
 
 import java.io.BufferedReader;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +38,6 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
     private final Supplier<String> token;
     private final int userId;
 
-    private final HttpClient httpClient;
     private final WebSocket.Builder webSocketBuilder;
 
     protected ScheduledFuture<?> pinger;
@@ -54,11 +53,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
         this.token = token;
         this.userId = userId;
 
-        this.httpClient = HttpClient.newBuilder()
-                .executor(CommonUtils.EXECUTOR)
-                .build();
-
-        this.webSocketBuilder = this.httpClient.newWebSocketBuilder()
+        this.webSocketBuilder = Requester.HTTP_CLIENT.underlyingClient().newWebSocketBuilder()
                 .header("Origin", "https://boosty.to");
     }
 
@@ -115,7 +110,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
 
     @Override
     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-        CommonUtils.LOGGER.warn("Disconnected from boosty: {}", reason);
+        CommonUtils.LOGGER.warn("Disconnected from boosty: {} ({})", reason, statusCode);
         connect();
 
         return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);

@@ -21,9 +21,10 @@ public class BoostySessionStorage {
         );
 
         this.deviceId = deviceId;
+        this.refreshTokens();
 
         CommonUtils.SCHEDULED_EXECUTOR.scheduleAtFixedRate(
-                this::refreshTokens, 0L, 1L, TimeUnit.DAYS
+                this::refreshTokens, 1L, 1L, TimeUnit.DAYS
         );
     }
 
@@ -38,18 +39,21 @@ public class BoostySessionStorage {
                 ))
                 .build();
 
-        try {
-            JsonObject object = Requester.sendRequest(request, JsonObject.class);
-            if (!object.has("access_token")) {
-                throw new NullPointerException(object.toString());
-            }
-
-            this.storage.setObj(new Storage(object));
-
-            CommonUtils.LOGGER.debug("Refreshed boosty tokens for device {}!", this.deviceId);
-        } catch (Throwable th) {
-            CommonUtils.LOGGER.error("Failed to refresh boosty tokens for device {}!", this.deviceId, th);
-        }
+        this.storage.setObj(Requester.sendRequestAsync(request, JsonObject.class)
+                .whenComplete((object, throwable) -> {
+                    if (!object.has("access_token") && throwable == null) {
+                        throw new NullPointerException(object.toString());
+                    }
+                })
+                .thenApply(Storage::new)
+                .whenComplete((storage, throwable) -> {
+                    if (throwable == null) {
+                        CommonUtils.LOGGER.debug("Refreshed boosty tokens for device {}!", this.deviceId);
+                    } else {
+                        CommonUtils.LOGGER.error("Failed to refresh boosty tokens for device {}!", this.deviceId, throwable);
+                    }
+                })
+        ).join();
     }
 
     public String getAccessToken() {

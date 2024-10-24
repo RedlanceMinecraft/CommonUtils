@@ -106,10 +106,12 @@ public class BaseCache<T> {
         setObj(CompletableFuture.completedFuture(obj));
     }
 
-    public void setObj(CompletableFuture<T> obj) {
+    public CompletableFuture<T> setObj(CompletableFuture<T> obj) {
         this.obj = obj;
         this.obj.thenRun(this::fireListeners);
         setDirty();
+
+        return this.obj;
     }
 
     protected boolean reload(boolean read) {

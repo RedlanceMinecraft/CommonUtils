@@ -1,5 +1,7 @@
 package org.redlance.common.utils.requester.mojang;
 
+import com.github.mizosoft.methanol.CacheControl;
+import com.github.mizosoft.methanol.MutableRequest;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.kosmx.emotes.server.config.Serializer;
@@ -15,13 +17,19 @@ import java.io.Reader;
 import java.net.URI;
 
 import java.net.http.HttpRequest;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Optional;
 
 public class MojangRequester {
+    public static final CacheControl CACHE_CONTROL = CacheControl.newBuilder()
+            .maxAge(Duration.ofHours(1))
+            .build();
+
     public static BaseMojangProfile getBaseByName(String name) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest request = MutableRequest.create()
                 .uri(URI.create("https://api.mojang.com/users/profiles/minecraft/" + name))
+                .cacheControl(MojangRequester.CACHE_CONTROL)
                 .build();
 
         BaseMojangProfile profile = Requester.sendRequest(request, BaseMojangProfile.class);
@@ -57,8 +65,9 @@ public class MojangRequester {
     }
 
     public static Optional<MojangProfile> getMojangProfileById(String uuid) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest request = MutableRequest.create()
                 .uri(URI.create("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid))
+                .cacheControl(MojangRequester.CACHE_CONTROL)
                 .build();
 
         JsonObject obj = Requester.sendRequest(request, JsonObject.class);

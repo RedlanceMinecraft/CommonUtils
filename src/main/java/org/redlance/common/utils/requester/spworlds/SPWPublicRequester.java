@@ -1,5 +1,6 @@
 package org.redlance.common.utils.requester.spworlds;
 
+import com.github.mizosoft.methanol.MutableRequest;
 import org.redlance.common.utils.LambdaExceptionUtils;
 import org.redlance.common.utils.requester.Requester;
 import org.redlance.common.utils.requester.mojang.MojangRequester;
@@ -35,11 +36,12 @@ public class SPWPublicRequester {
     }
 
     public static Optional<MojangProfile> getMojangProfile(String card, long discordId) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest request = MutableRequest.create()
                 .uri(URI.create("https://spworlds.ru/api/public/users/" + discordId))
                 .header("Authorization", "Bearer " + Base64.getEncoder().encodeToString(card
                         .getBytes(StandardCharsets.UTF_8)
                 ))
+                .cacheControl(MojangRequester.CACHE_CONTROL)
                 .build();
 
         BaseMojangProfile response = Requester.sendRequest(request, BaseMojangProfile.class);

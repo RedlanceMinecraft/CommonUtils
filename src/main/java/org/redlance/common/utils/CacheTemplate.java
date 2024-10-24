@@ -102,4 +102,11 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     public Stream<K> getKeyStream() {
         return getObj().keySet().parallelStream();
     }
+
+    @Override
+    public String toString() {
+        return String.format("CacheTemplate{%s (%s)}", this.path,
+                this.obj.isDone() ? getObj().size() : 0
+        );
+    }
 }

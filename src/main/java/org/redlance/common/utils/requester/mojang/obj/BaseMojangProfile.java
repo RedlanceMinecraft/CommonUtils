@@ -11,4 +11,9 @@ public class BaseMojangProfile {
 
     @SerializedName(value = "errorMessage", alternate = "error")
     public String errorMessage;
+
+    @Override
+    public String toString() {
+        return String.format("BaseMojangProfile{%s (%s)}", name, id);
+    }
 }

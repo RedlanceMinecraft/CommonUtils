@@ -32,4 +32,9 @@ public class Subscription {
      * User subscription level.
      */
     public SubscriptionLevel subscriptionLevel;
+
+    @Override
+    public String toString() {
+        return String.format("Subscription{%s (%s)}", subscriptionLevel, status);
+    }
 }

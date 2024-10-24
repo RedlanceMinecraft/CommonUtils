@@ -37,4 +37,9 @@ public class BoostyProfile {
      * I don't know why, but there are unique fields here too.
      */
     public BoostyUser user;
+
+    @Override
+    public String toString() {
+        return String.format("BoostyProfile{%s (%s)}", user, level);
+    }
 }

@@ -25,4 +25,9 @@ public class SubscriptionLevel { // TODO full impl: currencyPrices, externalApps
      * The price for which the user purchased the level.
      */
     public long price;
+
+    @Override
+    public String toString() {
+        return String.format("SubscriptionLevel{%s (%s)}", name, price);
+    }
 }

@@ -38,7 +38,7 @@ public class BaseCache<T> {
     private final Supplier<T> defaultObj;
     private final TypeToken<T> token;
 
-    private CompletableFuture<T> obj;
+    protected CompletableFuture<T> obj;
     private boolean dirty;
 
     public BaseCache(String path, Supplier<T> defaultObj, TypeToken<T> token) {
@@ -63,6 +63,7 @@ public class BaseCache<T> {
     public void setDirty() {
         if (!this.dirty) {
             CommonUtils.LOGGER.info("{} is now dirty!", this);
+            fireListeners();
         }
 
         this.dirty = true;
@@ -107,6 +108,7 @@ public class BaseCache<T> {
 
     public void setObj(CompletableFuture<T> obj) {
         this.obj = obj;
+        this.obj.thenRun(this::fireListeners);
         setDirty();
     }
 
@@ -123,12 +125,7 @@ public class BaseCache<T> {
         CommonUtils.LOGGER.info("Saving {}...", this);
         this.dirty = false;
 
-        boolean saved = save();
-        if (saved) {
-            fireListeners();
-        }
-
-        return saved;
+        return save();
     }
 
     private T read() {

@@ -106,7 +106,7 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     @Override
     public String toString() {
         return String.format("CacheTemplate{%s (%s)}", this.path,
-                this.obj.isDone() ? getObj().size() : 0
+                this.obj != null && this.obj.isDone() ? getObj().size() : 0
         );
     }
 }

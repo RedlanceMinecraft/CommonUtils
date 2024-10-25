@@ -12,6 +12,7 @@ import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import io.github.kosmx.emotes.api.proxy.AbstractNetworkInstance;
 import io.github.kosmx.emotes.common.network.EmotePacket;
 import io.github.kosmx.emotes.server.serializer.UniversalEmoteSerializer;
+import org.jetbrains.annotations.Nullable;
 import org.redlance.common.CommonUtils;
 
 import java.io.ByteArrayInputStream;
@@ -20,6 +21,8 @@ import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimation>, JsonSerializer<KeyframeAnimation> {
     @SuppressWarnings("deprecation")
@@ -68,9 +71,15 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
         HashMap<Byte, Byte> version = new HashMap<>();
 
         if (hasScaling(animation)) {
-            CommonUtils.LOGGER.warn("{} requires version 3, which is unsupported in most cases!", animation);
+            CommonUtils.LOGGER.warn("{} requires v3, which is unsupported in most cases!", animation);
+            version.put((byte) 0, (byte) 3);
+
+        } else if (hasDynamicParts(animation)) {
+            version.put((byte) 0, (byte) 2);
+
         } else {
-            version.put((byte) 0, (byte) 2); // Defailt is 3 for scaling
+            CommonUtils.LOGGER.warn("{} downgraded to v1!", animation);
+            version.put((byte) 0, (byte) 1);
         }
 
         return version;
@@ -82,15 +91,7 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
                 continue;
             }
 
-            if (hasScaling(part.scaleX)) {
-                return true;
-            }
-
-            if (hasScaling(part.scaleY)) {
-                return true;
-            }
-
-            if (hasScaling(part.scaleZ)) {
+            if (isStateUsed(part.scaleX) || isStateUsed(part.scaleY) || isStateUsed(part.scaleZ)) {
                 return true;
             }
         }
@@ -98,7 +99,32 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
         return false;
     }
 
-    private static boolean hasScaling(KeyframeAnimation.StateCollection.State state) {
+    private static final List<String> KEYS = List.of(
+            "head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg"
+    );
+
+    private static boolean hasDynamicParts(KeyframeAnimation animation) {
+        for (Map.Entry<String, KeyframeAnimation.StateCollection> entry : animation.getBodyParts().entrySet()) {
+            if (KEYS.contains(entry.getKey())) {
+                continue;
+            }
+
+            if (isCollectionUsed(entry.getValue())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isCollectionUsed(KeyframeAnimation.StateCollection collection) {
+        return isStateUsed(collection.x) || isStateUsed(collection.y) || isStateUsed(collection.z) ||
+                isStateUsed(collection.yaw) || isStateUsed(collection.pitch) || isStateUsed(collection.roll) ||
+                isStateUsed(collection.bendDirection) || isStateUsed(collection.bend) ||
+                isStateUsed(collection.scaleX) || isStateUsed(collection.scaleY) || isStateUsed(collection.scaleZ);
+    }
+
+    private static boolean isStateUsed(@Nullable KeyframeAnimation.StateCollection.State state) {
         return state != null && !state.getKeyFrames().isEmpty() && state.isEnabled();
     }
 }

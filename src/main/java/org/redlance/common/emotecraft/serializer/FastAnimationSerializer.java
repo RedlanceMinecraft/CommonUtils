@@ -71,14 +71,12 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
         HashMap<Byte, Byte> version = new HashMap<>();
 
         if (hasScaling(animation)) {
-            CommonUtils.LOGGER.warn("{} requires v3, which is unsupported in most cases!", animation);
             version.put((byte) 0, (byte) 3);
 
         } else if (hasDynamicParts(animation)) {
             version.put((byte) 0, (byte) 2);
 
         } else {
-            CommonUtils.LOGGER.warn("{} downgraded to v1!", animation);
             version.put((byte) 0, (byte) 1);
         }
 

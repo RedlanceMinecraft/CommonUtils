@@ -35,7 +35,7 @@ public class BaseCache<T> {
 
     public final Path path;
 
-    private final Supplier<T> defaultObj;
+    protected final Supplier<T> defaultObj;
     private final TypeToken<T> token;
 
     protected CompletableFuture<T> obj;
@@ -130,7 +130,7 @@ public class BaseCache<T> {
         return save();
     }
 
-    private T read() {
+    protected T read() {
         try (BufferedReader reader = Files.newBufferedReader(this.path)) {
             return Serializer.serializer.fromJson(reader, this.token);
         } catch (Throwable e) {

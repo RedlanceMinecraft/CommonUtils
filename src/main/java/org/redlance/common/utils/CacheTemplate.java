@@ -104,6 +104,20 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     }
 
     @Override
+    protected Map<K, V> read() {
+        Map<K, V> readed = super.read();
+
+        if (readed != null && !readed.isEmpty()) {
+            Map<K, V> newMap = this.defaultObj.get();
+            newMap.putAll(readed);
+
+            return newMap;
+        }
+
+        return readed;
+    }
+
+    @Override
     public String toString() {
         return String.format("CacheTemplate{%s (%s)}", this.path,
                 this.obj != null && this.obj.isDone() ? getObj().size() : 0

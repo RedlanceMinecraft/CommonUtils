@@ -4,6 +4,7 @@ import com.google.gson.reflect.TypeToken;
 import org.redlance.common.utils.cache.BaseCache;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,11 +14,14 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
+    private final boolean concurrent;
 
     @SuppressWarnings("unchecked")
-    public CacheTemplate(String path, Type... typeArguments) {
-        super(path, ConcurrentHashMap::new, (TypeToken<Map<K, V>>)
+    public CacheTemplate(String path, boolean concurrent, Type... typeArguments) {
+        super(path, concurrent ? ConcurrentHashMap::new : HashMap::new, (TypeToken<Map<K, V>>)
                 TypeToken.getParameterized(Map.class, typeArguments));
+
+        this.concurrent = concurrent;
     }
 
     public void write(K key, V value) {
@@ -107,7 +111,7 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     protected Map<K, V> read() {
         Map<K, V> readed = super.read();
 
-        if (readed != null && !readed.isEmpty()) {
+        if (this.concurrent && readed != null && !readed.isEmpty()) {
             Map<K, V> newMap = this.defaultObj.get();
             newMap.putAll(readed);
 

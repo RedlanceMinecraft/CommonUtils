@@ -2,9 +2,6 @@ package org.redlance.common.emotecraft.utils;
 
 import io.github.kosmx.emotes.executor.EmoteInstance;
 import io.github.kosmx.emotes.executor.Logger;
-import io.github.kosmx.emotes.executor.dataTypes.IClientMethods;
-import io.github.kosmx.emotes.executor.dataTypes.IDefaultTypes;
-import io.github.kosmx.emotes.executor.dataTypes.IGetters;
 import org.apache.logging.log4j.jul.LevelTranslator;
 import org.redlance.common.CommonUtils;
 
@@ -23,21 +20,6 @@ public class EmoteInstanceImpl extends EmoteInstance implements Logger {
     }
 
     @Override
-    public IDefaultTypes getDefaults() {
-        return null;
-    }
-
-    @Override
-    public IGetters getGetters() {
-        return null;
-    }
-
-    @Override
-    public IClientMethods getClientMethods() {
-        return null;
-    }
-
-    @Override
     public boolean isClient() {
         return false;
     }
@@ -50,6 +32,11 @@ public class EmoteInstanceImpl extends EmoteInstance implements Logger {
     @Override
     public Path getConfigPath() {
         return getGameDirectory().resolve("config.json");
+    }
+
+    @Override
+    public void writeLog(Level level, String msg, Throwable throwable) {
+        CommonUtils.LOGGER.log(LevelTranslator.toLevel(level), msg, throwable);
     }
 
     @Override

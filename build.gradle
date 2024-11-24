@@ -31,8 +31,7 @@ dependencies {
     runtimeOnly "com.lmax:disruptor:4.0.0"
 
     implementation api("org.apache.commons:commons-lang3:3.17.0")
-    // implementation api("com.google.guava:guava:33.3.1-jre")
-    implementation api("commons-io:commons-io:2.17.0")
+    implementation api("commons-io:commons-io:2.18.0")
     implementation api("com.google.code.gson:gson:2.11.0")
 
     implementation api("net.kyori:adventure-api:${project.adventure_version}")
@@ -44,7 +43,7 @@ dependencies {
     implementation api("io.github.kosmx.emotes:emotesServer:${project.emotecraft_version}")
     implementation api("io.github.kosmx.emotes:emotesMain:${project.emotecraft_version}")
     implementation api("io.github.kosmx.emotes:emotesAPI:${project.emotecraft_version}")
-    implementation api("dev.kosmx.player-anim:anim-core:2.0.0-alpha3+1.21") // TODO
+    implementation api("dev.kosmx.player-anim:anim-core:2.0.0-alpha4+1.21.1")
 }
 
 tasks.withType(JavaCompile).configureEach {

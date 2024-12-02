@@ -6,7 +6,7 @@ public class BaseMojangProfile {
     @SerializedName(value = "name", alternate = "username")
     public String name;
 
-    @SerializedName(value = "id", alternate = "uuid")
+    @SerializedName(value = "id", alternate = {"uuid", "minecraftUUID"})
     public String id;
 
     @SerializedName(value = "errorMessage", alternate = "error")

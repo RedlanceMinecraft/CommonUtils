@@ -82,7 +82,7 @@ public class BoostyUser {
      * Amount paid by the user for the entire time.
      * Accessible only through {@link BoostyRequester#requestSubscribers(String, String, int)}
      */
-    public long payments;
+    public double payments;
 
     /**
      * The amount for which the user purchased the subscription.

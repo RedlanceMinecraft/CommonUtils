@@ -108,7 +108,7 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     }
 
     @Override
-    protected Map<K, V> read() {
+    public Map<K, V> read() {
         Map<K, V> readed = super.read();
 
         if (this.concurrent && readed != null && !readed.isEmpty()) {

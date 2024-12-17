@@ -13,7 +13,7 @@ public class GroupObject {
     public String description;
     public Account account;
 
-    public List<String> followers = new ArrayList<>();
+    public List<Follower> followers = new ArrayList<>();
     public List<Member> members = new ArrayList<>();
 
     public String image;
@@ -22,5 +22,8 @@ public class GroupObject {
     public boolean isVerified;
 
     public record Member(String role, Account account) {
+    }
+
+    public record Follower(String id) {
     }
 }

@@ -10,6 +10,7 @@ import org.redlance.common.CommonUtils;
 
 import java.io.IOException;
 import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -80,12 +81,12 @@ public class Requester {
                 .thenApply(HttpResponse::body);
     }
 
-    public static String sendRequest(HttpRequest httpRequest) throws IOException, InterruptedException {
-        return sendRequest(httpRequest, HttpResponse.BodyHandlers.ofString());
+    public static void sendRequest(HttpRequest httpRequest) throws IOException, InterruptedException {
+        sendRequest(httpRequest, HttpResponse.BodyHandlers.discarding());
     }
 
-    public static CompletableFuture<String> sendRequestAsync(HttpRequest httpRequest) {
-        return sendRequestAsync(httpRequest, HttpResponse.BodyHandlers.ofString());
+    public static CompletableFuture<Void> sendRequestAsync(HttpRequest httpRequest) {
+        return sendRequestAsync(httpRequest, HttpResponse.BodyHandlers.discarding());
     }
 
     public static boolean invalidateRequest(HttpRequest httpRequest) {

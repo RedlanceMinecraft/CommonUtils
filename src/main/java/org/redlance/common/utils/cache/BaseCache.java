@@ -130,7 +130,7 @@ public class BaseCache<T> {
         return save();
     }
 
-    protected T read() {
+    public T read() {
         try (BufferedReader reader = Files.newBufferedReader(this.path)) {
             return Serializer.serializer.fromJson(reader, this.token);
         } catch (Throwable e) {
@@ -139,7 +139,7 @@ public class BaseCache<T> {
         }
     }
 
-    protected boolean save() {
+    public boolean save() {
         try (BufferedWriter writer = Files.newBufferedWriter(this.path)) {
             Serializer.serializer.toJson(getObj(), this.token.getType(), writer);
 

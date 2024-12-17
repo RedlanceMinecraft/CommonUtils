@@ -11,9 +11,11 @@ import dev.kosmx.playerAnim.core.data.AnimationFormat;
 import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import io.github.kosmx.emotes.api.proxy.AbstractNetworkInstance;
 import io.github.kosmx.emotes.common.network.EmotePacket;
-import io.github.kosmx.emotes.server.serializer.UniversalEmoteSerializer;
+import io.github.kosmx.emotes.common.network.PacketTask;
+import io.github.kosmx.emotes.common.network.objects.NetData;
 import org.jetbrains.annotations.Nullable;
 import org.redlance.common.CommonUtils;
+import org.redlance.common.utils.ByteBufUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -39,8 +41,15 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
     @Override
     public KeyframeAnimation deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
         try (InputStream is = new ByteArrayInputStream(Base64.getDecoder().decode(json.getAsString()))) {
-            return UniversalEmoteSerializer.readData(is, "emote.emotecraft").getFirst();
+            NetData data = new EmotePacket.Builder()
+                    .build()
+                    .read(ByteBufUtils.readFromIStream(is));
 
+            if (data == null || data.purpose != PacketTask.FILE) {
+                throw new IllegalStateException("Binary emote is invalid!");
+            }
+
+            return data.emoteData;
         } catch (Throwable e) {
             CommonUtils.LOGGER.warn("Failed to deserialize animation {}!", json, e);
 

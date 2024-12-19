@@ -3,7 +3,7 @@ package org.redlance.common.utils.requester.mojang;
 public class MojangUtils {
     public static String parseUuid(String id) {
         if (id.length() != 32) {
-            return null;
+            return id;
         }
 
         String first = id.substring(0, 8);

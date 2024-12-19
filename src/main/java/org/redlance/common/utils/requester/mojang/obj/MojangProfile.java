@@ -48,4 +48,8 @@ public class MojangProfile {
             return "slim".equalsIgnoreCase(this.metadata.get("model"));
         }
     }
+
+    public String getProfileName() {
+        return this.profileName;
+    }
 }

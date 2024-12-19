@@ -27,8 +27,12 @@ public class MojangRequester {
             .build();
 
     public static BaseMojangProfile getBaseByName(String name) throws IOException, InterruptedException {
+        return MojangRequester.getBaseByName("api.mojang.com", name);
+    }
+
+    public static BaseMojangProfile getBaseByName(String endpoint, String name) throws IOException, InterruptedException {
         HttpRequest request = MutableRequest.create()
-                .uri(URI.create("https://api.mojang.com/users/profiles/minecraft/" + name))
+                .uri(URI.create("https://" + endpoint +  "/users/profiles/minecraft/" + name))
                 .cacheControl(MojangRequester.CACHE_CONTROL)
                 .build();
 
@@ -41,7 +45,11 @@ public class MojangRequester {
     }
 
     public static String getIdByName(String name) throws IOException, InterruptedException {
-        BaseMojangProfile response = getBaseByName(name.trim());
+        return MojangRequester.getIdByName("api.mojang.com", name);
+    }
+
+    public static String getIdByName(String endpoint, String name) throws IOException, InterruptedException {
+        BaseMojangProfile response = getBaseByName(endpoint, name.trim());
         if (response.id == null) {
             return null;
         }
@@ -65,8 +73,12 @@ public class MojangRequester {
     }
 
     public static Optional<MojangProfile> getMojangProfileById(String uuid) throws IOException, InterruptedException {
+        return MojangRequester.getMojangProfileById("sessionserver.mojang.com", uuid);
+    }
+
+    public static Optional<MojangProfile> getMojangProfileById(String endpoint, String uuid) throws IOException, InterruptedException {
         HttpRequest request = MutableRequest.create()
-                .uri(URI.create("https://sessionserver.mojang.com/session/minecraft/profile/" + uuid))
+                .uri(URI.create("https://" + endpoint + "/session/minecraft/profile/" + uuid))
                 .cacheControl(MojangRequester.CACHE_CONTROL)
                 .build();
 

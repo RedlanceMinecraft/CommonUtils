@@ -1,7 +1,7 @@
 package org.redlance.common.utils.requester.spworlds;
 
 import com.github.mizosoft.methanol.MutableRequest;
-import org.redlance.common.utils.LambdaExceptionUtils;
+import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.requester.Requester;
 import org.redlance.common.utils.requester.mojang.MojangRequester;
 import org.redlance.common.utils.requester.mojang.obj.BaseMojangProfile;
@@ -11,28 +11,21 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 public class SPWPublicRequester {
     public static Optional<MojangProfile> getMojangProfile(List<String> cards, long discordId) {
-        final List<CompletableFuture<Optional<MojangProfile>>> futures = new ArrayList<>();
-
-        for (String card : cards) {
-            futures.add(CompletableFuture.supplyAsync(LambdaExceptionUtils.rethrowSupplier(
-                    () -> getMojangProfile(card, discordId)
-            )));
-        }
-
-        return futures.parallelStream()
-                .map(CompletableFuture::join)
-                .map(opt -> opt.orElse(null))
-                .filter(Objects::nonNull)
-                .findFirst();
+        return Requester.prepareParallelRequests(cards.stream(), card -> () -> {
+            try {
+                return getMojangProfile(card, discordId).orElse(null);
+            } catch (Throwable th) {
+                CommonUtils.LOGGER.warn("Failed to get profile with card {}!", card, th);
+                return null;
+            }
+        }).filter(Objects::nonNull).findFirst();
     }
 
     public static Optional<MojangProfile> getMojangProfile(String card, long discordId) throws IOException, InterruptedException {

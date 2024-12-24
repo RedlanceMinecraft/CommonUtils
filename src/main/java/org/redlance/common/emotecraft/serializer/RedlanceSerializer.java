@@ -11,15 +11,18 @@ import io.github.kosmx.emotes.server.config.Serializer;
 import org.redlance.common.CommonUtils;
 
 import java.io.BufferedReader;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class RedlanceSerializer<T extends SerializableConfig> extends Serializer {
     protected final Supplier<T> configSuppler;
     protected final Class<T> configClass;
+    private final Consumer<GsonBuilder> consumer;
 
-    public RedlanceSerializer(Supplier<T> configSuppler, Class<T> configClass) {
+    public RedlanceSerializer(Supplier<T> configSuppler, Class<T> configClass, Consumer<GsonBuilder> consumer) {
         this.configSuppler = configSuppler;
         this.configClass = configClass;
+        this.consumer = consumer;
 
         initializeSerializer();
     }
@@ -42,6 +45,10 @@ public class RedlanceSerializer<T extends SerializableConfig> extends Serializer
 
         builder.registerTypeAdapter(this.configClass, new RedlanceConfigSerializer<>(this.configSuppler));
         builder.registerTypeAdapter(KeyframeAnimation.class, FastAnimationSerializer.INSTANCE);
+
+        if (this.consumer != null) {
+            this.consumer.accept(builder);
+        }
     }
 
     @Override

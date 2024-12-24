@@ -27,6 +27,7 @@ public class Requester {
             .executor(CommonUtils.EXECUTOR)
             .connectTimeout(Duration.ofMinutes(1))
             .version(HttpClient.Version.HTTP_1_1)
+            .proxy(UrlProxySelector.INSTANCE)
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .cache(HttpCache.newBuilder()
                     .executor(CommonUtils.EXECUTOR)

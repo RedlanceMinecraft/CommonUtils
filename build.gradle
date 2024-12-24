@@ -4,7 +4,7 @@ plugins {
     id 'java'
 }
 
-archivesBaseName = rootProject.archives_base_name
+base.archivesName = rootProject.archives_base_name
 version = rootProject.mod_version
 group = rootProject.maven_group
 

@@ -18,9 +18,9 @@ import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.ByteBufUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +40,20 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
 
     @Override
     public KeyframeAnimation deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
-        try (InputStream is = new ByteArrayInputStream(Base64.getDecoder().decode(json.getAsString()))) {
+        try {
+            return serialize(json.getAsString());
+        } catch (Throwable e) {
+            CommonUtils.LOGGER.warn("Failed to deserialize animation {}!", json, e);
+            return FastAnimationSerializer.INVALID;
+        }
+    }
+
+    public KeyframeAnimation serialize(String src) throws IOException {
+        return serialize(Base64.getDecoder().decode(src));
+    }
+
+    public KeyframeAnimation serialize(byte[] src) throws IOException {
+        try (InputStream is = new ByteArrayInputStream(src)) {
             NetData data = new EmotePacket.Builder()
                     .build()
                     .read(ByteBufUtils.readFromIStream(is));
@@ -50,30 +63,30 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
             }
 
             return data.emoteData;
-        } catch (Throwable e) {
-            CommonUtils.LOGGER.warn("Failed to deserialize animation {}!", json, e);
-
-            return FastAnimationSerializer.INVALID;
         }
     }
 
     @Override
     public JsonElement serialize(KeyframeAnimation src, Type type, JsonSerializationContext context) {
         try {
-            ByteBuffer byteBuffer = new EmotePacket.Builder()
-                    .configureToSaveEmote(src)
-                    .setVersion(getDowngradedHashMap(src))
-                    .build(Integer.MAX_VALUE)
-                    .write();
-
-            return context.serialize(Base64.getEncoder().encodeToString(
-                    AbstractNetworkInstance.safeGetBytesFromBuffer(byteBuffer)
-            ));
+            return context.serialize(serializeToString(src));
         } catch (Throwable e) {
             CommonUtils.LOGGER.error("Failed to serialize animation {}!", src, e);
-
             return JsonNull.INSTANCE;
         }
+    }
+
+    public String serializeToString(KeyframeAnimation src) throws IOException {
+        return Base64.getEncoder().encodeToString(serializeToBytes(src));
+    }
+
+    public byte[] serializeToBytes(KeyframeAnimation src) throws IOException {
+        return AbstractNetworkInstance.safeGetBytesFromBuffer(new EmotePacket.Builder()
+                .configureToSaveEmote(src)
+                .setVersion(getDowngradedHashMap(src))
+                .build(Integer.MAX_VALUE)
+                .write()
+        );
     }
 
     public static HashMap<Byte, Byte> getDowngradedHashMap(KeyframeAnimation animation) {

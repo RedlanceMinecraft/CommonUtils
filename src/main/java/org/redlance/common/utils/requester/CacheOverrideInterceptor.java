@@ -2,7 +2,7 @@ package org.redlance.common.utils.requester;
 
 import com.github.mizosoft.methanol.CacheControl;
 import com.github.mizosoft.methanol.Methanol;
-import com.github.mizosoft.methanol.internal.extensions.ResponseBuilder;
+import com.github.mizosoft.methanol.ResponseBuilder;
 
 import java.io.IOException;
 import java.net.http.HttpRequest;
@@ -31,7 +31,7 @@ public final class CacheOverrideInterceptor implements Methanol.Interceptor {
                 .map(Duration::toSeconds)
                 .orElse(0L);
 
-        return ResponseBuilder.newBuilder(response)
+        return ResponseBuilder.from(response)
                 .setHeader(CACHE_CONTROL_HEADER, "max-age=" + Math.max(maxAge, 15))
                 .build();
     }

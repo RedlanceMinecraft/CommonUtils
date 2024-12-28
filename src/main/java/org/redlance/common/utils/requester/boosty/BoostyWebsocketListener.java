@@ -53,7 +53,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
         this.token = token;
         this.userId = userId;
 
-        this.webSocketBuilder = Requester.HTTP_CLIENT.underlyingClient().newWebSocketBuilder()
+        this.webSocketBuilder = Requester.HTTP_CLIENT.newWebSocketBuilder()
                 .header("Origin", "https://boosty.to");
     }
 

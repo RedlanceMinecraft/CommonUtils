@@ -46,11 +46,11 @@ public class Requester {
             .build();
 
     public static <T> @NotNull T sendRequest(HttpRequest httpRequest, Class<T> token) throws IOException, InterruptedException {
-        return sendRequest(httpRequest, TypeRef.from(token));
+        return sendRequest(httpRequest, TypeRef.of(token));
     }
 
     public static <T> @NotNull CompletableFuture<T> sendRequestAsync(HttpRequest httpRequest, Class<T> token) {
-        return sendRequestAsync(httpRequest, TypeRef.from(token));
+        return sendRequestAsync(httpRequest, TypeRef.of(token));
     }
 
     public static <T> @NotNull T sendRequest(HttpRequest httpRequest, TypeRef<T> token) throws IOException, InterruptedException {

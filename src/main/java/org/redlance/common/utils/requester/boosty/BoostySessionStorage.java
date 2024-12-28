@@ -34,6 +34,7 @@ public class BoostySessionStorage {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.boosty.to/oauth/token/"))
                 .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("Authorization", "Bearer " + getAccessToken())
                 .POST(HttpRequest.BodyPublishers.ofString(
                         String.format("device_id=%s&device_os=web&grant_type=refresh_token&refresh_token=%s", this.deviceId, getRefreshToken())
                 ))

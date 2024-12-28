@@ -140,8 +140,9 @@ public class BaseCache<T> {
     }
 
     public boolean save() {
+        T obj = getObj(); // Block before writer
         try (BufferedWriter writer = Files.newBufferedWriter(this.path)) {
-            Serializer.serializer.toJson(getObj(), this.token.getType(), writer);
+            Serializer.serializer.toJson(obj, this.token.getType(), writer);
 
             writer.flush();
 

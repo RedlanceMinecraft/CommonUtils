@@ -24,7 +24,7 @@ public class SPWRequester {
                 .POST(HttpRequest.BodyPublishers.ofString("{\"code\":\"" + code + "\"}"))
                 .build();
 
-        Requester.sendRequest(request);
+        Requester.sendRequestVoid(request);
     }
 
     public static void createPost(String groupId, String text, HttpRequest.BodyPublisher bodyPublisher, MediaType mediaType) throws IOException, InterruptedException {
@@ -38,7 +38,7 @@ public class SPWRequester {
                         ).build()
                 ).build();
 
-        Requester.sendRequest(request);
+        Requester.sendRequestVoidAsync(request);
     }
 
     public static List<PostObject> requestPosts(String sort, String source, long time, int maxPages) throws IOException, InterruptedException {
@@ -48,7 +48,7 @@ public class SPWRequester {
     }
 
     public static <T> T requestPostsChuncking(Chunker<T, List<PostObject>> chunker, String sort, String source, long time, int maxPages) throws IOException, InterruptedException {
-        for (int page = 1; page < maxPages; page++) {
+        for (int page = 1; page <= maxPages; page++) {
             HttpRequest request = MutableRequest.GET(String.format(
                     "https://spworlds.ru/api/sp/posts?sort=%s&source=%s&p=%s&time=%s", sort, source, page, time
             ));
@@ -70,7 +70,7 @@ public class SPWRequester {
     }
 
     public static <T> T requestGroupsChuncking(Chunker<T, List<GroupObject>> chunker, int maxPages) throws IOException, InterruptedException {
-        for (int page = 1; page < maxPages; page++) {
+        for (int page = 1; page <= maxPages; page++) {
             HttpRequest request = MutableRequest.GET(String.format(
                     "https://spworlds.ru/api/sp/groups?type=following&p=%s", page
             ));
@@ -96,6 +96,6 @@ public class SPWRequester {
                 .POST(HttpRequest.BodyPublishers.ofString("{\"vote\": " + vote + ", \"isUpvote\": " + up + "}"))
                 .build();
 
-        Requester.sendRequest(request);
+        Requester.sendRequestVoid(request);
     }
 }

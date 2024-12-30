@@ -26,4 +26,19 @@ public class GroupObject {
 
     public record Follower(String id) {
     }
+
+    @Override
+    public String toString() {
+        return String.format("{id=%s, name=%s, description=%s, owner=%s}", this.id, this.name, this.description, this.account);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof GroupObject object && this.id.equals(object.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
+    }
 }

@@ -1,10 +1,13 @@
 package org.redlance.common.utils.requester;
 
+import com.github.mizosoft.methanol.AdapterCodec;
 import com.github.mizosoft.methanol.HttpCache;
 import com.github.mizosoft.methanol.Methanol;
 import com.github.mizosoft.methanol.MoreBodyHandlers;
 import com.github.mizosoft.methanol.TrackedResponse;
 import com.github.mizosoft.methanol.TypeRef;
+import com.github.mizosoft.methanol.adapter.gson.GsonAdapterFactory;
+import io.github.kosmx.emotes.server.config.Serializer;
 import org.jetbrains.annotations.NotNull;
 import org.redlance.common.CommonUtils;
 
@@ -43,6 +46,10 @@ public class Requester {
             .backendInterceptor(new CacheOverrideInterceptor())
             .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36")
             .cookieHandler(new CookieManager())
+            .adapterCodec(AdapterCodec.newBuilder()
+                    .decoder(GsonAdapterFactory.createDecoder(Serializer.serializer))
+                    .encoder(GsonAdapterFactory.createEncoder(Serializer.serializer))
+                    .build())
             .build();
 
     public static <T> @NotNull T sendRequest(HttpRequest httpRequest, Class<T> token) throws IOException, InterruptedException {

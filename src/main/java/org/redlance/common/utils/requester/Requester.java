@@ -3,12 +3,10 @@ package org.redlance.common.utils.requester;
 import com.github.mizosoft.methanol.AdapterCodec;
 import com.github.mizosoft.methanol.HttpCache;
 import com.github.mizosoft.methanol.Methanol;
-import com.github.mizosoft.methanol.MoreBodyHandlers;
 import com.github.mizosoft.methanol.TrackedResponse;
 import com.github.mizosoft.methanol.TypeRef;
 import com.github.mizosoft.methanol.adapter.gson.GsonAdapterFactory;
 import io.github.kosmx.emotes.server.config.Serializer;
-import org.jetbrains.annotations.NotNull;
 import org.redlance.common.CommonUtils;
 
 import java.io.IOException;
@@ -29,7 +27,7 @@ public class Requester {
     public static final Methanol HTTP_CLIENT = Methanol.newBuilder()
             .executor(CommonUtils.EXECUTOR)
             .connectTimeout(Duration.ofMinutes(1))
-            .version(HttpClient.Version.HTTP_1_1)
+            .version(HttpClient.Version.HTTP_2)
             .proxy(UrlProxySelector.INSTANCE)
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .cache(HttpCache.newBuilder()
@@ -43,6 +41,7 @@ public class Requester {
                     })
                     .build()
             )
+            .interceptor(new CookieFixerInterceptor())
             .backendInterceptor(new CacheOverrideInterceptor())
             .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36")
             .cookieHandler(new CookieManager())
@@ -52,33 +51,16 @@ public class Requester {
                     .build())
             .build();
 
-    public static <T> @NotNull T sendRequest(HttpRequest httpRequest, Class<T> token) throws IOException, InterruptedException {
-        return sendRequest(httpRequest, TypeRef.of(token));
+    public static <T> T sendRequest(HttpRequest httpRequest, Class<T> type) throws IOException, InterruptedException {
+        return Requester.HTTP_CLIENT // send request
+                .send(httpRequest, type)
+                .body();
     }
 
-    public static <T> @NotNull CompletableFuture<T> sendRequestAsync(HttpRequest httpRequest, Class<T> token) {
-        return sendRequestAsync(httpRequest, TypeRef.of(token));
-    }
-
-    public static <T> @NotNull T sendRequest(HttpRequest httpRequest, TypeRef<T> token) throws IOException, InterruptedException {
-        T serialized = sendRequest(httpRequest, MoreBodyHandlers.ofObject(token)); // serialize
-
-        if (serialized == null) {
-            invalidateRequest(httpRequest);
-            throw new NullPointerException("Invalid serialized result!");
-        }
-
-        return serialized;
-    }
-
-    public static <T> @NotNull CompletableFuture<T> sendRequestAsync(HttpRequest httpRequest, TypeRef<T> token) {
-        return sendRequestAsync(httpRequest, MoreBodyHandlers.ofObject(token))
-                .whenComplete((serialized, throwable) -> {
-                    if (serialized == null && throwable == null) {
-                        invalidateRequest(httpRequest);
-                        throw new NullPointerException("Invalid serialized result!");
-                    }
-                });
+    public static <T> T sendRequest(HttpRequest httpRequest, TypeRef<T> token) throws IOException, InterruptedException {
+        return Requester.HTTP_CLIENT // send request
+                .send(httpRequest, token)
+                .body();
     }
 
     public static <T> T sendRequest(HttpRequest httpRequest, HttpResponse.BodyHandler<T> bodyHandler) throws IOException, InterruptedException {
@@ -87,18 +69,30 @@ public class Requester {
                 .body();
     }
 
+    public static <T> CompletableFuture<T> sendRequestAsync(HttpRequest httpRequest, Class<T> type) {
+        return Requester.HTTP_CLIENT // send request
+                .sendAsync(httpRequest, type)
+                .thenApply(HttpResponse::body);
+    }
+
+    public static <T> CompletableFuture<T> sendRequestAsync(HttpRequest httpRequest, TypeRef<T> token) {
+        return Requester.HTTP_CLIENT // send request
+                .sendAsync(httpRequest, token)
+                .thenApply(HttpResponse::body);
+    }
+
     public static <T> CompletableFuture<T> sendRequestAsync(HttpRequest httpRequest, HttpResponse.BodyHandler<T> bodyHandler) {
         return Requester.HTTP_CLIENT // send request
                 .sendAsync(httpRequest, bodyHandler)
                 .thenApply(HttpResponse::body);
     }
 
-    public static void sendRequest(HttpRequest httpRequest) throws IOException, InterruptedException {
-        sendRequest(httpRequest, HttpResponse.BodyHandlers.discarding());
+    public static void sendRequestVoid(HttpRequest httpRequest) throws IOException, InterruptedException {
+        Requester.HTTP_CLIENT.send(httpRequest, HttpResponse.BodyHandlers.discarding());
     }
 
-    public static CompletableFuture<Void> sendRequestAsync(HttpRequest httpRequest) {
-        return sendRequestAsync(httpRequest, HttpResponse.BodyHandlers.discarding());
+    public static void sendRequestVoidAsync(HttpRequest httpRequest) {
+        Requester.HTTP_CLIENT.sendAsync(httpRequest, HttpResponse.BodyHandlers.discarding());
     }
 
     public static boolean invalidateRequest(HttpRequest httpRequest) {

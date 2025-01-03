@@ -13,6 +13,11 @@ public class Username {
     @SerializedName(value = "changedToAt", alternate = {"changedAt", "changed_at"})
     public String changedToAt;
 
+    public Username(String name, String changedToAt) {
+        this.name = name;
+        this.changedToAt = changedToAt;
+    }
+
     public OffsetDateTime getChangedToOffset(DateTimeFormatter formatter) {
         return OffsetDateTime.parse(this.changedToAt, formatter);
     }

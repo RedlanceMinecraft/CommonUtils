@@ -90,7 +90,11 @@ public class BaseCache<T> {
         CommonUtils.LOGGER.info("Firing {} listeners for {}!", this.listeners.size(), this);
 
         for (Consumer<BaseCache<T>> listener : this.listeners) {
-            listener.accept(this);
+            try {
+                listener.accept(this);
+            } catch (Throwable th) {
+                CommonUtils.LOGGER.warn("Failed to fire listener {} for {}!", listener.toString(), this);
+            }
         }
     }
 

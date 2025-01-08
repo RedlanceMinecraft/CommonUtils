@@ -83,6 +83,9 @@ public class MojangRequester {
                 .build();
 
         JsonObject obj = Requester.sendRequest(request, JsonObject.class);
+        if (obj == null) {
+            return Optional.empty();
+        }
 
         if (obj.has("errorMessage")) {
             throw new InterruptedException(obj.get("errorMessage").getAsString());

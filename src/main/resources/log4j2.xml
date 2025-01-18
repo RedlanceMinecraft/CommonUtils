@@ -20,6 +20,7 @@
         <Logger level="info" name="net.dv8tion.jda"/>
         <Logger level="info" name="okhttp3"/>
         <Logger level="info" name="org.apache.http"/>
+        <Logger level="info" name="it.tdlight"/>
 
         <Root level="all">
             <AppenderRef ref="Console" level="all"/>

@@ -10,12 +10,8 @@ group = rootProject.maven_group
 
 repositories {
     maven {
-        name "KosmX's maven"
-        url "https://maven.kosmx.dev"
-    }
-    maven {
-        name "Redlance"
-        url "https://repo.redlance.org/public"
+        name = "Redlance"
+        url = "https://repo.redlance.org/public"
     }
     mavenCentral()
     mavenLocal()

@@ -39,7 +39,11 @@ dependencies {
     implementation api("io.github.kosmx.emotes:emotesServer:${project.emotecraft_version}")
     implementation api("io.github.kosmx.emotes:emotesMain:${project.emotecraft_version}")
     implementation api("io.github.kosmx.emotes:emotesAPI:${project.emotecraft_version}")
-    implementation api("dev.kosmx.player-anim:anim-core:2.0.0+1.21.1")
+    implementation api("dev.kosmx.player-anim:anim-core") {
+        version {
+            strictly "2.0.1+1.21.4"
+        }
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {

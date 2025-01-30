@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +56,7 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
     public KeyframeAnimation serialize(byte[] src) throws IOException {
         try (InputStream is = new ByteArrayInputStream(src)) {
             NetData data = new EmotePacket.Builder()
+                    .strictSizeLimit(false)
                     .build()
                     .read(ByteBufUtils.readFromIStream(is));
 
@@ -81,12 +83,15 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
     }
 
     public byte[] serializeToBytes(KeyframeAnimation src) throws IOException {
-        return AbstractNetworkInstance.safeGetBytesFromBuffer(new EmotePacket.Builder()
+        return AbstractNetworkInstance.safeGetBytesFromBuffer(serializeToByteBuff(src));
+    }
+
+    public ByteBuffer serializeToByteBuff(KeyframeAnimation src) throws IOException {
+        return new EmotePacket.Builder()
                 .configureToSaveEmote(src)
                 .setVersion(getDowngradedHashMap(src))
-                .build(Integer.MAX_VALUE)
-                .write()
-        );
+                .build(Integer.MAX_VALUE, false)
+                .write();
     }
 
     public static HashMap<Byte, Byte> getDowngradedHashMap(KeyframeAnimation animation) {

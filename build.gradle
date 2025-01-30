@@ -35,10 +35,11 @@ dependencies {
     implementation api("net.kyori:adventure-text-serializer-plain:${project.adventure_version}")
     implementation api("net.kyori:adventure-text-serializer-gson:${project.adventure_version}")
 
-    implementation api("io.github.kosmx.emotes:emotesExecutor:${project.emotecraft_version}")
-    implementation api("io.github.kosmx.emotes:emotesServer:${project.emotecraft_version}")
-    implementation api("io.github.kosmx.emotes:emotesMain:${project.emotecraft_version}")
-    implementation api("io.github.kosmx.emotes:emotesAPI:${project.emotecraft_version}")
+    implementation api("io.github.kosmx.emotes:emotesAssets:${project.emotecraft_version}")
+    implementation api("io.github.kosmx.emotes:emotesServer:${project.emotecraft_version}") {
+        exclude(group: "com.google.code.gson")
+        exclude(group: "org.jetbrains")
+    }
     implementation api("dev.kosmx.player-anim:anim-core") {
         version {
             strictly "2.0.1+1.21.4"

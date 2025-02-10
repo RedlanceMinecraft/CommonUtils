@@ -74,7 +74,6 @@ public class BaseCache<T> {
     }
 
     public boolean subscrube(Consumer<BaseCache<T>> listener) {
-        listener.accept(this); // Begin fire
         return this.listeners.add(listener);
     }
 
@@ -100,7 +99,9 @@ public class BaseCache<T> {
 
     public T getObj() {
         if (!this.obj.isDone()) {
-            CommonUtils.LOGGER.debug("Blocking thread '{}' until the {} is read!", Thread.currentThread().getName(), this);
+            CommonUtils.LOGGER.debug("Blocking thread '{}' until the {} is read!",
+                    Thread.currentThread().getName(), this, new Throwable("Blocking")
+            );
         }
 
         return this.obj.join();
@@ -123,6 +124,7 @@ public class BaseCache<T> {
             if (read) {
                 CommonUtils.LOGGER.info("Reading {}...", this);
                 this.obj = CompletableFuture.supplyAsync(this::read, CommonUtils.EXECUTOR);
+                this.obj.thenRun(this::fireListeners);
             }
 
             return false; // Never accessed

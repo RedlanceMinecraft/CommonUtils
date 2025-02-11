@@ -140,7 +140,7 @@ public class BaseCache<T> {
         try (BufferedReader reader = Files.newBufferedReader(this.path)) {
             return Serializer.serializer.fromJson(reader, this.token);
         } catch (Throwable e) {
-            CommonUtils.LOGGER.warn("Failed to read caches!", e);
+            CommonUtils.LOGGER.warn("Failed to read {}!", this, e);
             return this.defaultObj.get();
         }
     }
@@ -154,7 +154,7 @@ public class BaseCache<T> {
 
             return true;
         } catch (Throwable e) {
-            CommonUtils.LOGGER.warn("Failed to save caches!", e);
+            CommonUtils.LOGGER.warn("Failed to save {}!", this, e);
 
             return false;
         }

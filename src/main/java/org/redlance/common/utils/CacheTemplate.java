@@ -52,9 +52,12 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
         });
     }
 
-    public void remove(K key) {
-        getObj().remove(key);
-        setDirty();
+    public V remove(K key) {
+        V remove = getObj().remove(key);
+        if (remove != null) {
+            setDirty();
+        }
+        return remove;
     }
 
     public boolean hasKey(K key) {

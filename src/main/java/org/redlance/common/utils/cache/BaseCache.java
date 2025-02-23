@@ -1,8 +1,8 @@
 package org.redlance.common.utils.cache;
 
 import com.google.gson.reflect.TypeToken;
-import io.github.kosmx.emotes.executor.EmoteInstance;
 import io.github.kosmx.emotes.server.config.Serializer;
+import io.github.kosmx.emotes.server.services.InstanceService;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.CacheTemplate;
 
@@ -42,7 +42,7 @@ public class BaseCache<T> {
     private boolean dirty;
 
     public BaseCache(String path, Supplier<T> defaultObj, TypeToken<T> token) {
-        this(EmoteInstance.instance.getGameDirectory().resolve(path), defaultObj, token);
+        this(InstanceService.INSTANCE.getGameDirectory().resolve(path), defaultObj, token);
     }
 
     public BaseCache(Path path, Supplier<T> defaultObj, TypeToken<T> token) {
@@ -138,7 +138,7 @@ public class BaseCache<T> {
 
     public T read() {
         try (BufferedReader reader = Files.newBufferedReader(this.path)) {
-            return Serializer.serializer.fromJson(reader, this.token);
+            return Serializer.getSerializer().fromJson(reader, this.token);
         } catch (Throwable e) {
             CommonUtils.LOGGER.warn("Failed to read {}!", this, e);
             return this.defaultObj.get();
@@ -148,7 +148,7 @@ public class BaseCache<T> {
     public boolean save() {
         T obj = getObj(); // Block before writer
         try (BufferedWriter writer = Files.newBufferedWriter(this.path)) {
-            Serializer.serializer.toJson(obj, this.token.getType(), writer);
+            Serializer.getSerializer().toJson(obj, this.token.getType(), writer);
 
             writer.flush();
 

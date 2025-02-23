@@ -101,7 +101,7 @@ public class MojangRequester {
             try (Reader reader = new InputStreamReader(new ByteArrayInputStream(
                     Base64.getDecoder().decode(jsonObject.get("value").getAsString())
             ))) {
-                return Optional.of(Serializer.serializer.fromJson(reader, MojangProfile.class));
+                return Optional.of(Serializer.getSerializer().fromJson(reader, MojangProfile.class));
             }
         }
 

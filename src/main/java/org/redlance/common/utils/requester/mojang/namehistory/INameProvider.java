@@ -14,7 +14,7 @@ public interface INameProvider {
 
     record Response(@SerializedName(value = "usernames", alternate = {"name_history", "names"}) List<Username> usernames) {
         public static Response parse(JsonObject object) {
-            return Serializer.serializer.fromJson(object, Response.class);
+            return Serializer.getSerializer().fromJson(object, Response.class);
         }
     }
 }

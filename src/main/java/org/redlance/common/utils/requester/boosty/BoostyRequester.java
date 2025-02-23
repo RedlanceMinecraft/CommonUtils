@@ -85,7 +85,7 @@ public class BoostyRequester {
             throw new NullPointerException(data.toString());
         }
 
-        return Serializer.serializer.fromJson(
+        return Serializer.getSerializer().fromJson(
                 data.getAsJsonObject("profile"), BoostyProfile.class
         );
     }

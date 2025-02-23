@@ -102,7 +102,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
         CompletableFuture<JsonObject> future = this.messages.compute(id, (k, v) -> new CompletableFuture<>());
 
         this.webSocket.sendText(new Gson().toJson( // Boosty don't accept pretty gson
-                new OutboundAuthMessage(id, method, params == null ? null : Serializer.serializer.toJsonTree(params))
+                new OutboundAuthMessage(id, method, params == null ? null : Serializer.getSerializer().toJsonTree(params))
         ), true);
 
         return future;
@@ -128,7 +128,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
         try (BufferedReader reader = new BufferedReader(new CharSequenceReader(data))) {
             for (String line : reader.lines().toList()) {
-                InboundAuthMessage authMessage = Serializer.serializer.fromJson(line, InboundAuthMessage.class);
+                InboundAuthMessage authMessage = Serializer.getSerializer().fromJson(line, InboundAuthMessage.class);
 
                 if (authMessage.id() > 0) { // replied
                     CompletableFuture<JsonObject> future = this.messages.get(authMessage.id());
@@ -145,7 +145,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
                         future.complete(authMessage.result());
                     }
                 } else if (authMessage.result() != null) {
-                    InboundChannelMessage message = Serializer.serializer.fromJson(authMessage.result(),
+                    InboundChannelMessage message = Serializer.getSerializer().fromJson(authMessage.result(),
                             InboundChannelMessage.class);
 
                     if (message.data() == null || !message.data().has("data")) {

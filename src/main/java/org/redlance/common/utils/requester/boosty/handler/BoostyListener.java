@@ -21,7 +21,7 @@ public interface BoostyListener<T> {
     }
 
     default void handle(String channel, JsonObject object) {
-        handle(channel, object, Serializer.serializer.fromJson(
+        handle(channel, object, Serializer.getSerializer().fromJson(
                 object.getAsJsonObject("data").getAsJsonObject("data"),
                 Objects.requireNonNull(parseObject())
         ));

@@ -1,6 +1,6 @@
 package org.redlance.common.utils;
 
-import io.github.kosmx.emotes.executor.EmoteInstance;
+import io.github.kosmx.emotes.server.services.InstanceService;
 import org.redlance.common.CommonUtils;
 
 import java.io.BufferedReader;
@@ -17,7 +17,7 @@ public class ServerUtils {
         Properties prop = new Properties();
 
         try (BufferedReader reader = Files.newBufferedReader(
-                EmoteInstance.instance.getGameDirectory().resolve("server.properties")
+                InstanceService.INSTANCE.getGameDirectory().resolve("server.properties")
         )) {
             prop.load(reader);
         } catch (IOException e) {

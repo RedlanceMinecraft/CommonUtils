@@ -20,7 +20,8 @@ import java.util.stream.Stream;
 
 public class TranslatorUtils {
     public static final Map<String, List<String>> LOCALE_FALLBACK = Map.of(
-            "ru", List.of("ua", "kz", "by")
+            "ru", List.of("ua", "kz", "by"),
+            "es-ES", List.of("es-419")
     );
 
     public static TranslationRegistry createRegistrySource(Key name, final Locale defaultLocale, Class<?> target, String knownResource) {

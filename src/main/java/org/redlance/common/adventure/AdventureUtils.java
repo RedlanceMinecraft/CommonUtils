@@ -1,6 +1,7 @@
 package org.redlance.common.adventure;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +16,7 @@ public class AdventureUtils {
         }
     }
 
-    public static @NotNull Component parseLegacy(@NotNull String string) {
+    public static @NotNull TextComponent parseLegacy(@NotNull String string) {
         string = string.replace("\"", "").trim();
 
         if (string.contains("&")) {

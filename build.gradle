@@ -32,7 +32,6 @@ dependencies {
 
     implementation api("net.kyori:adventure-api:${project.adventure_version}")
     implementation api("net.kyori:adventure-text-serializer-legacy:${project.adventure_version}")
-    implementation api("net.kyori:adventure-text-serializer-plain:${project.adventure_version}")
     implementation api("net.kyori:adventure-text-serializer-gson:${project.adventure_version}")
 
     implementation api("io.github.kosmx.emotes:emotesAssets:${project.emotecraft_version}")

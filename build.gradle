@@ -18,8 +18,8 @@ repositories {
 }
 
 dependencies {
-    implementation api("com.github.mizosoft.methanol:methanol:1.8.2")
-    implementation api("com.github.mizosoft.methanol:methanol-gson:1.8.2")
+    implementation api("com.github.mizosoft.methanol:methanol:${project.methanol_version}")
+    implementation api("com.github.mizosoft.methanol:methanol-gson:${project.methanol_version}")
 
     implementation api("org.apache.logging.log4j:log4j-api:${project.log4j_version}")
     implementation "org.apache.logging.log4j:log4j-core:${project.log4j_version}"

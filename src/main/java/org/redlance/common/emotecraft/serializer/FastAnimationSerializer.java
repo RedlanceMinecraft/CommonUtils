@@ -13,6 +13,7 @@ import io.github.kosmx.emotes.api.proxy.AbstractNetworkInstance;
 import io.github.kosmx.emotes.common.network.EmotePacket;
 import io.github.kosmx.emotes.common.network.PacketTask;
 import io.github.kosmx.emotes.common.network.objects.NetData;
+import io.github.kosmx.emotes.server.serializer.EmoteSerializer;
 import org.jetbrains.annotations.Nullable;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.ByteBufUtils;
@@ -105,6 +106,12 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
 
         } else {
             version.put((byte) 0, (byte) 1);
+        }
+
+        if (animation.extraData.containsKey(EmoteSerializer.FOLDER_PATH_KEY) || animation.extraData.containsKey("bages")) {
+            version.put((byte) 0x11, (byte) 2);
+        } else {
+            version.put((byte) 0x11, (byte) 1);
         }
 
         return version;

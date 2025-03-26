@@ -35,19 +35,28 @@ public class Downloader {
 
     public static InputStream downloadImage(String uri, int width, int height) throws IOException, InterruptedException {
         try (InputStream body = download(uri)) {
-            BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            byte[] resized = resizeImage(body, width, height);
 
-            Graphics2D graphics2D = resizedImage.createGraphics();
-            graphics2D.drawImage(ImageIO.read(body), 0, 0, width, height, null);
-            graphics2D.dispose();
-
-            try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                ImageIO.write(resizedImage, "png", os);
-
-                try (InputStream out = new ByteArrayInputStream(os.toByteArray());) {
-                    return out;
-                }
+            try (InputStream out = new ByteArrayInputStream(resized)) {
+                return out;
             }
+        }
+    }
+
+    public static byte[] resizeImage(InputStream body, int width, int height) throws IOException {
+        BufferedImage originalImage = ImageIO.read(body);
+
+        width = Math.min(width, originalImage.getWidth());
+        height = Math.min(height, originalImage.getHeight());
+
+        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics2D = resizedImage.createGraphics();
+        graphics2D.drawImage(originalImage, 0, 0, width, height, null);
+        graphics2D.dispose();
+
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            ImageIO.write(resizedImage, "png", os);
+            return os.toByteArray();
         }
     }
 }

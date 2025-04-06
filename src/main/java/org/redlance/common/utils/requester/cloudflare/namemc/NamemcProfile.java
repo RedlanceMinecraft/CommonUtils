@@ -17,8 +17,8 @@ public class NamemcProfile {
         @Selector("div:nth-child(1) > div.col-12.order-lg-2.col-lg > select > option:nth-child(1)")
         public String uuid;
 
-        @Selector(value = "div:nth-child(2) > div.col-auto", format = "([0-9]*) / month", defValue = "0")
-        public int views;
+        @Selector(value = "div:nth-child(2) > div.col-auto", format = "([0-9,]*) / month", defValue = "0")
+        public String views;
 
         public static class Connection {
             @Selector(value = "a", attr = "data-bs-content")

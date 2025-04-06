@@ -8,14 +8,13 @@ import webGrude.http.GetException;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class ProxyingVisitor extends JavaLinkVisitor {
     protected final URI proxyUrl;
 
-    public ProxyingVisitor(HttpClient client, URI proxyUrl) {
+    public ProxyingVisitor(Methanol client, URI proxyUrl) {
         super(client);
         this.proxyUrl = proxyUrl;
     }

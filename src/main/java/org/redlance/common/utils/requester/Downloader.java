@@ -1,5 +1,6 @@
 package org.redlance.common.utils.requester;
 
+import com.github.mizosoft.methanol.ProgressTracker;
 import org.redlance.common.CommonUtils;
 
 import javax.imageio.ImageIO;
@@ -14,14 +15,22 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class Downloader {
+    public static final ProgressTracker TRACKER = ProgressTracker.newBuilder()
+            .bytesTransferredThreshold(1024 * 1024) // 1024 kB
+            .build();
+
     public static InputStream download(String uri) throws IOException, InterruptedException {
+        return Downloader.download(uri, Downloader::onProgress);
+    }
+
+    public static InputStream download(String uri, ProgressTracker.Listener listener) throws IOException, InterruptedException {
         CommonUtils.LOGGER.debug("Downloading {}...", uri);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(uri))
                 .build();
 
-        HttpResponse<InputStream> response = Requester.HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        HttpResponse<InputStream> response = Requester.HTTP_CLIENT.send(request, TRACKER.tracking(HttpResponse.BodyHandlers.ofInputStream(), listener));
         if (response.statusCode() != 200) {
             throw new IllegalStateException(String.valueOf(response.statusCode()));
         }
@@ -57,6 +66,21 @@ public class Downloader {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             ImageIO.write(resizedImage, "png", os);
             return os.toByteArray();
+        }
+    }
+
+    private static void onProgress(ProgressTracker.Progress progress) {
+        if (progress.determinate()) {
+            long percent = Math.round(100 * progress.value());
+            CommonUtils.LOGGER.debug("Downloaded {} from {} bytes ({})",
+                    progress.totalBytesTransferred(), progress.contentLength(), percent
+            );
+        } else {
+            CommonUtils.LOGGER.info("Downloaded {}", progress.totalBytesTransferred());
+        }
+
+        if (progress.done()) {
+            CommonUtils.LOGGER.info("Done!");
         }
     }
 }

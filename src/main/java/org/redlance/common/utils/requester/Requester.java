@@ -29,7 +29,7 @@ public class Requester {
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .cache(HttpCache.newBuilder()
                     .executor(CommonUtils.EXECUTOR)
-                    .cacheOnMemory(1000 * 1024 * 1024) // 1000 MBs
+                    .cacheOnMemory(1024 * 1024 * 1024) // 1024 MBs
                     .listener(new HttpCache.Listener() {
                         @Override
                         public void onNetworkUse(HttpRequest request, TrackedResponse<?> cacheResponse) {

@@ -14,13 +14,13 @@ repositories {
         url = "https://repo.redlance.org/public"
     }
     mavenCentral()
-    mavenLocal()
+    // mavenLocal()
 }
 
 dependencies {
     implementation api("com.github.mizosoft.methanol:methanol:${project.methanol_version}")
     implementation api("com.github.mizosoft.methanol:methanol-gson:${project.methanol_version}")
-    implementation api("com.github.beothorn:webGrude:3.0.0") {
+    implementation api("com.github.beothorn:webGrude:4.0.0") {
         exclude(group: "com.squareup.okhttp3")
     }
 

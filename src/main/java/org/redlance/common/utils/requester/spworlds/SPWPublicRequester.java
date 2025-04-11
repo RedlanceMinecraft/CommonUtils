@@ -18,7 +18,7 @@ import java.util.Optional;
 
 public class SPWPublicRequester {
     public static Optional<MojangProfile> getMojangProfile(List<String> cards, long discordId) {
-        return Requester.prepareParallelRequests(cards.stream(), card -> () -> {
+        return Requester.prepareParallelRequests(cards.stream(), card -> {
             try {
                 return getMojangProfile(card, discordId).orElse(null);
             } catch (Throwable th) {

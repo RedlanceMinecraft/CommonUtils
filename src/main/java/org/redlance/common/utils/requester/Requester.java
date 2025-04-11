@@ -12,12 +12,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class Requester {
@@ -107,18 +104,10 @@ public class Requester {
         }
     }
 
-    public static <R, T> Stream<R> prepareParallelRequests(Stream<T> requests, Function<? super T, Supplier<R>> mapper) {
-        return prepareParallelRequests(requests.map(mapper).toList());
-    }
-
-    public static <R> Stream<R> prepareParallelRequests(List<Supplier<R>> requests) {
-        final List<CompletableFuture<R>> futures = new ArrayList<>();
-
-        for (Supplier<R> request : requests) {
-            futures.add(CompletableFuture.supplyAsync(request, CommonUtils.EXECUTOR));
-        }
-
-        return futures.parallelStream().map(CompletableFuture::join);
+    public static <R, T> Stream<R> prepareParallelRequests(Stream<T> requests, Function<? super T, R> mapper) {
+        return requests.map(request -> CompletableFuture.supplyAsync(
+                () -> mapper.apply(request), CommonUtils.EXECUTOR
+        )).toList().parallelStream().map(CompletableFuture::join);
     }
 
     public static HttpRequest.BodyPublisher ofObject(Object object, MediaType mediaType) {

@@ -8,12 +8,7 @@ import org.redlance.common.utils.requester.mojang.namehistory.providers.Converti
 import org.redlance.common.utils.requester.mojang.namehistory.providers.LabyProvider;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
+import java.util.*;
 
 public class NameHistoryRequester implements INameProvider {
     public static final NameHistoryRequester INSTANCE = new NameHistoryRequester();
@@ -31,14 +26,14 @@ public class NameHistoryRequester implements INameProvider {
     public List<Username> getNameHistoryByName(String name) {
         List<Username> names = new ArrayList<>();
 
-        Requester.prepareParallelRequests(this.providers.keySet().stream(), provider -> (Supplier<List<Username>>) (() -> {
+        Requester.prepareParallelRequests(this.providers.keySet().stream(), provider -> {
             try {
                 return getNameHistoryByName(provider, name);
             } catch (Throwable th) {
-                CommonUtils.LOGGER.warn("Failed to get name history by uuid via {}!", provider.getName(), th);
-                return Collections.emptyList();
+                CommonUtils.LOGGER.warn("Failed to get name history by uuid via {}!", getProviderByClass(provider), th);
+                return Collections.<Username>emptyList();
             }
-        })).forEach(names::addAll);
+        }).forEach(names::addAll);
 
         return names;
     }
@@ -51,14 +46,14 @@ public class NameHistoryRequester implements INameProvider {
     public List<Username> getNameHistoryById(String uuid) {
         List<Username> names = new ArrayList<>();
 
-        Requester.prepareParallelRequests(this.providers.keySet().stream(), provider -> (Supplier<List<Username>>) (() -> {
+        Requester.prepareParallelRequests(this.providers.keySet().stream(), provider -> {
             try {
                 return getNameHistoryById(provider, uuid);
             } catch (Throwable th) {
-                CommonUtils.LOGGER.warn("Failed to get name history by uuid via {}!", provider.getName(), th);
-                return Collections.emptyList();
+                CommonUtils.LOGGER.warn("Failed to get name history by uuid via {}!", getProviderByClass(provider), th);
+                return Collections.<Username>emptyList();
             }
-        })).forEach(names::addAll);
+        }).forEach(names::addAll);
 
         return names;
     }
@@ -69,5 +64,9 @@ public class NameHistoryRequester implements INameProvider {
 
     public void registerProvider(INameProvider provider) {
         this.providers.put(provider.getClass(), provider);
+    }
+
+    protected INameProvider getProviderByClass(Class<? extends INameProvider> clazz) {
+        return this.providers.get(clazz);
     }
 }

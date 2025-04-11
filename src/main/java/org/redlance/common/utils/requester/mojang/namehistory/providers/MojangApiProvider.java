@@ -41,4 +41,9 @@ public class MojangApiProvider implements INameProvider {
 
         return Requester.sendRequest(request, new TypeRef<>() {});
     }
+
+    @Override
+    public String toString() {
+        return String.format("MojangApiProvider{endpoint=%s}", endpoint);
+    }
 }

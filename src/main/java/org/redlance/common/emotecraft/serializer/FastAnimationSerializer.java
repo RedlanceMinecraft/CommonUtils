@@ -14,8 +14,8 @@ import io.github.kosmx.emotes.common.network.EmotePacket;
 import io.github.kosmx.emotes.common.network.PacketTask;
 import io.github.kosmx.emotes.common.network.objects.NetData;
 import io.github.kosmx.emotes.server.serializer.EmoteSerializer;
-import org.jetbrains.annotations.Nullable;
 import org.redlance.common.CommonUtils;
+import org.redlance.common.emotecraft.KeyframeUtils;
 import org.redlance.common.utils.ByteBufUtils;
 
 import java.io.ByteArrayInputStream;
@@ -25,8 +25,6 @@ import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimation>, JsonSerializer<KeyframeAnimation> {
     @SuppressWarnings("deprecation")
@@ -88,20 +86,16 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
     }
 
     public ByteBuffer serializeToByteBuff(KeyframeAnimation src) throws IOException {
-        return new EmotePacket.Builder()
-                .configureToSaveEmote(src)
-                .setVersion(getDowngradedHashMap(src))
-                .build(Integer.MAX_VALUE, false)
-                .write();
+        return new EmotePacket.Builder().configureToSaveEmote(src).build(Integer.MAX_VALUE, false).write();
     }
 
     public static HashMap<Byte, Byte> getDowngradedHashMap(KeyframeAnimation animation) {
         HashMap<Byte, Byte> version = new HashMap<>();
 
-        if (hasScaling(animation)) {
+        if (KeyframeUtils.hasScaling(animation)) {
             version.put((byte) 0, (byte) 3);
 
-        } else if (hasDynamicParts(animation)) {
+        } else if (KeyframeUtils.hasDynamicParts(animation)) {
             version.put((byte) 0, (byte) 2);
 
         } else {
@@ -115,48 +109,5 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
         }
 
         return version;
-    }
-
-    private static boolean hasScaling(KeyframeAnimation animation) {
-        for (KeyframeAnimation.StateCollection part : animation.getBodyParts().values()) {
-            if (!part.isScalable()) {
-                continue;
-            }
-
-            if (isStateUsed(part.scaleX) || isStateUsed(part.scaleY) || isStateUsed(part.scaleZ)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static final List<String> KEYS = List.of(
-            "head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg"
-    );
-
-    private static boolean hasDynamicParts(KeyframeAnimation animation) {
-        for (Map.Entry<String, KeyframeAnimation.StateCollection> entry : animation.getBodyParts().entrySet()) {
-            if (KEYS.contains(entry.getKey())) {
-                continue;
-            }
-
-            if (isCollectionUsed(entry.getValue())) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static boolean isCollectionUsed(KeyframeAnimation.StateCollection collection) {
-        return isStateUsed(collection.x) || isStateUsed(collection.y) || isStateUsed(collection.z) ||
-                isStateUsed(collection.yaw) || isStateUsed(collection.pitch) || isStateUsed(collection.roll) ||
-                isStateUsed(collection.bendDirection) || isStateUsed(collection.bend) ||
-                isStateUsed(collection.scaleX) || isStateUsed(collection.scaleY) || isStateUsed(collection.scaleZ);
-    }
-
-    private static boolean isStateUsed(@Nullable KeyframeAnimation.StateCollection.State state) {
-        return state != null && !state.getKeyFrames().isEmpty() && state.isEnabled();
     }
 }

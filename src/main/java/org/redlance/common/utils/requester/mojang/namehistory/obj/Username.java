@@ -1,7 +1,6 @@
 package org.redlance.common.utils.requester.mojang.namehistory.obj;
 
 import com.google.gson.annotations.SerializedName;
-import org.apache.commons.lang3.StringUtils;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -30,7 +29,7 @@ public class Username {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Username username) {
-            return StringUtils.equalsIgnoreCase(this.name, username.name);
+            return this.name.equalsIgnoreCase(username.name);
         }
         return false;
     }

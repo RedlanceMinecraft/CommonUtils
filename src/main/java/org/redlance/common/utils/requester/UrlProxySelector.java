@@ -1,6 +1,5 @@
 package org.redlance.common.utils.requester;
 
-import org.apache.commons.lang3.StringUtils;
 import org.redlance.common.CommonUtils;
 
 import java.io.IOException;
@@ -52,7 +51,7 @@ public class UrlProxySelector extends ProxySelector {
     }
 
     public Proxy registerDomainPredicate(String domain, Proxy proxy) {
-        return registerCustomPredicate(uri -> StringUtils.containsIgnoreCase(uri.getHost(), domain), proxy);
+        return registerCustomPredicate(uri -> uri.getHost().contains(domain), proxy);
     }
 
     public Proxy registerCustomPredicate(Predicate<URI> predicate, InetSocketAddress address) {

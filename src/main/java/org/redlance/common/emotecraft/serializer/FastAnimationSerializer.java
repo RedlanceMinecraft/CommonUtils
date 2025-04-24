@@ -70,7 +70,7 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
     @Override
     public JsonElement serialize(KeyframeAnimation src, Type type, JsonSerializationContext context) {
         try {
-            return context.serialize(serializeToString(src));
+            return context.serialize(serializeToString(src), String.class);
         } catch (Throwable e) {
             CommonUtils.LOGGER.error("Failed to serialize animation {}!", src, e);
             return JsonNull.INSTANCE;

@@ -92,12 +92,12 @@ public class FastAnimationSerializer implements JsonDeserializer<KeyframeAnimati
     public static HashMap<Byte, Byte> getDowngradedHashMap(KeyframeAnimation animation) {
         HashMap<Byte, Byte> version = new HashMap<>();
 
-        if (KeyframeUtils.hasScaling(animation)) {
+        if (KeyframeUtils.hasEasingArgs(animation)) {
+            version.put((byte) 0, (byte) 4);
+        } else if (KeyframeUtils.hasScaling(animation)) {
             version.put((byte) 0, (byte) 3);
-
         } else if (KeyframeUtils.hasDynamicParts(animation)) {
             version.put((byte) 0, (byte) 2);
-
         } else {
             version.put((byte) 0, (byte) 1);
         }

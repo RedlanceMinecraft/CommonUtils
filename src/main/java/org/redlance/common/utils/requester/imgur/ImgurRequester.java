@@ -11,6 +11,10 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 
 public class ImgurRequester {
+    /**
+     * Since May 2025 Imgur seems to have stopped accepting uploads from Russian IPs
+     * Please use {@link org.redlance.common.utils.requester.UrlProxySelector}
+     */
     public static String saveToImgur(String token, HttpRequest.BodyPublisher bodyPublisher, MediaType mediaType) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.imgur.com/3/image"))

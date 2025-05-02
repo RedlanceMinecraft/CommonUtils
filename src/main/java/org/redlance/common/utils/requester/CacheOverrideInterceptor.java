@@ -1,6 +1,7 @@
 package org.redlance.common.utils.requester;
 
 import com.github.mizosoft.methanol.CacheControl;
+import com.github.mizosoft.methanol.HttpStatus;
 import com.github.mizosoft.methanol.Methanol;
 import com.github.mizosoft.methanol.ResponseBuilder;
 
@@ -27,6 +28,8 @@ public final class CacheOverrideInterceptor implements Methanol.Interceptor {
     }
 
     private <T> HttpResponse<T> forceCache(HttpResponse<T> response) {
+        if (!HttpStatus.isSuccessful(response)) return response;
+
         long maxAge = CacheControl.parse(response.headers()).maxAge()
                 .map(Duration::toSeconds)
                 .orElse(0L);

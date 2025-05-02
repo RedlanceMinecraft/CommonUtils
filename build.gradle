@@ -34,7 +34,7 @@ dependencies {
     runtimeOnly "com.lmax:disruptor:4.0.0"
 
     implementation api("commons-io:commons-io:2.19.0")
-    implementation api("com.google.code.gson:gson:2.13.0")
+    implementation api("com.google.code.gson:gson:2.13.1")
 
     implementation api("net.kyori:adventure-api:${project.adventure_version}")
     implementation api("net.kyori:adventure-text-serializer-legacy:${project.adventure_version}")

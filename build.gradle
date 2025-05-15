@@ -23,7 +23,9 @@ repositories {
 
 dependencies {
     implementation api("com.github.mizosoft.methanol:methanol:${project.methanol_version}")
-    implementation api("com.github.mizosoft.methanol:methanol-gson:${project.methanol_version}")
+    implementation api("com.github.mizosoft.methanol:methanol-gson:${project.methanol_version}") {
+        exclude(group: "com.google.code.gson")
+    }
     implementation api("com.github.beothorn:webGrude:4.0.0") {
         exclude(group: "com.squareup.okhttp3")
     }
@@ -34,19 +36,27 @@ dependencies {
     runtimeOnly "com.lmax:disruptor:4.0.0"
 
     implementation api("commons-io:commons-io:2.19.0")
-    implementation api("com.google.code.gson:gson:2.13.1")
-
+    implementation api("com.google.code.gson:gson:2.13.1") {
+        exclude(group: "com.google.errorprone")
+    }
     implementation api("net.kyori:adventure-api:${project.adventure_version}")
     implementation api("net.kyori:adventure-text-serializer-legacy:${project.adventure_version}")
     implementation api("net.kyori:adventure-text-serializer-gson:${project.adventure_version}") {
+        exclude(group: "com.google.auto.service")
+        exclude(group: "com.google.code.gson")
         exclude(group: "org.jspecify")
     }
 
     implementation api("io.github.kosmx.emotes:emotesAssets:${project.emotecraft_version}")
     implementation api("io.github.kosmx.emotes:emotesServer:${project.emotecraft_version}") {
-        exclude(group: "org.apache.commons")
         exclude(group: "com.google.code.gson")
         exclude(group: "org.jetbrains")
+
+        // NoteBlockLib
+        exclude(module: "listenablefuture")
+        exclude(group: "com.google.errorprone")
+        exclude(group: "com.google.j2objc")
+        exclude(group: "org.jspecify")
     }
 }
 

@@ -2,6 +2,7 @@ package org.redlance.common.utils.requester;
 
 import com.github.mizosoft.methanol.*;
 import com.github.mizosoft.methanol.adapter.gson.GsonAdapterFactory;
+import com.github.mizosoft.methanol.internal.Utils;
 import io.github.kosmx.emotes.server.config.Serializer;
 import org.redlance.common.CommonUtils;
 
@@ -110,6 +111,6 @@ public class Requester {
     }
 
     public static HttpRequest.BodyPublisher ofObject(Object object, MediaType mediaType) {
-        return HTTP_CLIENT.adapterCodec().orElseThrow().publisherOf(object, BodyAdapter.Hints.of(mediaType));
+        return HTTP_CLIENT.adapterCodec().orElseThrow().publisherOf(object, Utils.hintsOf(mediaType));
     }
 }

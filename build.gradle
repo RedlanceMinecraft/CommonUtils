@@ -1,8 +1,7 @@
 plugins {
-    id "org.gradlex.extra-java-module-info" version "1.12"
-    id "maven-publish"
-    id "java-library"
-    id "java"
+    id 'maven-publish'
+    id 'java-library'
+    id 'java'
 }
 
 base.archivesName = rootProject.archives_base_name
@@ -59,17 +58,6 @@ dependencies {
         exclude(group: "com.google.j2objc")
         exclude(group: "org.jspecify")
     }
-}
-
-extraJavaModuleInfo {
-    automaticModule("com.github.beothorn:webGrude", "webGrude")
-
-    automaticModule("io.github.kosmx.emotes:emotesAssets", "emotecraftAssets")
-    automaticModule("io.github.kosmx.emotes:emotesServer", "emotecraftServer")
-    automaticModule("io.github.kosmx.emotes:emotesAPI", "emotecraftApi")
-    automaticModule("dev.kosmx.player-anim:anim-core", "playerAnimator")
-
-    automaticModule("net.raphimc:NoteBlockLib", "NoteBlockLib")
 }
 
 tasks.withType(JavaCompile).configureEach {

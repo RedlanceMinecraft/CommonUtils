@@ -52,4 +52,9 @@ public class MojangProfile {
     public String getProfileName() {
         return this.profileName;
     }
+
+    @Override
+    public String toString() {
+        return String.format("MojangProfile{profileName=%s, profileId=%s}", profileName, profileId);
+    }
 }

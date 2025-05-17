@@ -5,6 +5,9 @@ import com.github.mizosoft.methanol.adapter.gson.GsonAdapterFactory;
 import com.github.mizosoft.methanol.internal.Utils;
 import io.github.kosmx.emotes.server.config.Serializer;
 import org.redlance.common.CommonUtils;
+import org.redlance.common.utils.requester.interceptors.CacheOverrideInterceptor;
+import org.redlance.common.utils.requester.interceptors.CookieFixerInterceptor;
+import org.redlance.common.utils.requester.interceptors.FallbackInterceptor;
 
 import java.io.IOException;
 import java.net.CookieManager;
@@ -36,6 +39,7 @@ public class Requester {
                     .build()
             )
             .interceptor(new CookieFixerInterceptor())
+            .interceptor(new FallbackInterceptor())
             .backendInterceptor(new CacheOverrideInterceptor())
             .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36")
             .cookieHandler(new CookieManager())

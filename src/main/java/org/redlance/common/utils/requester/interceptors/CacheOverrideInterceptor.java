@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester;
+package org.redlance.common.utils.requester.interceptors;
 
 import com.github.mizosoft.methanol.CacheControl;
 import com.github.mizosoft.methanol.HttpStatus;

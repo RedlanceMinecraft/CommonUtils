@@ -1,6 +1,7 @@
-package org.redlance.common.utils.requester;
+package org.redlance.common.utils.requester.interceptors;
 
 import com.github.mizosoft.methanol.Methanol;
+import org.redlance.common.utils.requester.Requester;
 
 import java.io.IOException;
 import java.net.CookieHandler;

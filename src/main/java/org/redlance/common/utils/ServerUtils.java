@@ -41,7 +41,7 @@ public class ServerUtils {
     public static Map<String, String> getQuery(URI uri) {
         String query = uri.getQuery();
         if (query == null) return Collections.emptyMap();
-        return ServerUtils.getQuery(uri);
+        return ServerUtils.getQueryRaw(query);
     }
 
     public static Map<String, String> getQueryRaw(String query) {

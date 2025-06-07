@@ -12,7 +12,7 @@ public class NamemcProfile {
     @Selector("body > main > div.row.align-items-end > div > h1")
     public String username;
 
-    @Selector("body > main > div:nth-child(3) > div.col-md.order-md-2.profile-column-right > div:nth-child(1) > div.card-body.py-1")
+    // @Selector("body > main > div:nth-child(3) > div.col-md.order-md-2.profile-column-right > div:nth-child(1) > div.card-body.py-1")
     public static class ProfileInfo {
         @Selector("div:nth-child(1) > div.col-12.order-lg-2.col-lg > select > option:nth-child(1)")
         public String uuid;

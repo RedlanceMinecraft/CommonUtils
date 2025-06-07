@@ -1,22 +1,20 @@
 package org.redlance.common.utils.requester.mojang.obj;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.redlance.common.utils.requester.Downloader;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-public class MojangProfile {
-    public long timestamp;
-    public String profileId;
-    public String profileName;
-    public Map<String, Texture> textures;
-
-    public Texture getSkin() {
+@SuppressWarnings("unused")
+public record MojangProfile(long timestamp, String profileId, String profileName, Map<String, Texture> textures) {
+    public @Nullable Texture getSkin() {
         return this.textures.get("SKIN");
     }
 
-    public Texture getCape() {
+    public @Nullable Texture getCape() {
         return this.textures.get("CAPE");
     }
 
@@ -28,10 +26,7 @@ public class MojangProfile {
         return "https://visage.surgeplay.com/bust/512/" + this.profileId + "?no=ears"; // Fuck earsmod
     }
 
-    public static class Texture {
-        public String url;
-        public Map<String, String> metadata;
-
+    public record Texture(String url, Map<String, String> metadata) {
         public InputStream downloadTexture() throws IOException, InterruptedException {
             return Downloader.download(this.url);
         }
@@ -41,10 +36,7 @@ public class MojangProfile {
         }
 
         public boolean isSlim() {
-            if (this.metadata == null) {
-                return false;
-            }
-
+            if (this.metadata == null) return false;
             return "slim".equalsIgnoreCase(this.metadata.get("model"));
         }
     }
@@ -54,7 +46,7 @@ public class MojangProfile {
     }
 
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         return String.format("MojangProfile{profileName=%s, profileId=%s}", profileName, profileId);
     }
 }

@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Optional;
 
 public class MojangRequester {
@@ -83,9 +84,7 @@ public class MojangRequester {
                 .build();
 
         JsonObject obj = Requester.sendRequest(request, JsonObject.class);
-        if (obj == null) {
-            return Optional.empty();
-        }
+        if (obj == null) return Optional.empty();
 
         if (obj.has("errorMessage")) {
             throw new InterruptedException(obj.get("errorMessage").getAsString());
@@ -103,6 +102,12 @@ public class MojangRequester {
             ))) {
                 return Optional.of(Serializer.getSerializer().fromJson(reader, MojangProfile.class));
             }
+        }
+
+        if (obj.has("id") && obj.has("name")) {
+            return Optional.of(new MojangProfile(-1,
+                    obj.get("id").getAsString(), obj.get("name").getAsString(), new HashMap<>(0)
+            ));
         }
 
         return Optional.empty();

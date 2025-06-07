@@ -152,6 +152,7 @@ public class BaseCache<T> {
 
             writer.flush();
 
+            CommonUtils.LOGGER.warn("{} saved!", this);
             return true;
         } catch (Throwable e) {
             CommonUtils.LOGGER.warn("Failed to save {}!", this, e);

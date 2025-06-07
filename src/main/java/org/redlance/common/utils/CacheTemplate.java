@@ -91,7 +91,7 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
             return Optional.empty();
         }
 
-        return getObj().entrySet().parallelStream()
+        return getStream()
                 .filter(kvEntry -> kvEntry.getValue().equals(value))
                 .filter(predicate)
                 .map(Map.Entry::getKey)

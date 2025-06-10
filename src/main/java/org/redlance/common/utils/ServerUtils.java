@@ -93,10 +93,18 @@ public class ServerUtils {
                 case "by" -> "be_by";
                 case "kz" -> "kk_kz";
                 case "ua" -> "uk_ua";
+                case "rs" -> "sr_rs";
+                case "bg" -> "bg_bg";
+                case "ge" -> "ka_ge";
 
                 // English-speaking countries
-                case "us", "gb", "au", "nz" -> "en_" + countryInLower;
-                case "ca" -> "en_ca";
+                case "us", "gb", "au", "nz", "ca", "sg", "za", "ie" -> "en_" + countryInLower;
+
+                // Spanish-speaking countries
+                case "es", "mx", "ar", "co", "pe", "ve", "cl", "do", "uy", "bo", "cr" -> "es_" + countryInLower;
+
+                // Portuguese-speaking countries
+                case "pt", "br", "ao", "mz" -> "pt_" + countryInLower;
 
                 // Asian countries
                 case "id" -> "id_id";
@@ -104,28 +112,43 @@ public class ServerUtils {
                 case "jp" -> "ja_jp";
                 case "kr" -> "ko_kr";
                 case "cn", "tw", "hk" -> "zh_" + countryInLower;
+                case "th" -> "th_th";
+                case "my" -> "ms_my";
+                case "in" -> "hi_in";
+                case "pk" -> "ur_pk";
+                case "bd" -> "bn_bd";
+                case "il" -> "he_il";
+                case "ph" -> "fil_ph";
+
+                // Middle Eastern and North African countries (Arabic-speaking)
+                case "ae", "eg", "tn", "sa", "ma", "dz", "lb" -> "ar_" + countryInLower;
 
                 // European countries
-                case "fr" -> "fr_fr";
-                case "be" -> "fr_be";
+                case "fr", "be", "lu", "mc" -> "fr_" + countryInLower;
                 case "ch" -> "de_ch";
                 case "de", "at" -> "de_" + countryInLower;
                 case "it" -> "it_it";
                 case "nl" -> "nl_nl";
                 case "pl" -> "pl_pl";
                 case "tr" -> "tr_tr";
+                case "cz" -> "cs_cz";
+                case "hu" -> "hu_hu";
+                case "ro" -> "ro_ro";
+                case "el" -> "el_gr";
+                case "sk" -> "sk_sk";
+                case "si" -> "sl_si";
+                case "lv" -> "lv_lv";
+                case "lt" -> "lt_lt";
 
                 // Nordic countries
                 case "se" -> "sv_se";
                 case "no" -> "no_no";
                 case "dk" -> "da_dk";
                 case "fi" -> "fi_fi";
+                case "is" -> "is_is";
 
-                // Spanish-speaking countries
-                case "es", "mx", "ar", "co", "pe", "ve", "cl" -> "es_" + countryInLower;
-
-                // Portuguese-speaking countries
-                case "pt", "br" -> "pt_" + countryInLower;
+                // Additional countries
+                case "ir" -> "fa_ir";
 
                 default -> {
                     CommonUtils.LOGGER.warn("Country code not explicitly mapped: {}, using English as fallback", country);

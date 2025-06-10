@@ -30,9 +30,6 @@ public class TranslatorUtils {
             // Spanish-speaking countries
             Map.entry("es_es", List.of("es_419", "es_mx", "es_ar", "es_co", "es_pe", "es_ve", "es_cl")),
 
-            // English-speaking countries - only keep en_us as key
-            Map.entry("en_us", List.of("en_gb", "en_au", "en_ca", "en_nz")),
-
             // German-speaking countries
             Map.entry("de_de", List.of("de_at", "de_ch")),
 

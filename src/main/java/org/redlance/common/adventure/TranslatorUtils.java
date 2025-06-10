@@ -58,6 +58,11 @@ public class TranslatorUtils {
             Map.entry("sv_se", List.of("no_no", "da_dk")),
             Map.entry("fi_fi", List.of("et_ee"))
     );
+    public static final Locale DEFAULT_LOCALE = Locale.forLanguageTag("en-us");
+
+    public static TranslationStore.StringBased<MessageFormat> createTranslationStore(Key name, Class<?> target, String knownResource) {
+        return createTranslationStore(name, DEFAULT_LOCALE, target, knownResource);
+    }
 
     public static TranslationStore.StringBased<MessageFormat> createTranslationStore(Key name, Locale defaultLocale, Class<?> target, String knownResource) {
         final TranslationStore.StringBased<MessageFormat> translationStore = TranslationStore.messageFormat(name);

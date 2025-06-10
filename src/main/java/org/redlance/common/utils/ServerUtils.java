@@ -4,6 +4,7 @@ import com.sun.net.httpserver.Headers;
 import io.github.kosmx.emotes.server.services.InstanceService;
 import net.kyori.adventure.translation.Translator;
 import org.redlance.common.CommonUtils;
+import org.redlance.common.adventure.TranslatorUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -76,15 +77,47 @@ public class ServerUtils {
         String userLocale = headers.apply("Accept-Language");
         if (userLocale != null && !userLocale.isBlank()) {
             for (Locale.LanguageRange range : Locale.LanguageRange.parse(userLocale.replace("_", "-"))) {
-                return Objects.requireNonNullElseGet(Translator.parseLocale(
-                        range.getRange().replace("-", "_")
-                ), fallback);
+                Locale locale = Translator.parseLocale(range.getRange().replace("-", "_"));
+                if (locale != null) return locale;
             }
         }
 
         String country = headers.apply("CF-IPCountry");
-        if (userLocale != null && !userLocale.isBlank()) {
-            return Objects.requireNonNullElseGet(Translator.parseLocale(country), fallback);
+        if (country != null && !country.isBlank()) {
+            String countryInLower = country.toLowerCase(Locale.ROOT);
+
+            String lang = switch (countryInLower) {
+                case "ru" -> "ru_ru";
+                case "us", "gb", "au", "nz" -> "en_" + countryInLower;
+                case "ca" -> "en_ca";
+                case "id" -> "id_id";
+                case "fr" -> "fr_fr";
+                case "be" -> "fr_be";
+                case "ch" -> "de_ch";
+                case "vn" -> "vi_vn";
+                case "by" -> "be_by";
+                case "de", "at" -> "de_" + countryInLower;
+                case "es", "mx", "ar", "co", "pe", "ve", "cl" -> "es_" + countryInLower;
+                case "pt", "br" -> "pt_" + countryInLower;
+                case "it" -> "it_it";
+                case "jp" -> "ja_jp";
+                case "kr" -> "ko_kr";
+                case "cn", "tw", "hk" -> "zh_" + countryInLower;
+                case "nl" -> "nl_nl";
+                case "pl" -> "pl_pl";
+                case "tr" -> "tr_tr";
+                case "se" -> "sv_se";
+                case "no" -> "no_no";
+                case "dk" -> "da_dk";
+                case "fi" -> "fi_fi";
+
+                default -> {
+                    CommonUtils.LOGGER.warn("Country code not explicitly mapped: {}, using default mapping", country);
+                    yield countryInLower + "_" + countryInLower;
+                }
+            };
+
+            return TranslatorUtils.parseLocale(lang, fallback);
         }
 
         return fallback.get();

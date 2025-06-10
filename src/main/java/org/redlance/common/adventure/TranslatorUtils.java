@@ -18,8 +18,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+@SuppressWarnings("unused")
 public class TranslatorUtils {
     public static final Map<String, List<String>> LOCALE_FALLBACK = Map.of(
             "ru_ru", List.of("tt_ru", "uk_ua", "kk_kz", "be_by", "ba_ru"),
@@ -60,8 +62,8 @@ public class TranslatorUtils {
         return translationStore;
     }
 
-    public static Locale parseLocale(String string, Locale defaultLocale) {
-        return Objects.requireNonNullElse(Translator.parseLocale(string), defaultLocale);
+    public static Locale parseLocale(String string, Supplier<Locale> fallback) {
+        return Objects.requireNonNullElseGet(Translator.parseLocale(string), fallback);
     }
 
     public static Translator findTranslatorSource(Component component, Locale locale) {

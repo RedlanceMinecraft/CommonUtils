@@ -17,15 +17,16 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 public class TranslatorUtils {
     public static final Map<String, List<String>> LOCALE_FALLBACK = Map.of(
-            "ru", List.of("ua", "kz", "by"),
-            "es-ES", List.of("es-419")
+            "ru_ru", List.of("tt_ru", "uk_ua", "kk_kz", "be_by", "ba_ru"),
+            "es_es", List.of("es_419") // Discord
     );
 
-    public static TranslationStore.StringBased<MessageFormat> createTranslationStore(Key name, final Locale defaultLocale, Class<?> target, String knownResource) {
+    public static TranslationStore.StringBased<MessageFormat> createTranslationStore(Key name, Locale defaultLocale, Class<?> target, String knownResource) {
         final TranslationStore.StringBased<MessageFormat> translationStore = TranslationStore.messageFormat(name);
         translationStore.defaultLocale(defaultLocale);
 
@@ -36,13 +37,14 @@ public class TranslatorUtils {
                 try (final Stream<Path> files = Files.walk(path)) {
                     files.filter(Files::isRegularFile).forEach(file -> {
                         final String localeName = FilenameUtils.removeExtension(file.getFileName().toString());
-                        Locale locale = localeName.equals("main") ? defaultLocale : Locale.forLanguageTag(localeName);
+                        Locale locale = localeName.equals("main") ? defaultLocale : Translator.parseLocale(localeName);
+                        if (locale == null) return;
 
                         CommonUtils.LOGGER.info("Loading {} ({}) localization...", localeName, locale);
 
                         if (LOCALE_FALLBACK.containsKey(localeName)) {
                             for (String localeFallback : LOCALE_FALLBACK.get(localeName)) {
-                                translationStore.registerAll(Locale.forLanguageTag(localeFallback), file, false);
+                                translationStore.registerAll(parseLocale(localeFallback, null), file, false);
                             }
                         }
                         translationStore.registerAll(locale, file, false);
@@ -56,6 +58,10 @@ public class TranslatorUtils {
         }
 
         return translationStore;
+    }
+
+    public static Locale parseLocale(String string, Locale defaultLocale) {
+        return Objects.requireNonNullElse(Translator.parseLocale(string), defaultLocale);
     }
 
     public static Translator findTranslatorSource(Component component, Locale locale) {

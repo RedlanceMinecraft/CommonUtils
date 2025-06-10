@@ -23,9 +23,40 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 public class TranslatorUtils {
-    public static final Map<String, List<String>> LOCALE_FALLBACK = Map.of(
-            "ru_ru", List.of("tt_ru", "uk_ua", "kk_kz", "be_by", "ba_ru"),
-            "es_es", List.of("es_419") // Discord
+    public static final Map<String, List<String>> LOCALE_FALLBACK = Map.ofEntries(
+            // Eastern European and Russian-speaking countries
+            Map.entry("ru_ru", List.of("tt_ru", "uk_ua", "kk_kz", "be_by", "ba_ru")),
+
+            // Spanish-speaking countries
+            Map.entry("es_es", List.of("es_419", "es_mx", "es_ar", "es_co", "es_pe", "es_ve", "es_cl")),
+
+            // English-speaking countries - only keep en_us as key
+            Map.entry("en_us", List.of("en_gb", "en_au", "en_ca", "en_nz")),
+
+            // German-speaking countries
+            Map.entry("de_de", List.of("de_at", "de_ch")),
+
+            // French-speaking countries
+            Map.entry("fr_fr", List.of("fr_ca", "fr_be", "fr_ch")),
+
+            // Portuguese-speaking countries - only keep pt_pt as key
+            Map.entry("pt_pt", List.of("pt_br")),
+
+            // Other European languages
+            Map.entry("it_it", List.of("fr_ch")),
+            Map.entry("nl_nl", List.of("de_at")),
+            Map.entry("pl_pl", List.of("cs_cz")),
+            Map.entry("tr_tr", List.of("az_az")),
+
+            // Asian languages
+            Map.entry("zh_cn", List.of("zh_tw", "zh_hk")),
+            Map.entry("ja_jp", List.of("ko_kr")),
+            Map.entry("vi_vn", List.of("th_th")),
+            Map.entry("id_id", List.of("ms_my")),
+
+            // Nordic languages
+            Map.entry("sv_se", List.of("no_no", "da_dk")),
+            Map.entry("fi_fi", List.of("et_ee"))
     );
 
     public static TranslationStore.StringBased<MessageFormat> createTranslationStore(Key name, Locale defaultLocale, Class<?> target, String knownResource) {

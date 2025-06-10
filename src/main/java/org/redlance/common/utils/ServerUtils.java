@@ -17,6 +17,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@SuppressWarnings("unused")
 public class ServerUtils {
     public static InetSocketAddress getAddressFromProperties() {
         Properties prop = new Properties();
@@ -87,33 +88,48 @@ public class ServerUtils {
             String countryInLower = country.toLowerCase(Locale.ROOT);
 
             String lang = switch (countryInLower) {
+                // Eastern European and Russian-speaking countries
                 case "ru" -> "ru_ru";
+                case "by" -> "be_by";
+                case "kz" -> "kk_kz";
+                case "ua" -> "uk_ua";
+
+                // English-speaking countries
                 case "us", "gb", "au", "nz" -> "en_" + countryInLower;
                 case "ca" -> "en_ca";
+
+                // Asian countries
                 case "id" -> "id_id";
-                case "fr" -> "fr_fr";
-                case "be" -> "fr_be";
-                case "ch" -> "de_ch";
                 case "vn" -> "vi_vn";
-                case "by" -> "be_by";
-                case "de", "at" -> "de_" + countryInLower;
-                case "es", "mx", "ar", "co", "pe", "ve", "cl" -> "es_" + countryInLower;
-                case "pt", "br" -> "pt_" + countryInLower;
-                case "it" -> "it_it";
                 case "jp" -> "ja_jp";
                 case "kr" -> "ko_kr";
                 case "cn", "tw", "hk" -> "zh_" + countryInLower;
+
+                // European countries
+                case "fr" -> "fr_fr";
+                case "be" -> "fr_be";
+                case "ch" -> "de_ch";
+                case "de", "at" -> "de_" + countryInLower;
+                case "it" -> "it_it";
                 case "nl" -> "nl_nl";
                 case "pl" -> "pl_pl";
                 case "tr" -> "tr_tr";
+
+                // Nordic countries
                 case "se" -> "sv_se";
                 case "no" -> "no_no";
                 case "dk" -> "da_dk";
                 case "fi" -> "fi_fi";
 
+                // Spanish-speaking countries
+                case "es", "mx", "ar", "co", "pe", "ve", "cl" -> "es_" + countryInLower;
+
+                // Portuguese-speaking countries
+                case "pt", "br" -> "pt_" + countryInLower;
+
                 default -> {
-                    CommonUtils.LOGGER.warn("Country code not explicitly mapped: {}, using default mapping", country);
-                    yield countryInLower + "_" + countryInLower;
+                    CommonUtils.LOGGER.warn("Country code not explicitly mapped: {}, using English as fallback", country);
+                    yield "en_" + countryInLower;
                 }
             };
 

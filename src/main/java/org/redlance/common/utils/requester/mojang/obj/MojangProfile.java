@@ -41,12 +41,8 @@ public record MojangProfile(long timestamp, String profileId, String profileName
         }
     }
 
-    public String getProfileName() {
-        return this.profileName;
-    }
-
     @Override
     public @NotNull String toString() {
-        return String.format("MojangProfile{profileName=%s, profileId=%s}", profileName, profileId);
+        return String.format("MojangProfile{profileName=%s, profileId=%s}", profileName(), profileId());
     }
 }

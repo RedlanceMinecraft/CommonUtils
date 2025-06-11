@@ -19,7 +19,7 @@ public class NameHistoryRequester implements INameProvider {
         registerProvider(new LabyProvider());
 
         // Mojang
-        registerProvider(new ConvertingMojangProvider("authserver.ely.by/api"));
+        // registerProvider(new ConvertingMojangProvider("authserver.ely.by/api"));
     }
 
     @Override

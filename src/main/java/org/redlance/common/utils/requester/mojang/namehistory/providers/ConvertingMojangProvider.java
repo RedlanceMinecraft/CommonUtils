@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.mojang.namehistory.providers;
+/*package org.redlance.common.utils.requester.mojang.namehistory.providers;
 
 import org.redlance.common.utils.requester.mojang.MojangRequester;
 import org.redlance.common.utils.requester.mojang.namehistory.obj.Username;
@@ -13,7 +13,7 @@ import java.util.Optional;
  * Like {@link MojangApiProvider}, but it will additionally
  * try to convert the uuid if nothing is found for the original one
  */
-public class ConvertingMojangProvider extends MojangApiProvider {
+/*public class ConvertingMojangProvider extends MojangApiProvider {
     public ConvertingMojangProvider(String endpoint) {
         super(endpoint);
     }
@@ -45,4 +45,4 @@ public class ConvertingMojangProvider extends MojangApiProvider {
             return Collections.emptyList();
         }
     }
-}
+}*/

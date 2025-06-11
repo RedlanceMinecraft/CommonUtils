@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.mojang.namehistory.providers;
+/*package org.redlance.common.utils.requester.mojang.namehistory.providers;
 
 import com.github.mizosoft.methanol.MutableRequest;
 import com.github.mizosoft.methanol.TypeRef;
@@ -16,7 +16,7 @@ import java.util.List;
  * Implemented provider for the official api (which is deprecated)
  * It is used in most cases for its simulations
  */
-public class MojangApiProvider implements INameProvider {
+/*public class MojangApiProvider implements INameProvider {
     protected final String endpoint;
 
     public MojangApiProvider(String endpoint) {
@@ -46,4 +46,4 @@ public class MojangApiProvider implements INameProvider {
     public String toString() {
         return String.format("MojangApiProvider{endpoint=%s}", endpoint);
     }
-}
+}*/

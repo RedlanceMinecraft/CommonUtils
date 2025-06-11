@@ -22,6 +22,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Optional;
 
+@SuppressWarnings("unused")
 public class MojangRequester {
     public static final CacheControl CACHE_CONTROL = CacheControl.newBuilder()
             .maxAge(Duration.ofHours(1))
@@ -44,7 +45,7 @@ public class MojangRequester {
     public static String getIdByName(String name) throws IOException, InterruptedException {
         BaseMojangProfile response = getBaseByName(name.trim());
         if (response.id == null) return null;
-        return MojangUtils.parseUuid(response.id);
+        return MojangUtils.parseUuid(response.id).toString();
     }
 
     public static Optional<MojangProfile> getMojangProfileByName(String name) {

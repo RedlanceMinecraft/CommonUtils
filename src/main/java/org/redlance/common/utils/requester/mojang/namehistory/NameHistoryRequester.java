@@ -4,12 +4,12 @@ import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.requester.Requester;
 import org.redlance.common.utils.requester.mojang.namehistory.obj.Username;
 import org.redlance.common.utils.requester.mojang.namehistory.providers.CraftyProvider;
-import org.redlance.common.utils.requester.mojang.namehistory.providers.ConvertingMojangProvider;
 import org.redlance.common.utils.requester.mojang.namehistory.providers.LabyProvider;
 
 import java.io.IOException;
 import java.util.*;
 
+@SuppressWarnings("unused")
 public class NameHistoryRequester implements INameProvider {
     public static final NameHistoryRequester INSTANCE = new NameHistoryRequester();
 

@@ -95,8 +95,12 @@ public class TranslatorUtils {
         return translationStore;
     }
 
-    public static Locale parseLocale(String string, Supplier<Locale> fallback) {
-        return Objects.requireNonNullElseGet(Translator.parseLocale(string), fallback);
+    public static Locale parseLocale(String localeCode, Supplier<Locale> fallback) {
+        if (localeCode.contains("-")) localeCode = localeCode.replace("-", "_");
+        if (!localeCode.contains("_") && localeCode.length() == 2) {
+            localeCode = localeCode + "_" + localeCode;
+        }
+        return Objects.requireNonNullElseGet(Translator.parseLocale(localeCode), fallback);
     }
 
     public static Translator findTranslatorSource(Component component, Locale locale) {

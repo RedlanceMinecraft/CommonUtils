@@ -78,7 +78,7 @@ public class ServerUtils {
         String userLocale = headers.apply("Accept-Language");
         if (userLocale != null && !userLocale.isBlank()) {
             for (Locale.LanguageRange range : Locale.LanguageRange.parse(userLocale.replace("_", "-"))) {
-                Locale locale = Translator.parseLocale(range.getRange().replace("-", "_"));
+                Locale locale = Translator.parseLocale(range.getRange());
                 if (locale != null) return locale;
             }
         }

@@ -2,7 +2,6 @@ package org.redlance.common.utils;
 
 import com.sun.net.httpserver.Headers;
 import io.github.kosmx.emotes.server.services.InstanceService;
-import net.kyori.adventure.translation.Translator;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.adventure.TranslatorUtils;
 
@@ -78,7 +77,7 @@ public class ServerUtils {
         String userLocale = headers.apply("Accept-Language");
         if (userLocale != null && !userLocale.isBlank()) {
             for (Locale.LanguageRange range : Locale.LanguageRange.parse(userLocale.replace("_", "-"))) {
-                Locale locale = Translator.parseLocale(range.getRange());
+                Locale locale = TranslatorUtils.parseLocale(range.getRange(), () -> null);
                 if (locale != null) return locale;
             }
         }

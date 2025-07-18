@@ -17,18 +17,20 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+@SuppressWarnings("unused")
 public class Requester {
     public static final Methanol HTTP_CLIENT = Methanol.newBuilder()
-            .executor(CommonUtils.EXECUTOR)
+            .executor(CommonUtils.createExecutor("http-requester-"))
             .connectTimeout(Duration.ofMinutes(1))
-            .version(HttpClient.Version.HTTP_1_1)
+            .version(HttpClient.Version.HTTP_2)
             .proxy(UrlProxySelector.INSTANCE)
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .cache(HttpCache.newBuilder()
-                    .executor(CommonUtils.EXECUTOR)
+                    .executor(CommonUtils.createExecutor("http-cache-"))
                     .cacheOnMemory(1024 * 1024 * 1024) // 1024 MBs
                     .listener(new HttpCache.Listener() {
                         @Override
@@ -108,9 +110,10 @@ public class Requester {
         }
     }
 
+    private static final ExecutorService PARALLEL_REQUESTER = CommonUtils.createExecutor("parallel-requester-");
     public static <R, T> Stream<R> prepareParallelRequests(Stream<T> requests, Function<? super T, R> mapper) {
         return requests.map(request -> CompletableFuture.supplyAsync(
-                () -> mapper.apply(request), CommonUtils.EXECUTOR
+                () -> mapper.apply(request), Requester.PARALLEL_REQUESTER
         )).toList().parallelStream().map(CompletableFuture::join);
     }
 

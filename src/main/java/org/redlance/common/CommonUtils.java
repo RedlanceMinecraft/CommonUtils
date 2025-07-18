@@ -8,16 +8,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class CommonUtils {
-    public static final ScheduledExecutorService SCHEDULED_EXECUTOR = Executors.newScheduledThreadPool(100, Thread.ofVirtual()
-            .name("common-scheduled-executor-", 1)
-            .factory()
-    );
-
-    public static final ExecutorService EXECUTOR = Executors.newCachedThreadPool(Thread.ofVirtual()
-            .name("common-executor-", 1)
-            .factory()
-    );
-
     static {
         System.setProperty("java.util.logging.manager", "org.apache.logging.log4j.jul.LogManager");
     }
@@ -25,5 +15,19 @@ public class CommonUtils {
     public static final Logger LOGGER = LogManager.getLogger("Redlance CommonUtils");
 
     public static void main(String... args) { // Used for testing things
+    }
+
+    public static ScheduledExecutorService createScheduledExecutor(int corePoolSize, String prefix) {
+        return Executors.newScheduledThreadPool(corePoolSize, Thread.ofVirtual()
+                .name(prefix, 0)
+                .factory()
+        );
+    }
+
+    public static ExecutorService createExecutor(String prefix) {
+        return Executors.newCachedThreadPool(Thread.ofVirtual()
+                .name(prefix, 0)
+                .factory()
+        );
     }
 }

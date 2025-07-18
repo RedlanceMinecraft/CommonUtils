@@ -17,11 +17,7 @@ import java.net.URI;
 import java.net.http.WebSocket;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
@@ -33,6 +29,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
     );
 
     private final Map<Integer, CompletableFuture<JsonObject>> messages = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService executor = CommonUtils.createScheduledExecutor(1, "boosty-websocket-");
 
     private final BiConsumer<String, JsonObject> listener;
     private final Supplier<String> token;
@@ -79,7 +76,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
                     }))
                     .join();
 
-            this.pinger = CommonUtils.SCHEDULED_EXECUTOR.scheduleAtFixedRate(
+            this.pinger = this.executor.scheduleAtFixedRate(
                     () -> sendMessage(7, null), 30L, 30L, TimeUnit.SECONDS
             );
 

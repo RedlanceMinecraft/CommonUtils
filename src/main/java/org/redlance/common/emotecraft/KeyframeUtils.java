@@ -1,19 +1,24 @@
 package org.redlance.common.emotecraft;
 
-import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
+import com.zigythebird.playeranimcore.animation.Animation;
+import com.zigythebird.playeranimcore.animation.keyframe.BoneAnimation;
+import com.zigythebird.playeranimcore.animation.keyframe.Keyframe;
+import com.zigythebird.playeranimcore.enums.AnimationFormat;
 import org.jetbrains.annotations.Nullable;
+import team.unnamed.mocha.parser.ast.Expression;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+@SuppressWarnings("unused")
 public class KeyframeUtils {
     private static final List<String> KEYS = List.of(
-            "head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg"
+            "head", "body", "right_arm", "left_arm", "right_leg", "left_leg"
     );
 
-    public static boolean hasEasingArgs(KeyframeAnimation animation) {
-        for (KeyframeAnimation.StateCollection collection : animation.getBodyParts().values()) {
+    public static boolean hasEasingArgs(Animation animation) {
+        for (BoneAnimation collection : animation.boneAnimations().values()) {
             if (collectionToStates(collection).anyMatch(KeyframeUtils::hasEasingArgs)) {
                 return true;
             }
@@ -21,29 +26,33 @@ public class KeyframeUtils {
         return false;
     }
 
-    public static boolean hasEasingArgs(KeyframeAnimation.StateCollection.State state) {
+    public static boolean hasEasingArgs(List<Keyframe> state) {
         if (!isStateUsed(state)) return false;
-        for (KeyframeAnimation.KeyFrame frame : state.getKeyFrames()) {
-            if (frame.easingArg != null && !frame.easingArg.isNaN()) {
+        for (Keyframe frame : state) {
+            List<List<Expression>> easingArgs = frame.easingArgs();
+            if (easingArgs == null || easingArgs.isEmpty()) {
+                return false;
+            }
+            if (easingArgs.size() == 1) {
+                return !easingArgs.getFirst().isEmpty();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean hasBends(Animation animation) {
+        for (BoneAnimation collection : animation.boneAnimations().values()) {
+            if (isStateUsed(collection.bendKeyFrames())) {
                 return true;
             }
         }
         return false;
     }
 
-    public static boolean hasBends(KeyframeAnimation animation) {
-        for (KeyframeAnimation.StateCollection collection : animation.getBodyParts().values()) {
-            if (isStateUsed(collection.bend) || isStateUsed(collection.bendDirection)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean hasScaling(KeyframeAnimation animation) {
-        for (KeyframeAnimation.StateCollection part : animation.getBodyParts().values()) {
-            if (!part.isScalable()) continue;
-            if (isStateUsed(part.scaleX) || isStateUsed(part.scaleY) || isStateUsed(part.scaleZ)) {
+    public static boolean hasScaling(Animation animation) {
+        for (BoneAnimation part : animation.boneAnimations().values()) {
+            if (part.scaleKeyFrames().hasKeyframes()) {
                 return true;
             }
         }
@@ -51,8 +60,8 @@ public class KeyframeUtils {
         return false;
     }
 
-    public static boolean hasDynamicParts(KeyframeAnimation animation) {
-        for (Map.Entry<String, KeyframeAnimation.StateCollection> entry : animation.getBodyParts().entrySet()) {
+    public static boolean hasDynamicParts(Animation animation) {
+        for (Map.Entry<String, BoneAnimation> entry : animation.boneAnimations().entrySet()) {
             if (KEYS.contains(entry.getKey())) continue;
             if (isCollectionUsed(entry.getValue())) {
                 return true;
@@ -62,21 +71,25 @@ public class KeyframeUtils {
         return false;
     }
 
-    public static boolean isCollectionUsed(@Nullable KeyframeAnimation.StateCollection collection) {
+    public static boolean isCollectionUsed(@Nullable BoneAnimation collection) {
         if (collection == null) return false;
         return collectionToStates(collection).anyMatch(KeyframeUtils::isStateUsed);
     }
 
-    public static boolean isStateUsed(@Nullable KeyframeAnimation.StateCollection.State state) {
-        return state != null && !state.getKeyFrames().isEmpty() && state.isEnabled();
+    public static boolean isStateUsed(@Nullable List<Keyframe> state) {
+        return state != null && !state.isEmpty();
     }
 
-    public static Stream<KeyframeAnimation.StateCollection.State> collectionToStates(KeyframeAnimation.StateCollection collection) {
+    public static Stream<List<Keyframe>> collectionToStates(BoneAnimation collection) {
         return Stream.of(
-                collection.x, collection.y, collection.z,
-                collection.yaw, collection.pitch, collection.roll,
-                collection.bendDirection, collection.bend,
-                collection.scaleX, collection.scaleY, collection.scaleZ
+                collection.positionKeyFrames().xKeyframes(), collection.positionKeyFrames().yKeyframes(), collection.positionKeyFrames().zKeyframes(),
+                collection.rotationKeyFrames().xKeyframes(), collection.rotationKeyFrames().yKeyframes(), collection.rotationKeyFrames().zKeyframes(),
+                collection.bendKeyFrames(),
+                collection.scaleKeyFrames().xKeyframes(), collection.scaleKeyFrames().yKeyframes(), collection.scaleKeyFrames().zKeyframes()
         );
+    }
+
+    public static boolean isPlayerAnimatorFormat(Animation animation) {
+        return animation.data().<AnimationFormat>get("format").orElse(null) == AnimationFormat.PLAYER_ANIMATOR;
     }
 }

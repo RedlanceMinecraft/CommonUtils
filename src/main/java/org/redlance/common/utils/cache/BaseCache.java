@@ -4,7 +4,6 @@ import com.google.gson.reflect.TypeToken;
 import io.github.kosmx.emotes.server.config.Serializer;
 import io.github.kosmx.emotes.server.services.InstanceService;
 import org.redlance.common.CommonUtils;
-import org.redlance.common.utils.CacheTemplate;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -14,18 +13,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unused")
 public class BaseCache<T> {
-    public static final Map<Path, BaseCache<?>> TRACKED_CACHES = new ConcurrentHashMap<>();
+    private static final ScheduledExecutorService CACHE_SAVER = CommonUtils.createScheduledExecutor(5, "cache-saver-");
+    private static final ExecutorService CACHE_READER = CommonUtils.createExecutor("cache-reader-");
+
+    private static final Map<Path, BaseCache<?>> TRACKED_CACHES = new ConcurrentHashMap<>();
 
     static {
         CommonUtils.LOGGER.debug("Added cache saving hook!");
-
         Runtime.getRuntime().addShutdownHook(new Thread(() ->
                 BaseCache.reload(null, false), "CacheSaveThread"
         ));
@@ -55,7 +55,7 @@ public class BaseCache<T> {
 
         reload(true);
 
-        CommonUtils.SCHEDULED_EXECUTOR.scheduleAtFixedRate(
+        BaseCache.CACHE_SAVER.scheduleAtFixedRate(
                 () -> reload(false), 30L, 30L, TimeUnit.SECONDS
         );
     }
@@ -123,7 +123,7 @@ public class BaseCache<T> {
         if (!this.dirty) {
             if (read) {
                 CommonUtils.LOGGER.info("Reading {}...", this);
-                this.obj = CompletableFuture.supplyAsync(this::read, CommonUtils.EXECUTOR);
+                this.obj = CompletableFuture.supplyAsync(this::read, BaseCache.CACHE_READER);
                 this.obj.thenRun(this::fireListeners);
             }
 
@@ -162,7 +162,7 @@ public class BaseCache<T> {
     }
 
     public static void reload(Consumer<BaseCache<?>> callback, boolean read) {
-        for (BaseCache<?> cache : CacheTemplate.TRACKED_CACHES.values()) {
+        for (BaseCache<?> cache : BaseCache.TRACKED_CACHES.values()) {
             if (cache.reload(read) && callback != null) {
                 callback.accept(cache);
             }

@@ -14,6 +14,7 @@ repositories {
         url = "https://repo.redlance.org/public"
     }
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
@@ -54,6 +55,7 @@ dependencies {
         exclude(group: "com.google.j2objc")
         exclude(group: "org.jspecify")
     }
+    implementation api("com.zigythebird.playeranim:PlayerAnimationLibCore:1.0.4.1+mc1.21.7")
 }
 
 tasks.withType(JavaCompile).configureEach {

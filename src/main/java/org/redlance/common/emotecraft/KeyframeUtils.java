@@ -3,7 +3,6 @@ package org.redlance.common.emotecraft;
 import com.zigythebird.playeranimcore.animation.Animation;
 import com.zigythebird.playeranimcore.animation.keyframe.BoneAnimation;
 import com.zigythebird.playeranimcore.animation.keyframe.Keyframe;
-import com.zigythebird.playeranimcore.enums.AnimationFormat;
 import org.jetbrains.annotations.Nullable;
 import team.unnamed.mocha.parser.ast.Expression;
 
@@ -87,9 +86,5 @@ public class KeyframeUtils {
                 collection.bendKeyFrames(),
                 collection.scaleKeyFrames().xKeyframes(), collection.scaleKeyFrames().yKeyframes(), collection.scaleKeyFrames().zKeyframes()
         );
-    }
-
-    public static boolean isPlayerAnimatorFormat(Animation animation) {
-        return animation.data().<AnimationFormat>get("format").orElse(null) == AnimationFormat.PLAYER_ANIMATOR;
     }
 }

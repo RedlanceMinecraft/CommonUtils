@@ -86,7 +86,7 @@ public class FastAnimationSerializer implements JsonDeserializer<Animation>, Jso
         HashMap<Byte, Byte> version = new HashMap<>();
 
         // Animation packet
-        if (KeyframeUtils.isPlayerAnimatorFormat(animation)) {
+        if (animation.data().isAnimationPlayerAnimatorFormat()) {
             if (KeyframeUtils.hasEasingArgs(animation)) {
                 version.put(PacketConfig.LEGACY_ANIMATION_FORMAT, (byte) 4);
             } else if (KeyframeUtils.hasScaling(animation)) {

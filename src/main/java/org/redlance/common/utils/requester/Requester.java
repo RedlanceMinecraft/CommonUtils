@@ -5,6 +5,7 @@ import com.github.mizosoft.methanol.adapter.gson.GsonAdapterFactory;
 import com.github.mizosoft.methanol.internal.Utils;
 import io.github.kosmx.emotes.server.config.Serializer;
 import org.redlance.common.CommonUtils;
+import org.redlance.common.utils.LambdaExceptionUtils;
 import org.redlance.common.utils.requester.interceptors.CacheOverrideInterceptor;
 import org.redlance.common.utils.requester.interceptors.CookieFixerInterceptor;
 import org.redlance.common.utils.requester.interceptors.FallbackInterceptor;
@@ -18,6 +19,7 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -35,7 +37,7 @@ public class Requester {
                     .listener(new HttpCache.Listener() {
                         @Override
                         public void onNetworkUse(HttpRequest request, TrackedResponse<?> cacheResponse) {
-                            CommonUtils.LOGGER.debug("Nework used: {}", request);
+                            CommonUtils.LOGGER.debug("Network used: {}", request);
                         }
                     })
                     .build()
@@ -43,7 +45,7 @@ public class Requester {
             .interceptor(new CookieFixerInterceptor())
             .interceptor(new FallbackInterceptor())
             .backendInterceptor(new CacheOverrideInterceptor())
-            .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36")
+            .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
             .cookieHandler(new CookieManager())
             .adapterCodec(AdapterCodec.newBuilder()
                     .decoder(GsonAdapterFactory.createDecoder(Serializer.getSerializer()))
@@ -112,9 +114,9 @@ public class Requester {
 
     private static final ExecutorService PARALLEL_REQUESTER = CommonUtils.createExecutor("parallel-requester-");
     public static <R, T> Stream<R> prepareParallelRequests(Stream<T> requests, Function<? super T, R> mapper) {
-        return requests.map(request -> CompletableFuture.supplyAsync(
-                () -> mapper.apply(request), Requester.PARALLEL_REQUESTER
-        )).toList().parallelStream().map(CompletableFuture::join);
+        return requests.map(request -> Requester.PARALLEL_REQUESTER.submit(
+                () -> mapper.apply(request)
+        )).map(LambdaExceptionUtils.rethrowFunction((Future::get)));
     }
 
     public static HttpRequest.BodyPublisher ofObject(Object object, MediaType mediaType) {

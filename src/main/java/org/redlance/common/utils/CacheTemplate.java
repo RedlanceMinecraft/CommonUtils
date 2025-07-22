@@ -4,9 +4,7 @@ import com.google.gson.reflect.TypeToken;
 import org.redlance.common.utils.cache.BaseCache;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -25,20 +23,8 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     }
 
     public void write(K key, V value) {
-        write(key, value, false);
-    }
-
-    public void write(K key, V value, boolean replace) {
-        Map<K, V> caches = getObj();
-
-        V prev;
-        if (replace && caches.containsKey(key)) {
-            prev = caches.replace(key, value);
-        } else {
-            prev = caches.put(key, value);
-        }
-
-        if (prev == null || prev != value) {
+        V previous = getObj().put(key, value);
+        if (!Objects.equals(previous, value)) {
             setDirty();
         }
     }
@@ -69,17 +55,8 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     }
 
     public V getValueByKey(K key) {
-        if (key == null) {
-            return null;
-        }
-
-        Map<K, V> caches = getObj();
-
-        if (!caches.containsKey(key)) {
-            return null;
-        }
-
-        return caches.get(key);
+        if (key == null) return null;
+        return getObj().get(key);
     }
 
     public Optional<K> getKeyByValue(Object value) {
@@ -87,34 +64,31 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     }
 
     public Optional<K> getKeyByValue(Object value, Predicate<Map.Entry<K, V>> predicate) {
-        if (value == null) {
-            return Optional.empty();
-        }
-
-        return getStream()
-                .filter(kvEntry -> kvEntry.getValue().equals(value))
+        if (value == null) return Optional.empty();
+        return getObj().entrySet().stream()
+                .filter(entry -> value.equals(entry.getValue()))
                 .filter(predicate)
                 .map(Map.Entry::getKey)
-                .findAny();
+                .findFirst();
     }
 
-    public Stream<Map.Entry<K, V>> getStream() {
-        return getObj().entrySet().parallelStream();
+    public Stream<Map.Entry<K, V>> getEntryStream() {
+        return getObj().entrySet().stream();
     }
 
-    public Stream<V> getValuesStream() {
-        return getObj().values().parallelStream();
+    public Collection<V> getValues() {
+        return getObj().values();
     }
 
-    public Stream<K> getKeyStream() {
-        return getObj().keySet().parallelStream();
+    public Set<K> getKeys() {
+        return getObj().keySet();
     }
 
     @Override
     public Map<K, V> read() {
         Map<K, V> readed = super.read();
 
-        if (this.concurrent && readed != null && !readed.isEmpty()) {
+        if (this.concurrent && readed != null) {
             Map<K, V> newMap = this.defaultObj.get();
             newMap.putAll(readed);
 
@@ -127,7 +101,7 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     @Override
     public String toString() {
         return String.format("CacheTemplate{%s (%s)}", this.path,
-                this.obj != null && this.obj.isDone() && getObj() != null ? getObj().size() : 0
+                this.obj != null && this.obj.isDone() ? getObj().size() : 0
         );
     }
 }

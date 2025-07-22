@@ -9,29 +9,29 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public class BaseCache<T> {
-    private static final ScheduledExecutorService CACHE_SAVER = CommonUtils.createScheduledExecutor(5, "cache-saver-");
+    private static final ScheduledExecutorService CACHE_SAVER = CommonUtils.createScheduledExecutor(2, "cache-saver-");
     private static final ExecutorService CACHE_READER = CommonUtils.createExecutor("cache-reader-");
 
     private static final Map<Path, BaseCache<?>> TRACKED_CACHES = new ConcurrentHashMap<>();
 
     static {
         CommonUtils.LOGGER.debug("Added cache saving hook!");
-        Runtime.getRuntime().addShutdownHook(new Thread(() ->
-                BaseCache.reload(null, false), "CacheSaveThread"
-        ));
+        Runnable saveAllDirtyCaches = () -> reloadAll(false);
+        BaseCache.CACHE_SAVER.scheduleAtFixedRate(saveAllDirtyCaches, 30L, 30L, TimeUnit.SECONDS);
+        Runtime.getRuntime().addShutdownHook(new Thread(saveAllDirtyCaches, "CacheSaveThread"));
     }
 
-    private final List<Consumer<BaseCache<T>>> listeners = new ArrayList<>();
+    private final List<Consumer<BaseCache<T>>> listeners = new CopyOnWriteArrayList<>();
 
     public final Path path;
 
@@ -39,7 +39,7 @@ public class BaseCache<T> {
     private final TypeToken<T> token;
 
     protected CompletableFuture<T> obj;
-    private boolean dirty;
+    private final AtomicBoolean dirty = new AtomicBoolean(false);
 
     public BaseCache(String path, Supplier<T> defaultObj, TypeToken<T> token) {
         this(InstanceService.INSTANCE.getGameDirectory().resolve(path), defaultObj, token);
@@ -54,40 +54,31 @@ public class BaseCache<T> {
         CommonUtils.LOGGER.debug("{} created!", path);
 
         reload(true);
-
-        BaseCache.CACHE_SAVER.scheduleAtFixedRate(
-                () -> reload(false), 30L, 30L, TimeUnit.SECONDS
-        );
     }
 
     public void setDirty() {
-        if (!this.dirty) {
+        if (this.dirty.compareAndSet(false, true)) {
             CommonUtils.LOGGER.info("{} is now dirty!", this);
             fireListeners();
         }
-
-        this.dirty = true;
     }
 
     public List<Consumer<BaseCache<T>>> getListeners() {
         return Collections.unmodifiableList(this.listeners);
     }
 
-    public boolean subscrube(Consumer<BaseCache<T>> listener) {
+    public boolean subscribe(Consumer<BaseCache<T>> listener) {
         return this.listeners.add(listener);
     }
 
-    public boolean unsubscrube(Consumer<BaseCache<T>> listener) {
+    public boolean unsubscribe(Consumer<BaseCache<T>> listener) {
         return this.listeners.remove(listener);
     }
 
     protected void fireListeners() {
-        if (this.listeners.isEmpty()) {
-            return;
-        }
+        if (this.listeners.isEmpty()) return;
 
         CommonUtils.LOGGER.info("Firing {} listeners for {}!", this.listeners.size(), this);
-
         for (Consumer<BaseCache<T>> listener : this.listeners) {
             try {
                 listener.accept(this);
@@ -98,13 +89,16 @@ public class BaseCache<T> {
     }
 
     public T getObj() {
-        if (!this.obj.isDone()) {
-            CommonUtils.LOGGER.debug("Blocking thread '{}' until the {} is read!",
-                    Thread.currentThread().getName(), this, new Throwable("Blocking")
-            );
+        try {
+            return this.obj.get();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            CommonUtils.LOGGER.error("Failed to wait for {}!", this, e);
+            throw new CompletionException(e);
+        } catch (ExecutionException e) {
+            CommonUtils.LOGGER.error("Failed to load {}!", this, e.getCause());
+            throw new CompletionException(e.getCause());
         }
-
-        return this.obj.join();
     }
 
     public void setObj(T obj) {
@@ -115,57 +109,49 @@ public class BaseCache<T> {
         this.obj = obj;
         this.obj.thenRun(this::fireListeners);
         setDirty();
-
         return this.obj;
     }
 
-    protected boolean reload(boolean read) {
-        if (!this.dirty) {
-            if (read) {
-                CommonUtils.LOGGER.info("Reading {}...", this);
-                this.obj = CompletableFuture.supplyAsync(this::read, BaseCache.CACHE_READER);
-                this.obj.thenRun(this::fireListeners);
-            }
-
-            return false; // Never accessed
+    protected void reload(boolean read) {
+        if (this.dirty.getAndSet(false)) {
+            CommonUtils.LOGGER.info("Saving {}...", this);
+            if (!save()) setDirty();
+        } else if (read) {
+            CommonUtils.LOGGER.info("Reading {}...", this);
+            this.obj = CompletableFuture.supplyAsync(this::read, BaseCache.CACHE_READER);
+            this.obj.thenRun(this::fireListeners);
         }
-
-        CommonUtils.LOGGER.info("Saving {}...", this);
-        this.dirty = false;
-
-        return save();
     }
 
     public T read() {
+        if (!Files.exists(this.path)) return this.defaultObj.get();
+
         try (BufferedReader reader = Files.newBufferedReader(this.path)) {
-            return Serializer.getSerializer().fromJson(reader, this.token);
-        } catch (Throwable e) {
+            T loadedObj = Serializer.getSerializer().fromJson(reader, this.token);
+            return loadedObj != null ? loadedObj : this.defaultObj.get();
+        } catch (Exception e) {
             CommonUtils.LOGGER.warn("Failed to read {}!", this, e);
             return this.defaultObj.get();
         }
     }
 
     public boolean save() {
-        T obj = getObj(); // Block before writer
+        T obj = getObj(); // Block before a writer
         try (BufferedWriter writer = Files.newBufferedWriter(this.path)) {
             Serializer.getSerializer().toJson(obj, this.token.getType(), writer);
-
             writer.flush();
 
-            CommonUtils.LOGGER.warn("{} saved!", this);
+            CommonUtils.LOGGER.debug("{} saved!", this);
             return true;
         } catch (Throwable e) {
             CommonUtils.LOGGER.warn("Failed to save {}!", this, e);
-
             return false;
         }
     }
 
-    public static void reload(Consumer<BaseCache<?>> callback, boolean read) {
-        for (BaseCache<?> cache : BaseCache.TRACKED_CACHES.values()) {
-            if (cache.reload(read) && callback != null) {
-                callback.accept(cache);
-            }
+    public static void reloadAll(boolean read) {
+        for (BaseCache<?> cache : TRACKED_CACHES.values()) {
+            cache.reload(read);
         }
     }
 

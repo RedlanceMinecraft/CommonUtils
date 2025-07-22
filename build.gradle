@@ -42,6 +42,7 @@ dependencies {
         exclude(group: "org.jspecify")
     }
 
+    implementation api("dev.kosmx.player-anim:anim-core:2.0.3.2+1.21.5") // https://github.com/dima-dencep/minecraftPlayerAnimator/commit/0cf079b4707e4cbc11935429abbcb4e0b613475b
     implementation api("io.github.kosmx.emotes:emotesAssets:${project.emotecraft_version}")
     implementation api("io.github.kosmx.emotes:emotesServer:${project.emotecraft_version}") {
         exclude(group: "com.google.code.gson")

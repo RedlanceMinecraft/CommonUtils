@@ -35,8 +35,8 @@ public class MojangRequester {
                 .build();
 
         BaseMojangProfile profile = Requester.sendRequest(request, BaseMojangProfile.class);
-        if (profile.errorMessage != null) {
-            throw new InterruptedException(profile.errorMessage);
+        if (profile.errorMessage() != null) {
+            throw new InterruptedException(profile.errorMessage());
         }
 
         return profile;
@@ -44,23 +44,19 @@ public class MojangRequester {
 
     public static String getIdByName(String name) throws IOException, InterruptedException {
         BaseMojangProfile response = getBaseByName(name.trim());
-        if (response.id == null) return null;
-        return MojangUtils.parseUuid(response.id).toString();
+        if (response.id() == null) return null;
+        return MojangUtils.toString(response.uuid());
     }
 
     public static Optional<MojangProfile> getMojangProfileByName(String name) {
         try {
             BaseMojangProfile response = getBaseByName(name.trim());
-            if (response.id == null) {
-                return Optional.empty();
-            }
-
-            return getMojangProfileById(response.id);
+            if (response.id() == null) return Optional.empty();
+            return getMojangProfileById(response.id());
         } catch (Throwable throwable) {
             CommonUtils.LOGGER.warn("Failed to send request!", throwable);
+            return Optional.empty();
         }
-
-        return Optional.empty();
     }
 
     public static Optional<MojangProfile> getMojangProfileById(String uuid) throws IOException, InterruptedException {

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+@SuppressWarnings("unused")
 public class SPWPublicRequester {
     public static Optional<MojangProfile> getMojangProfile(List<String> cards, long discordId) {
         return Requester.prepareParallelRequests(cards.stream(), card -> {
@@ -38,10 +39,7 @@ public class SPWPublicRequester {
                 .build();
 
         BaseMojangProfile response = Requester.sendRequest(request, BaseMojangProfile.class);
-        if (response.id == null) {
-            return Optional.empty();
-        }
-
-        return MojangRequester.getMojangProfileById(response.id);
+        if (response.id() == null) return Optional.empty();
+        return MojangRequester.getMojangProfileById(response.id());
     }
 }

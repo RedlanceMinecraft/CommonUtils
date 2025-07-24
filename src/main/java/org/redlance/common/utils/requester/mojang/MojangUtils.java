@@ -39,7 +39,7 @@ import java.util.UUID;
  * methods, which ought to be faster than a String.replace().
  */
 public class MojangUtils {
-    private static final int MOJANG_BROKEN_UUID_LENGTH = 32;
+    public static final int MOJANG_BROKEN_UUID_LENGTH = 32;
 
     private static final char[] HEX_DIGITS =
             new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };

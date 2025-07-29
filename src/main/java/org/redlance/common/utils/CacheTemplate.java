@@ -7,7 +7,6 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
@@ -60,14 +59,9 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     }
 
     public Optional<K> getKeyByValue(Object value) {
-        return getKeyByValue(value, kvEntry -> true);
-    }
-
-    public Optional<K> getKeyByValue(Object value, Predicate<Map.Entry<K, V>> predicate) {
         if (value == null) return Optional.empty();
         return getObj().entrySet().stream()
                 .filter(entry -> value.equals(entry.getValue()))
-                .filter(predicate)
                 .map(Map.Entry::getKey)
                 .findFirst();
     }

@@ -5,8 +5,8 @@ import io.github.kosmx.emotes.server.config.Serializer;
 import io.github.kosmx.emotes.server.services.InstanceService;
 import org.redlance.common.CommonUtils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -126,7 +126,7 @@ public class BaseCache<T> {
     public T read() {
         if (!Files.exists(this.path)) return this.defaultObj.get();
 
-        try (BufferedReader reader = Files.newBufferedReader(this.path)) {
+        try (Reader reader = new InputStreamReader(Files.newInputStream(this.path), StandardCharsets.UTF_8)) {
             T loadedObj = Serializer.getSerializer().fromJson(reader, this.token);
             return loadedObj != null ? loadedObj : this.defaultObj.get();
         } catch (Exception e) {
@@ -137,7 +137,7 @@ public class BaseCache<T> {
 
     public boolean save() {
         T obj = getObj(); // Block before a writer
-        try (BufferedWriter writer = Files.newBufferedWriter(this.path)) {
+        try (Writer writer = new OutputStreamWriter(Files.newOutputStream(this.path), StandardCharsets.UTF_8)) {
             Serializer.getSerializer().toJson(obj, this.token.getType(), writer);
             writer.flush();
 

@@ -25,7 +25,7 @@ import java.util.Optional;
 @SuppressWarnings("unused")
 public class MojangRequester {
     public static final CacheControl CACHE_CONTROL = CacheControl.newBuilder()
-            .maxAge(Duration.ofHours(1))
+            .maxAge(Duration.ofDays(1))
             .build();
 
     public static BaseMojangProfile getBaseByName(String name) throws IOException, InterruptedException {

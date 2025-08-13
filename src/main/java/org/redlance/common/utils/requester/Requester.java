@@ -4,6 +4,7 @@ import com.github.mizosoft.methanol.*;
 import com.github.mizosoft.methanol.adapter.gson.GsonAdapterFactory;
 import com.github.mizosoft.methanol.internal.Utils;
 import io.github.kosmx.emotes.server.config.Serializer;
+import io.github.kosmx.emotes.server.services.InstanceService;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.LambdaExceptionUtils;
 import org.redlance.common.utils.requester.interceptors.CacheOverrideInterceptor;
@@ -33,7 +34,7 @@ public class Requester {
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .cache(HttpCache.newBuilder()
                     .executor(CommonUtils.createExecutor("http-cache-"))
-                    .cacheOnMemory(1024 * 1024 * 1024) // 1024 MBs
+                    .cacheOnDisk(InstanceService.INSTANCE.getGameDirectory().resolve("httpcache"), 1024 * 1024 * 1024) // 1024 MBs
                     .listener(new HttpCache.Listener() {
                         @Override
                         public void onNetworkUse(HttpRequest request, TrackedResponse<?> cacheResponse) {

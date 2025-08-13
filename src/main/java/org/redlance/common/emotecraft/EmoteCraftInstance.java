@@ -8,6 +8,7 @@ import io.github.kosmx.emotes.common.SerializableConfig;
 import io.github.kosmx.emotes.server.config.ConfigSerializer;
 import io.github.kosmx.emotes.server.config.Serializer;
 import org.redlance.common.CommonUtils;
+import org.redlance.common.emotecraft.serializer.CompletableFutureAdapterFactory;
 import org.redlance.common.emotecraft.serializer.FastAnimationSerializer;
 
 import java.util.function.Consumer;
@@ -29,6 +30,7 @@ public class EmoteCraftInstance {
             @Override
             protected Gson initializeSerializer(GsonBuilder builder) {
                 builder.registerTypeAdapter(KeyframeAnimation.class, FastAnimationSerializer.INSTANCE);
+                builder.registerTypeAdapterFactory(new CompletableFutureAdapterFactory());
                 return super.initializeSerializer(builder);
             }
         };

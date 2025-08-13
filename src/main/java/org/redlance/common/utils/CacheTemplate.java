@@ -3,10 +3,12 @@ package org.redlance.common.utils;
 import com.google.gson.reflect.TypeToken;
 import org.redlance.common.utils.cache.BaseCache;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
@@ -59,9 +61,13 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     }
 
     public Optional<K> getKeyByValue(Object value) {
+        return getKeyByValue(value, null);
+    }
+
+    public Optional<K> getKeyByValue(Object value, @Nullable Predicate<Map.Entry<K, V>> predicate) {
         if (value == null) return Optional.empty();
         return getObj().entrySet().stream()
-                .filter(entry -> value.equals(entry.getValue()))
+                .filter(entry -> value.equals(entry.getValue()) && (predicate == null || predicate.test(entry)))
                 .map(Map.Entry::getKey)
                 .findFirst();
     }

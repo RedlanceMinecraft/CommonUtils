@@ -90,8 +90,8 @@ public class Requester {
                 .thenApply(HttpResponse::body);
     }
 
-    public static void sendRequestVoid(HttpRequest httpRequest) throws IOException, InterruptedException {
-        Requester.HTTP_CLIENT.send(httpRequest, HttpResponse.BodyHandlers.discarding());
+    public static HttpResponse<Void> sendRequestVoid(HttpRequest httpRequest) throws IOException, InterruptedException {
+        return Requester.HTTP_CLIENT.send(httpRequest, HttpResponse.BodyHandlers.discarding());
     }
 
     public static void sendRequestVoidAsync(HttpRequest httpRequest) {

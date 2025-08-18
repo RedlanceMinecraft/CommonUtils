@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+@SuppressWarnings("unused")
 public class UrlProxySelector extends ProxySelector {
-    protected static final InetSocketAddress LOCAL_VLESS = InetSocketAddress.createUnresolved("192.168.0.101", 25564);
     protected static final List<Proxy> NO_PROXY_LIST = List.of(Proxy.NO_PROXY);
 
     public static final UrlProxySelector INSTANCE = new UrlProxySelector();
@@ -40,10 +40,6 @@ public class UrlProxySelector extends ProxySelector {
         }
 
         return proxies;
-    }
-
-    public Proxy registerDomainPredicateToLocal(String domain) {
-        return registerDomainPredicate(domain, new Proxy(Proxy.Type.HTTP, UrlProxySelector.LOCAL_VLESS));
     }
 
     public Proxy registerDomainPredicate(String domain, InetSocketAddress address) {

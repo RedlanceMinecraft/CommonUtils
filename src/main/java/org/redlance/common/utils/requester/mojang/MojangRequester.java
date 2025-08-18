@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.UUID;
 
 @SuppressWarnings("unused")
 public class MojangRequester {
@@ -57,6 +58,10 @@ public class MojangRequester {
             CommonUtils.LOGGER.warn("Failed to send request!", throwable);
             return Optional.empty();
         }
+    }
+
+    public static Optional<MojangProfile> getMojangProfileById(UUID uuid) throws IOException, InterruptedException {
+        return getMojangProfileById(MojangUtils.toString(uuid));
     }
 
     public static Optional<MojangProfile> getMojangProfileById(String uuid) throws IOException, InterruptedException {

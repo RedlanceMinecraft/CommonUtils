@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.interceptors;
+/*package org.redlance.common.utils.requester.interceptors;
 
 import com.github.mizosoft.methanol.Methanol;
 import org.redlance.common.utils.requester.Requester;
@@ -15,17 +15,17 @@ import java.util.concurrent.CompletableFuture;
 public class CookieFixerInterceptor implements Methanol.Interceptor {
     @Override
     public <T> HttpResponse<T> intercept(HttpRequest request, Chain<T> chain) throws IOException, InterruptedException {
-        downgradleCookies(request);
+        downgradeCookies(request);
         return chain.forward(request);
     }
 
     @Override
     public <T> CompletableFuture<HttpResponse<T>> interceptAsync(HttpRequest request, Chain<T> chain) {
-        downgradleCookies(request);
+        downgradeCookies(request);
         return chain.forwardAsync(request);
     }
 
-    private void downgradleCookies(HttpRequest request) {
+    private void downgradeCookies(HttpRequest request) {
         CookieHandler handler = Requester.HTTP_CLIENT.cookieHandler().orElse(null);
 
         if (handler instanceof CookieManager manager) {
@@ -36,4 +36,4 @@ public class CookieFixerInterceptor implements Methanol.Interceptor {
             }
         }
     }
-}
+}*/

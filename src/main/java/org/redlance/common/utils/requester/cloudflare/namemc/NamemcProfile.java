@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.cloudflare.namemc;
+/*package org.redlance.common.utils.requester.cloudflare.namemc;
 
 import org.redlance.common.utils.requester.cloudflare.namemc.generic.NameHistoryEntry;
 import webGrude.mapping.annotations.Page;
@@ -53,4 +53,4 @@ public class NamemcProfile {
     public String toString() {
         return String.format("NamemcProfile{name=%s, info=%s, nameHistory=%s}", username, info, nameHistory);
     }
-}
+}*/

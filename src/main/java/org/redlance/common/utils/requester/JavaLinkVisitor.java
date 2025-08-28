@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester;
+/*package org.redlance.common.utils.requester;
 
 import webGrude.OkHttpBrowser;
 import webGrude.http.GetException;
@@ -26,4 +26,4 @@ public class JavaLinkVisitor extends OkHttpBrowser {
             throw new GetException(e, url);
         }
     }
-}
+}*/

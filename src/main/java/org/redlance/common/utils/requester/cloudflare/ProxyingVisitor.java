@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.cloudflare;
+/*package org.redlance.common.utils.requester.cloudflare;
 
 import com.github.mizosoft.methanol.MediaType;
 import com.github.mizosoft.methanol.Methanol;
@@ -44,4 +44,4 @@ public class ProxyingVisitor extends JavaLinkVisitor {
     }
 
     public record ProxyResponse(String source, int code) { }
-}
+}*/

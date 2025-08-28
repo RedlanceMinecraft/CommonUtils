@@ -25,10 +25,10 @@ public class BaseCache<T> {
     private static final Map<Path, BaseCache<?>> TRACKED_CACHES = new ConcurrentHashMap<>();
 
     static {
-        CommonUtils.LOGGER.debug("Added cache saving hook!");
+        CommonUtils.LOGGER.debug("Added json cache saving hook!");
         Runnable saveAllDirtyCaches = () -> reloadAll(false);
         BaseCache.CACHE_SAVER.scheduleAtFixedRate(saveAllDirtyCaches, 30L, 30L, TimeUnit.SECONDS);
-        Runtime.getRuntime().addShutdownHook(new Thread(saveAllDirtyCaches, "CacheSaveThread"));
+        Runtime.getRuntime().addShutdownHook(new Thread(saveAllDirtyCaches, "json-cache-saver"));
     }
 
     private final List<Consumer<BaseCache<T>>> listeners = new CopyOnWriteArrayList<>();

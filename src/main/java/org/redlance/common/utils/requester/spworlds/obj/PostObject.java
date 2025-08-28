@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.spworlds.obj;
+/*package org.redlance.common.utils.requester.spworlds.obj;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -14,4 +14,4 @@ public class PostObject {
     public int upvotes;
     public int downvotes;
     public boolean isAd;
-}
+}*/

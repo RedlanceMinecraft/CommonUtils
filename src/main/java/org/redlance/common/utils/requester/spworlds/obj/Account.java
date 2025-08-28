@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.spworlds.obj;
+/*package org.redlance.common.utils.requester.spworlds.obj;
 
 import org.redlance.common.utils.requester.mojang.obj.BaseMojangProfile;
 
@@ -21,4 +21,4 @@ public class Account {
     public int hashCode() {
         return this.id.hashCode();
     }
-}
+}*/

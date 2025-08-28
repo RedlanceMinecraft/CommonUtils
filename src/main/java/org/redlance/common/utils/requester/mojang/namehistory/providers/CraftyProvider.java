@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.mojang.namehistory.providers;
+/*package org.redlance.common.utils.requester.mojang.namehistory.providers;
 
 import com.github.mizosoft.methanol.MutableRequest;
 import org.redlance.common.utils.requester.Requester;
@@ -16,7 +16,7 @@ import java.util.List;
  * Uses <a href="https://crafty.gg/">crafty.gg</a> to get nickname changes.
  * Thank them so much!
  */
-public class CraftyProvider implements INameProvider {
+/*public class CraftyProvider implements INameProvider {
     @Override
     public List<Username> getNameHistoryByName(String name) throws IOException, InterruptedException {
         HttpRequest request = MutableRequest.create()
@@ -36,4 +36,4 @@ public class CraftyProvider implements INameProvider {
     public List<Username> getNameHistoryById(String uuid) throws IOException, InterruptedException {
         return getNameHistoryByName(uuid);
     }
-}
+}*/

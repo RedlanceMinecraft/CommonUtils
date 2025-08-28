@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.mojang.namehistory.obj;
+/*package org.redlance.common.utils.requester.mojang.namehistory.obj;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -38,4 +38,4 @@ public class Username {
     public int hashCode() {
         return this.name.hashCode();
     }
-}
+}*/

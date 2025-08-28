@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.mojang.namehistory;
+/*package org.redlance.common.utils.requester.mojang.namehistory;
 
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
@@ -17,4 +17,4 @@ public interface INameProvider {
             return Serializer.getSerializer().fromJson(object, Response.class);
         }
     }
-}
+}*/

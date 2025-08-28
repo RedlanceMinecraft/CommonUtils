@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.spworlds.obj;
+/*package org.redlance.common.utils.requester.spworlds.obj;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -41,4 +41,4 @@ public class GroupObject {
     public int hashCode() {
         return this.id.hashCode();
     }
-}
+}*/

@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.mojang.namehistory.providers;
+/*package org.redlance.common.utils.requester.mojang.namehistory.providers;
 
 import com.github.mizosoft.methanol.MutableRequest;
 import org.redlance.common.utils.requester.Requester;
@@ -17,7 +17,7 @@ import java.util.List;
  * More intended for users of labymod itself...
  * Thank them so much!
  */
-public class LabyProvider implements INameProvider {
+/*public class LabyProvider implements INameProvider {
     @Override
     public List<Username> getNameHistoryByName(String name) throws IOException, InterruptedException {
         return getNameHistoryById(MojangRequester.getIdByName(name));
@@ -37,4 +37,4 @@ public class LabyProvider implements INameProvider {
 
         return response.usernames();
     }
-}
+}*/

@@ -21,9 +21,9 @@ dependencies {
     implementation api("com.github.mizosoft.methanol:methanol-gson:${project.methanol_version}") {
         exclude(group: "com.google.code.gson")
     }
-    implementation api("com.github.beothorn:webGrude:5.0.0") {
+    /*implementation api("com.github.beothorn:webGrude:5.0.0") {
         exclude(group: "com.squareup.okhttp3")
-    }
+    }*/
 
     implementation api("org.apache.logging.log4j:log4j-api:${project.log4j_version}")
     implementation "org.apache.logging.log4j:log4j-core:${project.log4j_version}"

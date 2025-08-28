@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.cloudflare.namemc.generic;
+/*package org.redlance.common.utils.requester.cloudflare.namemc.generic;
 
 import webGrude.mapping.annotations.Selector;
 
@@ -15,4 +15,4 @@ public class NameHistoryEntry {
     public String toString() {
         return String.format("NameHistoryEntry{username=%s, changedAt=%s}", username, changedAt);
     }
-}
+}*/

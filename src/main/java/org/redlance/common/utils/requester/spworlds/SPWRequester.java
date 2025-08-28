@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.spworlds;
+/*package org.redlance.common.utils.requester.spworlds;
 
 import com.github.mizosoft.methanol.MediaType;
 import com.github.mizosoft.methanol.MoreBodyPublishers;
@@ -98,4 +98,4 @@ public class SPWRequester {
 
         Requester.sendRequestVoid(request);
     }
-}
+}*/

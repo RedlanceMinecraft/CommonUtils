@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.interceptors;
+/*package org.redlance.common.utils.requester.interceptors;
 
 import com.github.mizosoft.methanol.Methanol;
 import com.github.mizosoft.methanol.MutableRequest;
@@ -82,4 +82,4 @@ public class FallbackInterceptor implements Methanol.Interceptor {
     public static URI replaceDomain(URI originalUri, String newHost) throws URISyntaxException {
         return new URI(originalUri.getScheme(), originalUri.getUserInfo(), newHost, originalUri.getPort(), originalUri.getPath(), originalUri.getQuery(), originalUri.getFragment());
     }
-}
+}*/

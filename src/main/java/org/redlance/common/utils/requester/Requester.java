@@ -8,8 +8,6 @@ import io.github.kosmx.emotes.server.services.InstanceService;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.LambdaExceptionUtils;
 import org.redlance.common.utils.requester.interceptors.CacheOverrideInterceptor;
-import org.redlance.common.utils.requester.interceptors.CookieFixerInterceptor;
-import org.redlance.common.utils.requester.interceptors.FallbackInterceptor;
 
 import java.io.IOException;
 import java.net.CookieManager;
@@ -43,16 +41,23 @@ public class Requester {
                     })
                     .build()
             )
-            .interceptor(new CookieFixerInterceptor())
-            .interceptor(new FallbackInterceptor())
+            // .interceptor(new CookieFixerInterceptor())
+            // .interceptor(new FallbackInterceptor())
             .backendInterceptor(new CacheOverrideInterceptor())
-            .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
+            .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36")
             .cookieHandler(new CookieManager())
             .adapterCodec(AdapterCodec.newBuilder()
                     .decoder(GsonAdapterFactory.createDecoder(Serializer.getSerializer()))
                     .encoder(GsonAdapterFactory.createEncoder(Serializer.getSerializer()))
                     .build())
             .build();
+
+    static {
+        CommonUtils.LOGGER.debug("Added http cache saving hook!");
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> Requester.HTTP_CLIENT.caches().forEach(
+                LambdaExceptionUtils.rethrowConsumer(HttpCache::close)
+        ), "http-cache-saver"));
+    }
 
     public static <T> T sendRequest(HttpRequest httpRequest, Class<T> type) throws IOException, InterruptedException {
         return Requester.HTTP_CLIENT // send request
@@ -115,7 +120,7 @@ public class Requester {
 
     private static final ExecutorService PARALLEL_REQUESTER = CommonUtils.createExecutor("parallel-requester-");
     public static <R, T> Stream<R> prepareParallelRequests(Stream<T> requests, Function<? super T, R> mapper) {
-        return requests.map(request -> Requester.PARALLEL_REQUESTER.submit(
+        return requests.map(request -> Requester.PARALLEL_REQUESTER.submit( // TODO rewrite with java 25
                 () -> mapper.apply(request)
         )).map(LambdaExceptionUtils.rethrowFunction((Future::get)));
     }

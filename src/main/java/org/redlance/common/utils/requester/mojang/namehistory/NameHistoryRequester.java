@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.mojang.namehistory;
+/*package org.redlance.common.utils.requester.mojang.namehistory;
 
 import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.requester.Requester;
@@ -69,4 +69,4 @@ public class NameHistoryRequester implements INameProvider {
     protected INameProvider getProviderByClass(Class<? extends INameProvider> clazz) {
         return this.providers.get(clazz);
     }
-}
+}*/

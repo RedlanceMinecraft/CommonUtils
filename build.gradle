@@ -31,7 +31,7 @@ dependencies {
     runtimeOnly "com.lmax:disruptor:4.0.0"
 
     implementation api("commons-io:commons-io:2.20.0")
-    implementation api("com.google.code.gson:gson:2.13.1") {
+    implementation api("com.google.code.gson:gson:2.13.2") {
         exclude(group: "com.google.errorprone")
     }
     implementation api("net.kyori:adventure-api:${project.adventure_version}")

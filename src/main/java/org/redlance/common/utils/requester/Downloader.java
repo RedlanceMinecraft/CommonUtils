@@ -19,15 +19,15 @@ public class Downloader {
             .bytesTransferredThreshold(1024 * 1024) // 1024 kB
             .build();
 
-    public static InputStream download(String uri) throws IOException, InterruptedException {
+    public static InputStream download(URI uri) throws IOException, InterruptedException {
         return Downloader.download(uri, Downloader::onProgress);
     }
 
-    public static InputStream download(String uri, ProgressTracker.Listener listener) throws IOException, InterruptedException {
+    public static InputStream download(URI uri, ProgressTracker.Listener listener) throws IOException, InterruptedException {
         CommonUtils.LOGGER.debug("Downloading {}...", uri);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(uri))
+                .uri(uri)
                 .build();
 
         HttpResponse<InputStream> response = Requester.HTTP_CLIENT.send(request, TRACKER.tracking(HttpResponse.BodyHandlers.ofInputStream(), listener));
@@ -38,11 +38,11 @@ public class Downloader {
         return response.body();
     }
 
-    public static InputStream downloadImage(String uri) throws IOException, InterruptedException {
+    public static InputStream downloadImage(URI uri) throws IOException, InterruptedException {
         return downloadImage(uri, 256, 256);
     }
 
-    public static InputStream downloadImage(String uri, int width, int height) throws IOException, InterruptedException {
+    public static InputStream downloadImage(URI uri, int width, int height) throws IOException, InterruptedException {
         try (InputStream body = download(uri)) {
             byte[] resized = resizeImage(body, width, height);
 

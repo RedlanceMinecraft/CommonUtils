@@ -6,6 +6,7 @@ import org.redlance.common.utils.requester.Downloader;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Map;
 
 @SuppressWarnings("unused")
@@ -28,11 +29,11 @@ public record MojangProfile(long timestamp, String profileId, String profileName
 
     public record Texture(String url, Map<String, String> metadata) {
         public InputStream downloadTexture() throws IOException, InterruptedException {
-            return Downloader.download(this.url);
+            return Downloader.download(URI.create(this.url));
         }
 
         public InputStream downloadTexture(int width, int height) throws IOException, InterruptedException {
-            return Downloader.downloadImage(this.url, width, height);
+            return Downloader.downloadImage(URI.create(this.url), width, height);
         }
 
         public boolean isSlim() {

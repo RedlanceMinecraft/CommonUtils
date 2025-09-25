@@ -124,7 +124,8 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
         try (BufferedReader reader = new BufferedReader(new CharSequenceReader(data))) {
-            for (String line : reader.lines().toList()) {
+            String line;
+            while ((line = reader.readLine()) != null) {
                 InboundAuthMessage authMessage = Serializer.getSerializer().fromJson(line, InboundAuthMessage.class);
 
                 if (authMessage.id() > 0) { // replied

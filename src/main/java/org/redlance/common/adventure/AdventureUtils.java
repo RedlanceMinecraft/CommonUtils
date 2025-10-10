@@ -22,11 +22,11 @@ public class AdventureUtils {
     public static @NotNull TextComponent parseLegacy(@NotNull String string) {
         string = string.replace("\"", "").trim();
 
-        if (string.contains("&")) {
-            return LegacyComponentSerializer.legacyAmpersand().deserialize(string);
-
-        } else if (string.contains("§")) {
+        if (string.contains("§")) {
             return LegacyComponentSerializer.legacySection().deserialize(string);
+
+        } else if (string.contains("&")) {
+            return LegacyComponentSerializer.legacyAmpersand().deserialize(string);
 
         } else {
             return Component.text(string);

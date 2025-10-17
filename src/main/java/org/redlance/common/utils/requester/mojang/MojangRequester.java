@@ -5,6 +5,7 @@ import com.github.mizosoft.methanol.MutableRequest;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.github.kosmx.emotes.server.config.Serializer;
+import org.jetbrains.annotations.Nullable;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.requester.Requester;
 import org.redlance.common.utils.requester.mojang.obj.BaseMojangProfile;
@@ -43,10 +44,10 @@ public class MojangRequester {
         return profile;
     }
 
-    public static String getIdByName(String name) throws IOException, InterruptedException {
+    public static @Nullable UUID getIdByName(String name) throws IOException, InterruptedException {
         BaseMojangProfile response = getBaseByName(name.trim());
         if (response.id() == null) return null;
-        return MojangUtils.toString(response.uuid());
+        return response.uuid();
     }
 
     public static Optional<MojangProfile> getMojangProfileByName(String name) {

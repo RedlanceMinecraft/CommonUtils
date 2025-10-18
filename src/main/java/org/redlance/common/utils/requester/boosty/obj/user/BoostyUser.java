@@ -1,5 +1,6 @@
 package org.redlance.common.utils.requester.boosty.obj.user;
 
+import org.redlance.common.utils.requester.Chunker;
 import org.redlance.common.utils.requester.boosty.BoostyRequester;
 
 import java.time.Clock;
@@ -11,8 +12,8 @@ import java.util.Objects;
 public class BoostyUser {
     /**
      * If you can write to this user.
-     * Accessible only through {@link BoostyRequester#requestSubscribers(String, String, int)},
-     * {@link BoostyRequester#requestPostSales(String, String)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)},
+     * {@link BoostyRequester#requestPostSalesChunking(Chunker, String, String)} (String, String)}
      */
     public boolean canWrite;
 
@@ -35,7 +36,7 @@ public class BoostyUser {
     /**
      * Unique user id.
      */
-    public int id;
+    public long id;
 
     /**
      * true if a user has a blog page.
@@ -44,49 +45,60 @@ public class BoostyUser {
     public boolean isBlogger;
 
     /**
+     * Link to user's blog (if available)
+     * Accessible only through {@link BoostyRequester#requestUserProfile(String, String, int)}
+     */
+    public String blogUrl;
+
+    /**
      * User name.
      */
     public String name;
 
     /**
      * true if the user is on **your** blacklist.
-     * Accessible only through {@link BoostyRequester#requestSubscribers(String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)} (String, String, int)}
      */
     public boolean isBlackListed;
 
     /**
+     * Was the fee paid off when purchasing subscription?
+     */
+    public boolean isFeePaid;
+
+    /**
      * User subscription level.
-     * Accessible only through {@link BoostyRequester#requestSubscribers(String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)} (String, String, int)}
      */
     public SubscriptionLevel level;
 
     /**
      * The date when the next payment is due if the user has an active subscription.
-     * Accessible only through {@link BoostyRequester#requestSubscribers(String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)} (String, String, int)}
      */
     public long nextPayTime;
 
     /**
      * Date when the user bought the last subscription.
-     * Accessible only through {@link BoostyRequester#requestSubscribers(String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)}
      */
     public long onTime;
 
     /**
      * Date when subscription will end, set only if user canceled auto-renewal.
-     * Accessible only through {@link BoostyRequester#requestSubscribers(String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)}
      */
     public long offTime;
 
     /**
      * Amount paid by the user for the entire time.
-     * Accessible only through {@link BoostyRequester#requestSubscribers(String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)}
      */
     public double payments;
 
     /**
      * The amount for which the user purchased the subscription.
-     * Accessible only through {@link BoostyRequester#requestSubscribers(String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)}
      */
     public int price;
 
@@ -97,7 +109,7 @@ public class BoostyUser {
 
     /**
      * true if the user is subscribed right now, also see {@link #isSubscribed()}
-     * Accessible only through {@link BoostyRequester#requestSubscribers(String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)}
      */
     public boolean subscribed;
 
@@ -106,6 +118,12 @@ public class BoostyUser {
      * Accessible only through {@link BoostyRequester#requestUserProfile(String, String, int)}
      */
     public Map<String, ExternalApp> externalApps = new HashMap<>();
+
+    /**
+     * User subscription status
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)}
+     */
+    public SubscribeStatus status;
 
     /**
      * Checks the user's subscription, and also checks the time.

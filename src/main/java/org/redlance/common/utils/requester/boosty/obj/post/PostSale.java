@@ -11,12 +11,17 @@ public class PostSale {
     /**
      * Date the post was created.
      */
-    public int createdAt;
+    public long createdAt;
+
+    /**
+     * Was the fee paid off when purchasing?
+     */
+    public boolean isFeePaid;
 
     /**
      * Id of post creator.
      */
-    public int bloggerId;
+    public long bloggerId;
 
     /**
      * The post itself.

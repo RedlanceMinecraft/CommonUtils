@@ -32,7 +32,7 @@ public class BoostyRequester {
 
     public static <T> T requestPostSalesChunking(Chunker<T, PostSales> chunker, String blog, String token) throws IOException, InterruptedException {
         return Chunker.sendChunkingRequest(chunker, paginator -> {
-            String url = String.format("https://api.boosty.to/v1/blog/%s/sales/post/?limit=300&offset=%s",
+            String url = String.format("https://api.boosty.to/v1/blog/%s/sales/post/?limit=300&offset=%s&sort_by=time&order=gt",
                     blog, paginator == null ? 0 : paginator.offset()
             );
 
@@ -56,7 +56,7 @@ public class BoostyRequester {
 
     public static <T> T requestSubscribersChunking(Chunker<T, List<BoostyUser>> chunker, String blog, String token, int levelId) throws IOException, InterruptedException {
         return Chunker.sendChunkingRequest(chunker, paginator -> {
-            String url = String.format("https://api.boosty.to/v1/blog/%s/subscribers?limit=300&is_active=true&level_ids=%s&offset=%s",
+            String url = String.format("https://api.boosty.to/v1/blog/%s/subscribers?sort_by=on_time&limit=300&is_active=true&level_ids=%s&offset=%s&order=gt",
                     blog, levelId, paginator == null ? 0 : paginator.offset()
             );
 

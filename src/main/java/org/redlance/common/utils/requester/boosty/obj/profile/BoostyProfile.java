@@ -1,5 +1,6 @@
 package org.redlance.common.utils.requester.boosty.obj.profile;
 
+import com.google.gson.annotations.SerializedName;
 import org.redlance.common.utils.requester.boosty.obj.user.BoostyUser;
 
 public class BoostyProfile {
@@ -31,6 +32,7 @@ public class BoostyProfile {
     /**
      * User subscription level.
      */
+    @SerializedName(value = "level", alternate = "subscription")
     public Subscription level;
 
     /**

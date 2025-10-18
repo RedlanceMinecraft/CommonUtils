@@ -24,7 +24,7 @@ public class Subscription {
     public long offTime;
 
     /**
-     * SubscriptionLevel status, can be: suspended, active, expired.
+     * SubscriptionLevel status, can be: suspended, active, expired, renewal_canceled.
      */
     public String status;
 

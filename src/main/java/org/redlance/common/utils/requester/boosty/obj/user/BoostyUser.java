@@ -12,7 +12,7 @@ import java.util.Objects;
 public class BoostyUser {
     /**
      * If you can write to this user.
-     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)},
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, long)},
      * {@link BoostyRequester#requestPostSalesChunking(Chunker, String, String)} (String, String)}
      */
     public boolean canWrite;
@@ -40,13 +40,13 @@ public class BoostyUser {
 
     /**
      * true if a user has a blog page.
-     * Accessible only through {@link BoostyRequester#requestUserProfile(String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestUserProfile(String, String, long)}
      */
     public boolean isBlogger;
 
     /**
      * Link to user's blog (if available)
-     * Accessible only through {@link BoostyRequester#requestUserProfile(String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestUserProfile(String, String, long)}
      */
     public String blogUrl;
 
@@ -57,7 +57,7 @@ public class BoostyUser {
 
     /**
      * true if the user is on **your** blacklist.
-     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)} (String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, long)}
      */
     public boolean isBlackListed;
 
@@ -68,37 +68,37 @@ public class BoostyUser {
 
     /**
      * User subscription level.
-     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)} (String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, long)}
      */
     public SubscriptionLevel level;
 
     /**
      * The date when the next payment is due if the user has an active subscription.
-     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)} (String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, long)}
      */
     public long nextPayTime;
 
     /**
      * Date when the user bought the last subscription.
-     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, long)}
      */
     public long onTime;
 
     /**
      * Date when subscription will end, set only if user canceled auto-renewal.
-     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, long)}
      */
     public long offTime;
 
     /**
      * Amount paid by the user for the entire time.
-     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, long)}
      */
     public double payments;
 
     /**
      * The amount for which the user purchased the subscription.
-     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, long)}
      */
     public int price;
 
@@ -109,19 +109,19 @@ public class BoostyUser {
 
     /**
      * true if the user is subscribed right now, also see {@link #isSubscribed()}
-     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, long)}
      */
     public boolean subscribed;
 
     /**
      * Linked social networks, currently telegram and discord are available.
-     * Accessible only through {@link BoostyRequester#requestUserProfile(String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestUserProfile(String, String, long)}
      */
     public Map<String, ExternalApp> externalApps = new HashMap<>();
 
     /**
      * User subscription status
-     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)}
+     * Accessible only through {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, long)}
      */
     public SubscribeStatus status;
 

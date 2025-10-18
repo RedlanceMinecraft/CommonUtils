@@ -45,16 +45,16 @@ public class BoostyRequester {
     }
 
     /**
-     * @deprecated Use {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, int)}
+     * @deprecated Use {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, long)}
      */
     @Deprecated(forRemoval = true)
-    public static List<BoostyUser> requestSubscribers(String blog, String token, int levelId) throws IOException, InterruptedException {
+    public static List<BoostyUser> requestSubscribers(String blog, String token, long levelId) throws IOException, InterruptedException {
         List<BoostyUser> boostyUsers = new ArrayList<>();
         requestSubscribersChunking(boostyUsers::addAll, blog, token, levelId);
         return boostyUsers;
     }
 
-    public static <T> T requestSubscribersChunking(Chunker<T, List<BoostyUser>> chunker, String blog, String token, int levelId) throws IOException, InterruptedException {
+    public static <T> T requestSubscribersChunking(Chunker<T, List<BoostyUser>> chunker, String blog, String token, long levelId) throws IOException, InterruptedException {
         return Chunker.sendChunkingRequest(chunker, paginator -> {
             String url = String.format("https://api.boosty.to/v1/blog/%s/subscribers?sort_by=on_time&limit=300&is_active=true&level_ids=%s&offset=%s&order=gt",
                     blog, levelId, paginator == null ? 0 : paginator.offset()
@@ -67,7 +67,7 @@ public class BoostyRequester {
         }, new TypeRef<BoostyLegacyPaginator<List<BoostyUser>>>() {});
     }
 
-    public static BoostyProfile requestUserProfile(String blog, String token, int userId) throws IOException, InterruptedException {
+    public static BoostyProfile requestUserProfile(String blog, String token, long userId) throws IOException, InterruptedException {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.boosty.to/v1/blog/" + blog + "/subscriber/" + userId + "/profile"))
                 .header("Authorization", "Bearer " + token)
@@ -90,7 +90,7 @@ public class BoostyRequester {
         );
     }
 
-    public static int requestUserFromDialog(String token, int dialogId) throws IOException, InterruptedException {
+    public static long requestUserFromDialog(String token, long dialogId) throws IOException, InterruptedException {
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.boosty.to/v1/dialog/" + dialogId))
                 .header("Authorization", "Bearer " + token)
@@ -107,7 +107,7 @@ public class BoostyRequester {
             throw new NullPointerException(chatmate.toString());
         }
 
-        return chatmate.get("id").getAsInt();
+        return chatmate.get("id").getAsLong();
     }
 
     public static String requestSocketToken(String token) throws IOException, InterruptedException {

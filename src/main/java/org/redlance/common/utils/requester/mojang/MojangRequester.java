@@ -44,10 +44,10 @@ public class MojangRequester {
         return profile;
     }
 
-    public static @Nullable UUID getIdByName(String name) throws IOException, InterruptedException {
+    public static @Nullable String getIdByName(String name) throws IOException, InterruptedException {
         BaseMojangProfile response = getBaseByName(name.trim());
         if (response.id() == null) return null;
-        return response.uuid();
+        return response.uuid().toString();
     }
 
     public static Optional<MojangProfile> getMojangProfileByName(String name) {

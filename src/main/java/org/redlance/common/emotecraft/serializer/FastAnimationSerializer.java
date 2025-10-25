@@ -26,10 +26,14 @@ import java.util.Base64;
 import java.util.HashMap;
 
 public class FastAnimationSerializer implements JsonDeserializer<Animation>, JsonSerializer<Animation> {
-    public static final FastAnimationSerializer INSTANCE = new FastAnimationSerializer();
+    public static final FastAnimationSerializer INSTANCE = new FastAnimationSerializer(false);
+    public static final FastAnimationSerializer DOWNGRADABLE = new FastAnimationSerializer(true);
 
-    private FastAnimationSerializer() {
-        CommonUtils.LOGGER.debug("Serializing animations via {}!", getClass().getName());
+    private final boolean downgradable;
+
+    private FastAnimationSerializer(boolean downgradable) {
+        this.downgradable = downgradable;
+        CommonUtils.LOGGER.debug("Serializing animations via {} (downgradable={})!", getClass().getName(), downgradable);
     }
 
     @Override
@@ -80,7 +84,11 @@ public class FastAnimationSerializer implements JsonDeserializer<Animation>, Jso
     }
 
     public ByteBuffer serializeToByteBuff(Animation src) throws IOException {
-        return new EmotePacket.Builder().configureToSaveEmote(src).build(Integer.MAX_VALUE, false).write();
+        return new EmotePacket.Builder()
+                .configureToSaveEmote(src)
+                .setVersion(this.downgradable ? getDowngradedHashMap(src) : new HashMap<>())
+                .build(Integer.MAX_VALUE, false)
+                .write();
     }
 
     @SuppressWarnings("unused")
@@ -99,9 +107,10 @@ public class FastAnimationSerializer implements JsonDeserializer<Animation>, Jso
             } else {
                 version.put((byte) 0, (byte) 1);
             }
-        } /*else {
+        } else {
             // TODO It may be possible to downgrade PAL versions, but for now this is not necessary.
-        }*/
+            version.remove(PacketConfig.LEGACY_ANIMATION_FORMAT);
+        }
 
         if (animation.data().has("bages")) {
             version.put((byte) 0x11, (byte) 2);

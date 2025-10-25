@@ -9,6 +9,7 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("unused")
 public class AdventureUtils {
     public static @NotNull TextComponent parseLegacy(@NotNull String string) {
         string = string.replace("\"", "").trim();

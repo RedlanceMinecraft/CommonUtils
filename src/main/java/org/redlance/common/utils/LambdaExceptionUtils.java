@@ -23,6 +23,7 @@ import java.util.function.*;
 /**
  * From stackoverflow: https://stackoverflow.com/a/27644392
  */
+@SuppressWarnings("unused")
 public class LambdaExceptionUtils {
 
     public static <E extends Exception> Runnable rethrowRunnable(Runnable_WithExceptions<E> runnable) {

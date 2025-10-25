@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+@SuppressWarnings("unused")
 public class KeyframeUtils {
     private static final List<String> KEYS = List.of(
             "head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg"

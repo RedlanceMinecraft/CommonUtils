@@ -1,4 +1,4 @@
-package org.redlance.common.utils.requester.discord;
+/*package org.redlance.common.utils.requester.discord;
 
 import com.google.gson.JsonObject;
 import org.redlance.common.utils.requester.Requester;
@@ -9,6 +9,7 @@ import java.net.URLEncoder;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 
+@SuppressWarnings("unused")
 public class DiscordRequester {
     public static String authorizeApp(String userToken, long clientId, String redirectUri) throws IOException, InterruptedException {
         return authorizeApp(userToken, clientId, "code", redirectUri, "identify");
@@ -36,4 +37,4 @@ public class DiscordRequester {
         return URI.create(obj.get("location").getAsString()).getQuery()
                 .split("=")[1];
     }
-}
+}*/

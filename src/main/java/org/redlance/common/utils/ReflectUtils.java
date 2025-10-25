@@ -7,6 +7,7 @@ import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.util.Collection;
 
+@SuppressWarnings("unused")
 public class ReflectUtils {
     private static final Unsafe UNSAFE = uncheck(() -> {
         Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
@@ -14,7 +15,7 @@ public class ReflectUtils {
         return (Unsafe) theUnsafe.get(null);
     });
 
-    @SuppressWarnings("removal")
+    @SuppressWarnings("deprecation")
     public static final MethodHandles.Lookup TRUSTED_LOOKUP = uncheck(() -> {
         Field hackfield = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
         return (MethodHandles.Lookup) UNSAFE.getObject(UNSAFE.staticFieldBase(hackfield), UNSAFE.staticFieldOffset(hackfield));

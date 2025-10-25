@@ -34,6 +34,7 @@ import java.util.function.Consumer;
 /**
  * Utilities to load resources.
  */
+@SuppressWarnings("unused")
 public class ResourceUtils {
 
     /**

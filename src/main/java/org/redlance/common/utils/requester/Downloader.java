@@ -14,6 +14,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+@SuppressWarnings("unused")
 public class Downloader {
     public static final ProgressTracker TRACKER = ProgressTracker.newBuilder()
             .bytesTransferredThreshold(1024 * 1024) // 1024 kB

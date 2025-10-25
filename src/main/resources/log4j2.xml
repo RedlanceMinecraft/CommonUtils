@@ -23,6 +23,10 @@
         <Logger level="info" name="org.apache.http"/>
         <Logger level="info" name="it.tdlight"/>
 
+        <Logger level="debug" name="io.netty.channel.uring.IoUring"/>
+        <Logger level="debug" name="io.netty.channel.kqueue.KQueue"/>
+        <Logger level="debug" name="io.netty.channel.epoll.Epoll"/>
+
         <Root level="all">
             <AppenderRef ref="Console" level="all"/>
             <AppenderRef ref="LogFile" level="info"/>

@@ -2,8 +2,7 @@ package org.redlance.common.emotecraft;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
-import io.github.kosmx.emotes.common.CommonData;
+import com.zigythebird.playeranimcore.animation.Animation;
 import io.github.kosmx.emotes.common.SerializableConfig;
 import io.github.kosmx.emotes.server.config.ConfigSerializer;
 import io.github.kosmx.emotes.server.config.Serializer;
@@ -20,16 +19,15 @@ public class EmoteCraftInstance {
     }
 
     public static <T extends SerializableConfig> T tryInitializeInstance(Supplier<T> configSuppler, Class<T> configClass, Consumer<GsonBuilder> consumer) {
-        if (CommonData.isLoaded) {
+        if (Serializer.INSTANCE != null) {
             CommonUtils.LOGGER.warn("Emotecraft is loaded multiple times, please load it only once!");
             return getConfigAs();
         }
 
-        CommonData.isLoaded = true;
         Serializer.INSTANCE = new Serializer<>(new ConfigSerializer<>(configSuppler), configClass, consumer) {
             @Override
             protected Gson initializeSerializer(GsonBuilder builder) {
-                builder.registerTypeAdapter(KeyframeAnimation.class, FastAnimationSerializer.INSTANCE);
+                builder.registerTypeAdapter(Animation.class, FastAnimationSerializer.INSTANCE);
                 builder.registerTypeAdapterFactory(new CompletableFutureAdapterFactory());
                 return super.initializeSerializer(builder);
             }

@@ -1,28 +1,25 @@
 package org.redlance.common.emotecraft;
 
-import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
+import com.zigythebird.playeranimcore.animation.Animation;
+import com.zigythebird.playeranimcore.animation.keyframe.BoneAnimation;
 
 @SuppressWarnings("unused")
 public class KeyframeUtils {
-    private static final List<String> KEYS = List.of(
+    /*private static final List<String> KEYS = List.of(
             "head", "body", "rightArm", "leftArm", "rightLeg", "leftLeg"
-    );
+    );*/
 
-    public static boolean hasEasingArgs(KeyframeAnimation animation) {
-        for (KeyframeAnimation.StateCollection collection : animation.getBodyParts().values()) {
+    public static boolean hasEasingArgs(Animation animation) {
+        return true;
+        /*for (KeyframeAnimation.StateCollection collection : animation.getBodyParts().values()) {
             if (collectionToStates(collection).anyMatch(KeyframeUtils::hasEasingArgs)) {
                 return true;
             }
         }
-        return false;
+        return false;*/
     }
 
-    public static boolean hasEasingArgs(KeyframeAnimation.StateCollection.State state) {
+    /*public static boolean hasEasingArgs(KeyframeAnimation.StateCollection.State state) {
         if (!isStateUsed(state)) return false;
         for (KeyframeAnimation.KeyFrame frame : state.getKeyFrames()) {
             if (frame.easingArg != null && !frame.easingArg.isNaN()) {
@@ -30,40 +27,42 @@ public class KeyframeUtils {
             }
         }
         return false;
-    }
+    }*/
 
-    public static boolean hasBends(KeyframeAnimation animation) {
-        for (KeyframeAnimation.StateCollection collection : animation.getBodyParts().values()) {
-            if (isStateUsed(collection.bend) || isStateUsed(collection.bendDirection)) {
+    public static boolean hasBends(Animation animation) {
+        for (BoneAnimation bone : animation.boneAnimations().values()) {
+            if (!bone.bendKeyFrames().isEmpty()) {
                 return true;
             }
         }
         return false;
     }
 
-    public static boolean hasScaling(KeyframeAnimation animation) {
-        for (KeyframeAnimation.StateCollection part : animation.getBodyParts().values()) {
+    public static boolean hasScaling(Animation animation) {
+        return true;
+        /*for (KeyframeAnimation.StateCollection part : animation.getBodyParts().values()) {
             if (!part.isScalable()) continue;
             if (isStateUsed(part.scaleX) || isStateUsed(part.scaleY) || isStateUsed(part.scaleZ)) {
                 return true;
             }
         }
 
-        return false;
+        return false;*/
     }
 
-    public static boolean hasDynamicParts(KeyframeAnimation animation) {
-        for (Map.Entry<String, KeyframeAnimation.StateCollection> entry : animation.getBodyParts().entrySet()) {
+    public static boolean hasDynamicParts(Animation animation) {
+        return true;
+        /*for (Map.Entry<String, KeyframeAnimation.StateCollection> entry : animation.getBodyParts().entrySet()) {
             if (KEYS.contains(entry.getKey())) continue;
             if (isCollectionUsed(entry.getValue())) {
                 return true;
             }
         }
 
-        return false;
+        return false;*/
     }
 
-    public static boolean isCollectionUsed(@Nullable KeyframeAnimation.StateCollection collection) {
+    /*public static boolean isCollectionUsed(@Nullable KeyframeAnimation.StateCollection collection) {
         if (collection == null) return false;
         return collectionToStates(collection).anyMatch(KeyframeUtils::isStateUsed);
     }
@@ -79,5 +78,5 @@ public class KeyframeUtils {
                 collection.bendDirection, collection.bend,
                 collection.scaleX, collection.scaleY, collection.scaleZ
         );
-    }
+    }*/
 }

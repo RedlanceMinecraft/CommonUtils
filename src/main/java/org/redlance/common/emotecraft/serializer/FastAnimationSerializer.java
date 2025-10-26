@@ -26,14 +26,19 @@ import java.util.Base64;
 import java.util.HashMap;
 
 public class FastAnimationSerializer implements JsonDeserializer<Animation>, JsonSerializer<Animation> {
-    public static final FastAnimationSerializer INSTANCE = new FastAnimationSerializer(false);
-    public static final FastAnimationSerializer DOWNGRADABLE = new FastAnimationSerializer(true);
+    public static final FastAnimationSerializer INSTANCE = new FastAnimationSerializer(false, false);
+    public static final FastAnimationSerializer DOWNGRADABLE = new FastAnimationSerializer(true, false);
+    public static final FastAnimationSerializer LEGACY = new FastAnimationSerializer(true, true);
 
     private final boolean downgradable;
+    private final boolean forcePlayerAnim;
 
-    private FastAnimationSerializer(boolean downgradable) {
+    private FastAnimationSerializer(boolean downgradable, boolean forcePlayerAnim) {
         this.downgradable = downgradable;
-        CommonUtils.LOGGER.debug("Serializing animations via {} (downgradable={})!", getClass().getName(), downgradable);
+        this.forcePlayerAnim = forcePlayerAnim;
+        CommonUtils.LOGGER.debug("Serializing animations via {} (downgradable={}, forcePlayerAnim={})!",
+                getClass().getName(), downgradable, forcePlayerAnim
+        );
     }
 
     @Override
@@ -46,21 +51,18 @@ public class FastAnimationSerializer implements JsonDeserializer<Animation>, Jso
         }
     }
 
-    public Animation serialize(String src) throws IOException {
+    public static Animation serialize(String src) throws IOException {
         return serialize(Base64.getDecoder().decode(src));
     }
 
-    public Animation serialize(byte[] src) throws IOException {
+    public static Animation serialize(byte[] src) throws IOException {
         try (InputStream is = new ByteArrayInputStream(src)) {
             NetData data = new EmotePacket.Builder()
                     .strictSizeLimit(false)
                     .build()
                     .read(MathHelper.readFromIStream(is));
 
-            if (data.purpose != PacketTask.FILE) {
-                throw new IllegalStateException("Binary emote is invalid!");
-            }
-
+            if (data.purpose != PacketTask.FILE) throw new IllegalStateException("Binary emote is invalid!");
             return data.emoteData;
         }
     }
@@ -68,34 +70,34 @@ public class FastAnimationSerializer implements JsonDeserializer<Animation>, Jso
     @Override
     public JsonElement serialize(Animation src, Type type, JsonSerializationContext context) {
         try {
-            return context.serialize(serializeToString(src), String.class);
+            return context.serialize(serializeToString(src, this.downgradable, this.forcePlayerAnim), String.class);
         } catch (Throwable e) {
             CommonUtils.LOGGER.error("Failed to serialize animation {}!", src, e);
             return JsonNull.INSTANCE;
         }
     }
 
-    public String serializeToString(Animation src) throws IOException {
-        return Base64.getEncoder().encodeToString(serializeToBytes(src));
+    public static String serializeToString(Animation src, boolean downgradable, boolean forcePlayerAnim) throws IOException {
+        return Base64.getEncoder().encodeToString(serializeToBytes(src, downgradable, forcePlayerAnim));
     }
 
-    public byte[] serializeToBytes(Animation src) throws IOException {
-        return AbstractNetworkInstance.safeGetBytesFromBuffer(serializeToByteBuff(src));
+    public static byte[] serializeToBytes(Animation src, boolean downgradable, boolean forcePlayerAnim) throws IOException {
+        return AbstractNetworkInstance.safeGetBytesFromBuffer(serializeToByteBuff(src, downgradable, forcePlayerAnim));
     }
 
-    public ByteBuffer serializeToByteBuff(Animation src) throws IOException {
+    public static ByteBuffer serializeToByteBuff(Animation src, boolean downgradable, boolean forcePlayerAnim) throws IOException {
         return new EmotePacket.Builder()
                 .configureToSaveEmote(src)
-                .setVersion(this.downgradable ? getDowngradedHashMap(src) : new HashMap<>())
+                .setVersion(downgradable ? getDowngradedHashMap(src, forcePlayerAnim) : new HashMap<>())
                 .build(Integer.MAX_VALUE, false)
                 .write();
     }
 
     @SuppressWarnings("unused")
-    public static HashMap<Byte, Byte> getDowngradedHashMap(Animation animation) {
+    public static HashMap<Byte, Byte> getDowngradedHashMap(Animation animation, boolean forcePlayerAnim) {
         HashMap<Byte, Byte> version = new HashMap<>(EmotePacket.defaultVersions);
 
-        if (animation.data().isAnimationPlayerAnimatorFormat()) {
+        if (forcePlayerAnim || animation.data().isAnimationPlayerAnimatorFormat()) {
             version.remove(PacketConfig.NEW_ANIMATION_FORMAT);
 
             if (KeyframeUtils.hasEasingArgs(animation)) {

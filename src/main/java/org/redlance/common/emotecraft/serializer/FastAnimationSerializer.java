@@ -24,6 +24,7 @@ import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 
 public class FastAnimationSerializer implements JsonDeserializer<Animation>, JsonSerializer<Animation> {
     public static final FastAnimationSerializer INSTANCE = new FastAnimationSerializer(false, false);
@@ -114,7 +115,7 @@ public class FastAnimationSerializer implements JsonDeserializer<Animation>, Jso
             version.remove(PacketConfig.LEGACY_ANIMATION_FORMAT);
         }
 
-        if (animation.data().has("bages")) {
+        if (animation.data().getRaw("bages") instanceof List<?> tags && !tags.isEmpty()) {
             version.put((byte) 0x11, (byte) 2);
         } else {
             version.put((byte) 0x11, (byte) 1);

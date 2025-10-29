@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public class UrlUtils {
     private static final Pattern URL_PATTERN = Pattern.compile(
             "(?:[a-z0-9]{2,}:\\/\\/)?(?>(?:[0-9]{1,3}\\.){3}[0-9]{1,3}" +
-                    "|(?:[-\\w_]+\\.)+(?:com|net|org|jp|de|uk|fr|br|it|ru|es|me|gov|pl|ca|au|cn|co|in|nl|se|no|fi|mx|kr|ch|ua|vn|cz|gr|at|be|ar|dk|hk|pt|nz|za|sg|my|th|tw|gg|ms|online|edu|mil|io|info|biz|us))" +
+                    "|(?:[-\\w_]+\\.)+(?:com|net|org|jp|de|uk|fr|br|ru|es|me|gov|pl|ca|au|cn|co|in|nl|se|no|fi|mx|kr|ch|ua|vn|cz|gr|at|be|ar|dk|hk|pt|nz|za|sg|my|th|tw|gg|ms|online|edu|mil|io|info|biz|us))" +
                     "(?::[0-9]{1,5})?[^!\"\\u00A7 \\n]*",
             Pattern.CASE_INSENSITIVE
     );

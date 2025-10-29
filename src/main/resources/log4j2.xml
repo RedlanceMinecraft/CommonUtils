@@ -2,15 +2,19 @@
 <Configuration status="INFO">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%d{HH:mm:ss}] %highlight{[%t/%level]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=green, TRACE=blue, FINEST=cyan} %highlight{%msg}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=green, TRACE=blue, FINEST=cyan}%n" disableAnsi="false"/>
+            <PatternLayout pattern="[%d{HH:mm:ss}] %highlight{[%t/%level]}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=green, TRACE=blue} %highlight{%msg{nolookups}}{FATAL=red, ERROR=red, WARN=yellow, INFO=default, DEBUG=green, TRACE=blue}%n" disableAnsi="false"/>
             <Filters>
                 <MarkerFilter marker="JANSI" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
                 <MarkerFilter marker="NOJANSI" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
             </Filters>
         </Console>
-        <RandomAccessFile name="LogFile" fileName="log.txt" immediateFlush="false" append="false">
-            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] %msg%n"/>
-        </RandomAccessFile>
+        <RollingRandomAccessFile name="LogFile" fileName="log.txt" immediateFlush="false" append="false" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %msg{nolookups}%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <OnStartupTriggeringPolicy />
+            </Policies>
+        </RollingRandomAccessFile>
     </Appenders>
     <Loggers>
         <Logger level="info" name="org.telegram.telegrambots.longpolling"/>

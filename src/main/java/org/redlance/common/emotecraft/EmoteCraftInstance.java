@@ -12,10 +12,10 @@ public class EmoteCraftInstance {
         EmoteCraftInstance.tryInitializeInstance(configSuppler, configClass, null);
     }*/
 
-    public static <T extends SerializableConfig> void tryInitializeInstance(Supplier<T> configSuppler, Class<T> configClass) {
+    public static <T extends SerializableConfig> T tryInitializeInstance(Supplier<T> configSuppler, Class<T> configClass) {
         if (Serializer.INSTANCE != null) {
             CommonUtils.LOGGER.warn("Emotecraft is loaded multiple times, please load it only once!");
-            return;
+            return getConfigAs();
         }
 
         Serializer.INSTANCE = new Serializer<>(new ConfigSerializer<>(configSuppler), configClass)/* {
@@ -26,5 +26,16 @@ public class EmoteCraftInstance {
                 return super.initializeSerializer(builder);
             }
         }*/;
+
+        return getConfigAs();
     }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends SerializableConfig> T getConfigAs() {
+        if (Serializer.INSTANCE == null) {
+            throw new NullPointerException("Serializer not initialized!");
+        }
+
+        return (T) Serializer.getConfig();
+    };
 }

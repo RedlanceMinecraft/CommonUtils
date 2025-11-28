@@ -85,7 +85,7 @@ public class MojangRequester {
             try (Reader reader = new InputStreamReader(new ByteArrayInputStream(
                     Base64.getDecoder().decode(jsonObject.get("value").textValue())
             ))) {
-                return Optional.of(CommonUtils.OBJECT_MAPPER.convertValue(reader, MojangProfile.class));
+                return Optional.of(CommonUtils.OBJECT_MAPPER.readValue(reader, MojangProfile.class));
             }
         }
 

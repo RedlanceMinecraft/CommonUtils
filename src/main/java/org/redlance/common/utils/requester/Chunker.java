@@ -26,6 +26,7 @@ public interface Chunker<R, T> extends Function<T, R> {
 
         while (true) {
             paginator = Requester.sendRequest(builder.apply(paginator), type);
+            if (paginator.error() != null) throw new InterruptedException(paginator.error());
 
             T ret = chunker.apply(paginator.data());
             if (ret != null) {

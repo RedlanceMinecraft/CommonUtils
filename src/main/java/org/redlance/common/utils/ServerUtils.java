@@ -1,7 +1,9 @@
 package org.redlance.common.utils;
 
+import com.github.mizosoft.methanol.MediaType;
 import com.sun.net.httpserver.Headers;
 import io.github.kosmx.emotes.server.services.InstanceService;
+import org.jetbrains.annotations.NotNull;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.adventure.TranslatorUtils;
 
@@ -159,5 +161,13 @@ public class ServerUtils {
         }
 
         return fallback.get();
+    }
+
+    public static boolean isTypeAccepted(String acceptHeader, @NotNull MediaType mediaType) {
+        if (acceptHeader == null || acceptHeader.isBlank()) return false;
+        for (String accept : acceptHeader.split(",")) {
+            if (mediaType.includes(MediaType.parse(accept))) return true;
+        }
+        return false;
     }
 }

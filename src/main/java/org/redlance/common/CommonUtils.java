@@ -1,10 +1,9 @@
 package org.redlance.common;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.StreamReadFeature;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
@@ -30,6 +29,10 @@ public class CommonUtils {
             .addModules(JACKSON_MODULES)
             .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
             .enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+            .defaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, JsonInclude.Include.NON_EMPTY))
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .defaultPrettyPrinter(null)
             .build();
 
@@ -37,6 +40,10 @@ public class CommonUtils {
             .addModules(JACKSON_MODULES)
             .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
             .enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+            .defaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, JsonInclude.Include.NON_EMPTY))
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .defaultPrettyPrinter(null)
 
             .disable(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT)

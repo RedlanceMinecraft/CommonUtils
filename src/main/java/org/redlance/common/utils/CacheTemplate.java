@@ -2,9 +2,9 @@ package org.redlance.common.utils;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jetbrains.annotations.Nullable;
 import org.redlance.common.utils.cache.BaseCache;
 
-import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,8 +24,8 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     }
 
     public CacheTemplate(Path path, ObjectMapper mapper, boolean concurrent, JavaType key, JavaType value) {
-        super(path, mapper, concurrent ? ConcurrentHashMap::new : HashMap::new, mapper.getTypeFactory().constructMapType(
-                concurrent ? ConcurrentHashMap.class : HashMap.class, key, value
+        super(path, mapper, concurrent ? ConcurrentHashMap::new : LinkedHashMap::new, mapper.getTypeFactory().constructMapType(
+                concurrent ? ConcurrentHashMap.class : LinkedHashMap.class, key, value
         ));
 
         this.concurrent = concurrent;

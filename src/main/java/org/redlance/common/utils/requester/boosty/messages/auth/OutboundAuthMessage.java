@@ -1,8 +1,6 @@
 package org.redlance.common.utils.requester.boosty.messages.auth;
 
-import com.google.gson.JsonElement;
-
-public record OutboundAuthMessage(int id, int method, JsonElement params) {
+public record OutboundAuthMessage(int id, int method, Object params) {
     public record Auth(String name, String token) {
     }
 

@@ -1,9 +1,8 @@
 package org.redlance.common.utils.requester;
 
 import com.github.mizosoft.methanol.*;
-import com.github.mizosoft.methanol.adapter.gson.GsonAdapterFactory;
+import com.github.mizosoft.methanol.adapter.jackson.JacksonAdapterFactory;
 import com.github.mizosoft.methanol.internal.Utils;
-import io.github.kosmx.emotes.server.config.Serializer;
 import io.github.kosmx.emotes.server.services.InstanceService;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.LambdaExceptionUtils;
@@ -24,6 +23,8 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 public class Requester {
+    public static final MediaType APPLICATION_JACKSON_SMILE = MediaType.of("application", "x-jackson-smile");
+
     public static final Methanol HTTP_CLIENT = Methanol.newBuilder()
             .executor(CommonUtils.createExecutor("http-requester-"))
             .connectTimeout(Duration.ofMinutes(1))
@@ -47,8 +48,13 @@ public class Requester {
             .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36")
             .cookieHandler(new CookieManager())
             .adapterCodec(AdapterCodec.newBuilder()
-                    .decoder(GsonAdapterFactory.createDecoder(Serializer.getSerializer()))
-                    .encoder(GsonAdapterFactory.createEncoder(Serializer.getSerializer()))
+                    // Json
+                    .decoder(JacksonAdapterFactory.createJsonDecoder(CommonUtils.OBJECT_MAPPER))
+                    .encoder(JacksonAdapterFactory.createJsonEncoder(CommonUtils.OBJECT_MAPPER))
+
+                    // Smile
+                    .decoder(JacksonAdapterFactory.createDecoder(CommonUtils.SMILE_MAPPER, APPLICATION_JACKSON_SMILE))
+                    .encoder(JacksonAdapterFactory.createEncoder(CommonUtils.SMILE_MAPPER, APPLICATION_JACKSON_SMILE))
                     .build())
             .build();
 

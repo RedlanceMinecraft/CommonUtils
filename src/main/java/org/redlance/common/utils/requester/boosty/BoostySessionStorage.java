@@ -1,7 +1,6 @@
 package org.redlance.common.utils.requester.boosty;
 
-import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.cache.BaseCache;
 import org.redlance.common.utils.requester.Requester;
@@ -20,8 +19,8 @@ public class BoostySessionStorage {
     private final String deviceId;
 
     public BoostySessionStorage(String deviceId) {
-        this.storage = new BaseCache<>(String.format("boosty-%s.json", deviceId),
-                () -> new Storage(null, null, 0L), TypeToken.get(Storage.class)
+        this.storage = new BaseCache<>(String.format("boosty-%s.json", deviceId), CommonUtils.OBJECT_MAPPER,
+                () -> new Storage(null, null, 0L), CommonUtils.constructType(Storage.class)
         );
 
         this.deviceId = deviceId;
@@ -45,7 +44,7 @@ public class BoostySessionStorage {
                 .build();
 
         try {
-            JsonObject object = Requester.sendRequest(request, JsonObject.class);
+            ObjectNode object = Requester.sendRequest(request, ObjectNode.class);
             if (!object.has("access_token")) {
                 throw new NullPointerException(object.toString());
             }
@@ -71,11 +70,11 @@ public class BoostySessionStorage {
     }
 
     private record Storage(String accessToken, String refreshToken, long expiresAt) {
-        public Storage(JsonObject object) {
+        public Storage(ObjectNode object) {
             this(
-                    object.get("access_token").getAsString(),
-                    object.get("refresh_token").getAsString(),
-                    Instant.now().getEpochSecond() + object.get("expires_in").getAsLong()
+                    object.get("access_token").asText(),
+                    object.get("refresh_token").asText(),
+                    Instant.now().getEpochSecond() + object.get("expires_in").asLong()
             );
         }
     }

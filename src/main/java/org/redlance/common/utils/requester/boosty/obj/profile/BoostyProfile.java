@@ -1,6 +1,6 @@
 package org.redlance.common.utils.requester.boosty.obj.profile;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import org.redlance.common.utils.requester.boosty.obj.user.BoostyUser;
 
 public class BoostyProfile {
@@ -32,7 +32,7 @@ public class BoostyProfile {
     /**
      * User subscription level.
      */
-    @SerializedName(value = "level", alternate = "subscription")
+    @JsonAlias(value = {"level", "subscription"})
     public Subscription level;
 
     /**

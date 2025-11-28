@@ -1,7 +1,7 @@
 package org.redlance.common.utils.cache;
 
-import com.google.gson.reflect.TypeToken;
-import io.github.kosmx.emotes.server.config.Serializer;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.kosmx.emotes.server.services.InstanceService;
 import org.redlance.common.CommonUtils;
 
@@ -33,22 +33,24 @@ public class BaseCache<T> {
 
     private final List<Consumer<BaseCache<T>>> listeners = new CopyOnWriteArrayList<>();
 
-    public final Path path;
+    protected final Path path;
+    protected final ObjectMapper mapper;
 
     protected final Supplier<T> defaultObj;
-    private final TypeToken<T> token;
+    private final JavaType javaType;
 
     protected CompletableFuture<T> obj;
     private final AtomicBoolean dirty = new AtomicBoolean(false);
 
-    public BaseCache(String path, Supplier<T> defaultObj, TypeToken<T> token) {
-        this(InstanceService.INSTANCE.getGameDirectory().resolve(path), defaultObj, token);
+    public BaseCache(String path, ObjectMapper mapper, Supplier<T> defaultObj, JavaType javaType) {
+        this(InstanceService.INSTANCE.getGameDirectory().resolve(path), mapper, defaultObj, javaType);
     }
 
-    public BaseCache(Path path, Supplier<T> defaultObj, TypeToken<T> token) {
+    public BaseCache(Path path, ObjectMapper mapper, Supplier<T> defaultObj, JavaType javaType) {
         this.path = path;
+        this.mapper = mapper;
         this.defaultObj = defaultObj;
-        this.token = token;
+        this.javaType = javaType;
 
         TRACKED_CACHES.put(path, this);
         CommonUtils.LOGGER.debug("{} created!", path);
@@ -83,7 +85,7 @@ public class BaseCache<T> {
             try {
                 listener.accept(this);
             } catch (Throwable th) {
-                CommonUtils.LOGGER.warn("Failed to fire listener {} for {}!", listener.toString(), this);
+                CommonUtils.LOGGER.warn("Failed to fire listener {} for {}!", listener.toString(), this, th);
             }
         }
     }
@@ -127,7 +129,7 @@ public class BaseCache<T> {
         if (!Files.exists(this.path)) return this.defaultObj.get();
 
         try (Reader reader = new InputStreamReader(Files.newInputStream(this.path), StandardCharsets.UTF_8)) {
-            T loadedObj = Serializer.getSerializer().fromJson(reader, this.token);
+            T loadedObj = this.mapper.readValue(reader, this.javaType);
             return loadedObj != null ? loadedObj : this.defaultObj.get();
         } catch (Exception e) {
             CommonUtils.LOGGER.warn("Failed to read {}!", this, e);
@@ -138,7 +140,7 @@ public class BaseCache<T> {
     public boolean save() {
         T obj = getObj(); // Block before a writer
         try (Writer writer = new OutputStreamWriter(Files.newOutputStream(this.path), StandardCharsets.UTF_8)) {
-            Serializer.getSerializer().toJson(obj, this.token.getType(), writer);
+            this.mapper.writerFor(this.javaType).writeValue(writer, obj);
             writer.flush();
 
             CommonUtils.LOGGER.debug("{} saved!", this);

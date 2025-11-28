@@ -1,8 +1,8 @@
 package org.redlance.common.utils.requester.boosty;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.mizosoft.methanol.TypeRef;
-import com.google.gson.JsonObject;
-import io.github.kosmx.emotes.server.config.Serializer;
+import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.requester.Chunker;
 import org.redlance.common.utils.requester.Requester;
 import org.redlance.common.utils.requester.boosty.obj.post.PostSales;
@@ -75,18 +75,18 @@ public class BoostyRequester {
                 .timeout(Duration.ofSeconds(15))
                 .build();
 
-        JsonObject response = Requester.sendRequest(httpRequest, JsonObject.class);
+        ObjectNode response = Requester.sendRequest(httpRequest, ObjectNode.class);
         if (!response.has("data")) {
             throw new NullPointerException(response.toString());
         }
 
-        JsonObject data = response.getAsJsonObject("data");
+        ObjectNode data = (ObjectNode) response.get("data");
         if (!data.has("profile")) {
             throw new NullPointerException(data.toString());
         }
 
-        return Serializer.getSerializer().fromJson(
-                data.getAsJsonObject("profile"), BoostyProfile.class
+        return CommonUtils.OBJECT_MAPPER.convertValue(
+                data.get("profile"), BoostyProfile.class
         );
     }
 
@@ -97,17 +97,17 @@ public class BoostyRequester {
                 .GET()
                 .build();
 
-        JsonObject response = Requester.sendRequest(httpRequest, JsonObject.class);
+        ObjectNode response = Requester.sendRequest(httpRequest, ObjectNode.class);
         if (!response.has("chatmate")) {
             throw new NullPointerException(response.toString());
         }
 
-        JsonObject chatmate = response.getAsJsonObject("chatmate");
+        ObjectNode chatmate = (ObjectNode) response.get("chatmate");
         if (!chatmate.has("id")) {
             throw new NullPointerException(chatmate.toString());
         }
 
-        return chatmate.get("id").getAsLong();
+        return chatmate.get("id").longValue();
     }
 
     public static String requestSocketToken(String token) throws IOException, InterruptedException {
@@ -117,11 +117,11 @@ public class BoostyRequester {
                 .GET()
                 .build();
 
-        JsonObject response = Requester.sendRequest(httpRequest, JsonObject.class);
+        ObjectNode response = Requester.sendRequest(httpRequest, ObjectNode.class);
         if (!response.has("token")) {
             throw new NullPointerException(response.toString());
         }
 
-        return response.get("token").getAsString();
+        return response.get("token").textValue();
     }
 }

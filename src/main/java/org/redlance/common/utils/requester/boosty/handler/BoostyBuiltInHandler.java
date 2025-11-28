@@ -1,6 +1,6 @@
 package org.redlance.common.utils.requester.boosty.handler;
 
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.redlance.common.CommonUtils;
 
 import java.util.ArrayList;
@@ -9,14 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-public class BoostyBuiltInHandler implements BiConsumer<String, JsonObject> {
+public class BoostyBuiltInHandler implements BiConsumer<String, ObjectNode> {
     private final Map<String, List<BoostyListener<?>>> listeners = new HashMap<>();
 
     @Override
-    public void accept(String channel, JsonObject jsonObject) {
+    public void accept(String channel, ObjectNode jsonObject) {
         CommonUtils.LOGGER.info("Handling {} from channel {}!", jsonObject, channel);
 
-        String type = jsonObject.getAsJsonObject("data").get("type").getAsString();
+        String type = jsonObject.get("data").get("type").textValue();
         if (type == null) {
             return;
         }

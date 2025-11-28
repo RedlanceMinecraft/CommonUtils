@@ -1,10 +1,9 @@
 package org.redlance.common.utils;
 
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.redlance.common.utils.cache.BaseCache;
 
 import javax.annotation.Nullable;
-import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -15,10 +14,10 @@ import java.util.stream.Stream;
 public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     private final boolean concurrent;
 
-    @SuppressWarnings("unchecked")
-    public CacheTemplate(String path, boolean concurrent, Type... typeArguments) {
-        super(path, concurrent ? ConcurrentHashMap::new : HashMap::new, (TypeToken<Map<K, V>>)
-                TypeToken.getParameterized(Map.class, typeArguments));
+    public CacheTemplate(String path, ObjectMapper mapper, boolean concurrent, Class<K> keyClass, Class<V> valueClass) {
+        super(path, mapper, concurrent ? ConcurrentHashMap::new : HashMap::new, mapper.getTypeFactory().constructMapType(
+                concurrent ? ConcurrentHashMap.class : HashMap.class, keyClass, valueClass
+        ));
 
         this.concurrent = concurrent;
     }

@@ -1,10 +1,9 @@
 package org.redlance.common.utils.requester.mojang;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.mizosoft.methanol.CacheControl;
 import com.github.mizosoft.methanol.MutableRequest;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import io.github.kosmx.emotes.server.config.Serializer;
 import org.jetbrains.annotations.Nullable;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.requester.Requester;
@@ -71,30 +70,28 @@ public class MojangRequester {
                 .cacheControl(MojangRequester.CACHE_CONTROL)
                 .build();
 
-        JsonObject obj = Requester.sendRequest(request, JsonObject.class);
+        ObjectNode obj = Requester.sendRequest(request, ObjectNode.class);
         if (obj == null) return Optional.empty();
 
         if (obj.has("errorMessage")) {
-            throw new InterruptedException(obj.get("errorMessage").getAsString());
+            throw new InterruptedException(obj.get("errorMessage").textValue());
         }
 
-        for (JsonElement elem : obj.getAsJsonArray("properties")) {
-            JsonObject jsonObject = elem.getAsJsonObject();
-
-            if (!jsonObject.has("name") || !"textures".equals(jsonObject.get("name").getAsString())) {
+        for (JsonNode jsonObject : obj.get("properties")) {
+            if (!jsonObject.has("name") || !"textures".equals(jsonObject.get("name").textValue())) {
                 continue;
             }
 
             try (Reader reader = new InputStreamReader(new ByteArrayInputStream(
-                    Base64.getDecoder().decode(jsonObject.get("value").getAsString())
+                    Base64.getDecoder().decode(jsonObject.get("value").textValue())
             ))) {
-                return Optional.of(Serializer.getSerializer().fromJson(reader, MojangProfile.class));
+                return Optional.of(CommonUtils.OBJECT_MAPPER.convertValue(reader, MojangProfile.class));
             }
         }
 
         if (obj.has("id") && obj.has("name")) {
             return Optional.of(new MojangProfile(-1,
-                    obj.get("id").getAsString(), obj.get("name").getAsString(), new HashMap<>(0)
+                    obj.get("id").textValue(), obj.get("name").textValue(), new HashMap<>(0)
             ));
         }
 

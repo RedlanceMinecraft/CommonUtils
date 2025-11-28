@@ -1,47 +1,30 @@
 package org.redlance.common.emotecraft;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.zigythebird.playeranimcore.animation.Animation;
 import io.github.kosmx.emotes.common.SerializableConfig;
 import io.github.kosmx.emotes.server.config.ConfigSerializer;
 import io.github.kosmx.emotes.server.config.Serializer;
 import org.redlance.common.CommonUtils;
-import org.redlance.common.emotecraft.serializer.CompletableFutureAdapterFactory;
-import org.redlance.common.emotecraft.serializer.FastAnimationSerializer;
 
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class EmoteCraftInstance {
-    public static <T extends SerializableConfig> T tryInitializeInstance(Supplier<T> configSuppler, Class<T> configClass) {
-        return EmoteCraftInstance.tryInitializeInstance(configSuppler, configClass, null);
-    }
+    /*public static <T extends SerializableConfig> void tryInitializeInstance(Supplier<T> configSuppler, Class<T> configClass) {
+        EmoteCraftInstance.tryInitializeInstance(configSuppler, configClass, null);
+    }*/
 
-    public static <T extends SerializableConfig> T tryInitializeInstance(Supplier<T> configSuppler, Class<T> configClass, Consumer<GsonBuilder> consumer) {
+    public static <T extends SerializableConfig> void tryInitializeInstance(Supplier<T> configSuppler, Class<T> configClass) {
         if (Serializer.INSTANCE != null) {
             CommonUtils.LOGGER.warn("Emotecraft is loaded multiple times, please load it only once!");
-            return getConfigAs();
+            return;
         }
 
-        Serializer.INSTANCE = new Serializer<>(new ConfigSerializer<>(configSuppler), configClass, consumer) {
+        Serializer.INSTANCE = new Serializer<>(new ConfigSerializer<>(configSuppler), configClass)/* {
             @Override
             protected Gson initializeSerializer(GsonBuilder builder) {
                 builder.registerTypeAdapter(Animation.class, FastAnimationSerializer.INSTANCE);
                 builder.registerTypeAdapterFactory(new CompletableFutureAdapterFactory());
                 return super.initializeSerializer(builder);
             }
-        };
-
-        return getConfigAs();
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T extends SerializableConfig> T getConfigAs() {
-        if (Serializer.getSerializer() == null) {
-            throw new NullPointerException("Serializer not initialized!");
-        }
-
-        return (T) Serializer.getConfig();
+        }*/;
     }
 }

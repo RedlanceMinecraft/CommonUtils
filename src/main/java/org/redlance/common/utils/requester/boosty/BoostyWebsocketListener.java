@@ -1,8 +1,7 @@
 package org.redlance.common.utils.requester.boosty;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import io.github.kosmx.emotes.server.config.Serializer;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.input.CharSequenceReader;
 import org.jetbrains.annotations.Nullable;
 import org.redlance.common.CommonUtils;
@@ -28,10 +27,10 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
             "users#", "dialogs#", "blogger:"//, "$dialog:"
     );
 
-    private final Map<Integer, CompletableFuture<JsonObject>> messages = new ConcurrentHashMap<>();
+    private final Map<Integer, CompletableFuture<ObjectNode>> messages = new ConcurrentHashMap<>();
     private final ScheduledExecutorService executor = CommonUtils.createScheduledExecutor(1, "boosty-websocket-");
 
-    private final BiConsumer<String, JsonObject> listener;
+    private final BiConsumer<String, ObjectNode> listener;
     private final Supplier<String> token;
     private final int userId;
 
@@ -45,7 +44,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
      * @param token Boosty access token.
      * @param userId Boosty shelf user id.
      */
-    public BoostyWebsocketListener(BiConsumer<String, JsonObject> listener, Supplier<String> token, int userId) {
+    public BoostyWebsocketListener(BiConsumer<String, ObjectNode> listener, Supplier<String> token, int userId) {
         this.listener = listener;
         this.token = token;
         this.userId = userId;
@@ -67,7 +66,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
             this.webSocket = e;
             this.messages.clear();
 
-            JsonObject responseObj = sendMessage(0, new OutboundAuthMessage.Auth("js", this.token.get()))
+            ObjectNode responseObj = sendMessage(0, new OutboundAuthMessage.Auth("js", this.token.get()))
                     .whenCompleteAsync(((element, throwable) ->  {
                         for (String channel : KNOWN_CHANNEL_PREFIXES) {
                             sendMessage(1, new OutboundAuthMessage.Subscribe(channel + this.userId))
@@ -81,7 +80,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
             );
 
             CommonUtils.LOGGER.info("Connected to boosty! (Backend version: {})",
-                    responseObj.has("version") ? responseObj.get("version").getAsString() : responseObj
+                    responseObj.has("version") ? responseObj.get("version").asText() : responseObj
             );
         }).exceptionally((ex) -> {
             CommonUtils.LOGGER.error("Failed to connect!", ex);
@@ -93,14 +92,18 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
      * @param method 0 - default, 1 - channel subscribe, 2 - channel unsubscribe, 7 - ping
      * @param params Payload, null for ping.
      */
-    public CompletableFuture<JsonObject> sendMessage(int method, @Nullable Object params) {
+    public CompletableFuture<ObjectNode> sendMessage(int method, @Nullable Object params) {
         int id = this.messages.size() + 1;
 
-        CompletableFuture<JsonObject> future = this.messages.compute(id, (k, v) -> new CompletableFuture<>());
+        CompletableFuture<ObjectNode> future = this.messages.compute(id, (k, v) -> new CompletableFuture<>());
 
-        this.webSocket.sendText(new Gson().toJson( // Boosty don't accept pretty gson
-                new OutboundAuthMessage(id, method, params == null ? null : Serializer.getSerializer().toJsonTree(params))
-        ), true);
+        try {
+            this.webSocket.sendText(CommonUtils.OBJECT_MAPPER.writeValueAsString( // Boosty don't accept pretty gson
+                    new OutboundAuthMessage(id, method, params)
+            ), true);
+        } catch (JsonProcessingException e) {
+            future.completeExceptionally(e);
+        }
 
         return future;
     }
@@ -126,10 +129,10 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
         try (BufferedReader reader = new BufferedReader(new CharSequenceReader(data))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                InboundAuthMessage authMessage = Serializer.getSerializer().fromJson(line, InboundAuthMessage.class);
+                InboundAuthMessage authMessage = CommonUtils.OBJECT_MAPPER.readValue(line, InboundAuthMessage.class);
 
                 if (authMessage.id() > 0) { // replied
-                    CompletableFuture<JsonObject> future = this.messages.get(authMessage.id());
+                    CompletableFuture<ObjectNode> future = this.messages.get(authMessage.id());
                     if (future == null) {
                         CommonUtils.LOGGER.warn("Unknown message {}: {}!", authMessage.id(), authMessage.result());
                         return WebSocket.Listener.super.onText(webSocket, data, last);
@@ -143,7 +146,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
                         future.complete(authMessage.result());
                     }
                 } else if (authMessage.result() != null) {
-                    InboundChannelMessage message = Serializer.getSerializer().fromJson(authMessage.result(),
+                    InboundChannelMessage message = CommonUtils.OBJECT_MAPPER.convertValue(authMessage.result(),
                             InboundChannelMessage.class);
 
                     if (message.data() == null || !message.data().has("data")) {

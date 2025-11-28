@@ -1,15 +1,15 @@
 package org.redlance.common.utils.requester.mojang.obj;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import org.redlance.common.utils.requester.mojang.MojangUtils;
 
 import java.util.UUID;
 
 @SuppressWarnings("unused")
 public record BaseMojangProfile(
-        @SerializedName(value = "name", alternate = "username") String name,
-        @SerializedName(value = "id", alternate = {"uuid", "minecraftUUID"}) String id,
-        @SerializedName(value = "errorMessage", alternate = "error") String errorMessage
+        @JsonAlias(value = "username") String name,
+        @JsonAlias(value = { "uuid", "minecraftUUID"}) String id,
+        @JsonAlias(value = "error") String errorMessage
 ) {
     public BaseMojangProfile(String name, String id) {
         this(name, id, null);

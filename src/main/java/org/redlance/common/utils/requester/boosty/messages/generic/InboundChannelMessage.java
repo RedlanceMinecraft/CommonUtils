@@ -1,6 +1,6 @@
 package org.redlance.common.utils.requester.boosty.messages.generic;
 
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public record InboundChannelMessage(String channel, JsonObject data) {
+public record InboundChannelMessage(String channel, ObjectNode data) {
 }

@@ -1,8 +1,8 @@
 package org.redlance.common.utils.requester.boosty.handler;
 
-import com.google.gson.JsonObject;
-import io.github.kosmx.emotes.server.config.Serializer;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jetbrains.annotations.Nullable;
+import org.redlance.common.CommonUtils;
 
 import java.util.Objects;
 
@@ -15,13 +15,13 @@ public interface BoostyListener<T> {
         throw new UnsupportedOperationException();
     }
 
-    default void handle(String channel, JsonObject object, T type) {
+    default void handle(String channel, ObjectNode object, T type) {
         handle(channel, type);
     }
 
-    default void handle(String channel, JsonObject object) {
-        handle(channel, object, Serializer.getSerializer().fromJson(
-                object.getAsJsonObject("data").getAsJsonObject("data"),
+    default void handle(String channel, ObjectNode object) {
+        handle(channel, object, CommonUtils.OBJECT_MAPPER.convertValue(
+                object.get("data").get("data"),
                 Objects.requireNonNull(parseObject())
         ));
     }

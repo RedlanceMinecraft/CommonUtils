@@ -1,12 +1,12 @@
 package org.redlance.common.utils.requester.boosty.obj.user;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonAlias;
 
 public class SubscriptionLevel { // TODO full impl: currencyPrices, externalApps, createdAt, data, ownerId
     /**
      * Whether the level is deleted.
      */
-    @SerializedName(value = "isDeleted", alternate = "deleted")
+    @JsonAlias(value = {"isDeleted", "deleted"})
     public boolean isDeleted;
 
     /**

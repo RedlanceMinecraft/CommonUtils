@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.cfg.MapperBuilder;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
 import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
@@ -25,28 +26,12 @@ public class CommonUtils {
 
     private static final List<Module> JACKSON_MODULES = ObjectMapper.findModules(CommonUtils.class.getClassLoader());
 
-    public static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
+    public static final ObjectMapper OBJECT_MAPPER = configureMapper(JsonMapper.builder())
             .addModules(JACKSON_MODULES)
-            .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
-            .enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
-            .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-            .defaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, JsonInclude.Include.NON_EMPTY))
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .defaultPrettyPrinter(null)
             .build();
 
-    public static final ObjectMapper SMILE_MAPPER = SmileMapper.builder()
+    public static final ObjectMapper SMILE_MAPPER = configureMapper(SmileMapper.builder())
             .addModules(JACKSON_MODULES)
-            .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
-            .enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
-            .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-            .defaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, JsonInclude.Include.NON_EMPTY))
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            .defaultPrettyPrinter(null)
 
             .disable(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT)
             .enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
@@ -71,5 +56,17 @@ public class CommonUtils {
 
     public static JavaType constructType(Type type) {
         return CommonUtils.OBJECT_MAPPER.constructType(type);
+    }
+
+    public static <T extends MapperBuilder<?, T>> T configureMapper(T mapper) {
+        return mapper
+                .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+                .enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
+                .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+                .defaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, JsonInclude.Include.NON_EMPTY))
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .defaultPrettyPrinter(null);
     }
 }

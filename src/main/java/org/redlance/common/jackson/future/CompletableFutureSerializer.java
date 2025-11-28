@@ -75,5 +75,18 @@ public class CompletableFutureSerializer extends JsonSerializer<CompletableFutur
 
         return this;
     }
+
+    @Override
+    public boolean isEmpty(SerializerProvider provider, CompletableFuture value) {
+        if (super.isEmpty(provider, value)) return true;
+        if (!value.isDone()) return true;
+        if (value.isCompletedExceptionally()) return true;
+
+        try {
+            return value.get() == null;
+        } catch (Exception e) {
+            return true;
+        }
+    }
 }
 

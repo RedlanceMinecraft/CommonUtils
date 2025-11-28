@@ -2,7 +2,6 @@ package org.redlance.common.utils.cache;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.kosmx.emotes.server.services.InstanceService;
 import org.redlance.common.CommonUtils;
 
 import java.io.*;
@@ -41,10 +40,6 @@ public class BaseCache<T> {
 
     protected CompletableFuture<T> obj;
     private final AtomicBoolean dirty = new AtomicBoolean(false);
-
-    public BaseCache(String path, ObjectMapper mapper, Supplier<T> defaultObj, JavaType javaType) {
-        this(InstanceService.INSTANCE.getGameDirectory().resolve(path), mapper, defaultObj, javaType);
-    }
 
     public BaseCache(Path path, ObjectMapper mapper, Supplier<T> defaultObj, JavaType javaType) {
         this.path = path;
@@ -141,7 +136,7 @@ public class BaseCache<T> {
         T obj = getObj(); // Block before a writer
         try (Writer writer = new OutputStreamWriter(Files.newOutputStream(this.path), StandardCharsets.UTF_8)) {
             this.mapper.writerFor(this.javaType).writeValue(writer, obj);
-            writer.flush();
+            // writer.flush();
 
             CommonUtils.LOGGER.debug("{} saved!", this);
             return true;

@@ -7,6 +7,7 @@ import org.redlance.common.utils.requester.Requester;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -18,8 +19,8 @@ public class BoostySessionStorage {
     private final BaseCache<Storage> storage;
     private final String deviceId;
 
-    public BoostySessionStorage(String deviceId) {
-        this.storage = new BaseCache<>(String.format("boosty-%s.json", deviceId), CommonUtils.OBJECT_MAPPER,
+    public BoostySessionStorage(Path root, String deviceId) {
+        this.storage = new BaseCache<>(root.resolve(String.format("boosty-%s.json", deviceId)), CommonUtils.OBJECT_MAPPER,
                 () -> new Storage(null, null, 0L), CommonUtils.constructType(Storage.class)
         );
 

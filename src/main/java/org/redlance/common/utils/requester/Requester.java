@@ -28,7 +28,7 @@ public class Requester {
     public static final Methanol HTTP_CLIENT = Methanol.newBuilder()
             .executor(CommonUtils.createExecutor("http-requester-"))
             .connectTimeout(Duration.ofMinutes(1))
-            .version(HttpClient.Version.HTTP_1_1)
+            .version(HttpClient.Version.HTTP_2)
             .proxy(UrlProxySelector.INSTANCE)
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .cache(HttpCache.newBuilder()
@@ -126,7 +126,7 @@ public class Requester {
 
     private static final ExecutorService PARALLEL_REQUESTER = CommonUtils.createExecutor("parallel-requester-");
     public static <R, T> Stream<R> prepareParallelRequests(Stream<T> requests, Function<? super T, R> mapper) {
-        return requests.map(request -> Requester.PARALLEL_REQUESTER.submit( // TODO rewrite with java 25
+        return requests.map(request -> Requester.PARALLEL_REQUESTER.submit( // TODO rewrite with java 26
                 () -> mapper.apply(request)
         )).map(LambdaExceptionUtils.rethrowFunction((Future::get)));
     }

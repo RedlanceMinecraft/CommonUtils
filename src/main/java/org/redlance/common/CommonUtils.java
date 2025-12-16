@@ -37,6 +37,7 @@ public class CommonUtils {
             .enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
             .build();
 
+    @SuppressWarnings("unused")
     public static void main(String... args) { // Used for testing things
     }
 

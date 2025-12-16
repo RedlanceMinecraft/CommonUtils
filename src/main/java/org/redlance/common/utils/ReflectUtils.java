@@ -27,7 +27,7 @@ public class ReflectUtils {
             INTERNAL_UNSAFE.getClass().getDeclaredMethod("objectFieldOffset", Field.class)
     );
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     public static final MethodHandles.Lookup TRUSTED_LOOKUP = uncheck(() -> {
         Field hackfield = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
         return (MethodHandles.Lookup) UNSAFE.getObject(UNSAFE.staticFieldBase(hackfield), UNSAFE.staticFieldOffset(hackfield));
@@ -61,6 +61,7 @@ public class ReflectUtils {
         return (Collection<T>) COLLECTION_HANDLE.get(unmodifiable);
     }
 
+    @SuppressWarnings("removal")
     public static void setRecordField(Object record, String fieldName, Object newValue) {
         try {
             Field field = record.getClass().getDeclaredField(fieldName);

@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.node.BinaryNode;
 import com.zigythebird.playeranimcore.animation.Animation;
 import io.github.kosmx.emotes.common.network.EmotePacket;
 import io.github.kosmx.emotes.common.network.PacketConfig;
+import io.netty.buffer.AdaptiveByteBufAllocator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.PooledByteBufAllocator;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.emotecraft.KeyframeUtils;
 
@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class FastAnimationSerializer extends JsonSerializer<Animation> {
-    protected static final ByteBufAllocator ALLOC = PooledByteBufAllocator.DEFAULT;
+    protected static final ByteBufAllocator ALLOC = AdaptiveByteBufAllocator.DEFAULT;
 
     public static final FastAnimationSerializer INSTANCE = new FastAnimationSerializer(false, false);
     public static final FastAnimationSerializer DOWNGRADABLE = new FastAnimationSerializer(true, false);

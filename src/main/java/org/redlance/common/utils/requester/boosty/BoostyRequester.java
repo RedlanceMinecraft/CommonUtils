@@ -1,6 +1,6 @@
 package org.redlance.common.utils.requester.boosty;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.github.mizosoft.methanol.TypeRef;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.requester.Chunker;
@@ -122,6 +122,6 @@ public class BoostyRequester {
             throw new NullPointerException(response.toString());
         }
 
-        return response.get("token").textValue();
+        return response.get("token").stringValue();
     }
 }

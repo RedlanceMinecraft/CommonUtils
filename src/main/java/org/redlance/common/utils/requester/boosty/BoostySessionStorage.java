@@ -1,6 +1,6 @@
 package org.redlance.common.utils.requester.boosty;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.cache.BaseCache;
 import org.redlance.common.utils.requester.Requester;
@@ -73,8 +73,8 @@ public class BoostySessionStorage {
     private record Storage(String accessToken, String refreshToken, long expiresAt) {
         public Storage(ObjectNode object) {
             this(
-                    object.get("access_token").asText(),
-                    object.get("refresh_token").asText(),
+                    object.get("access_token").asString(),
+                    object.get("refresh_token").asString(),
                     Instant.now().getEpochSecond() + object.get("expires_in").asLong()
             );
         }

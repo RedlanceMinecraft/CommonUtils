@@ -1,9 +1,5 @@
 package org.redlance.common.jackson.animation;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.node.BinaryNode;
 import com.zigythebird.playeranimcore.animation.Animation;
 import io.github.kosmx.emotes.common.network.EmotePacket;
 import io.github.kosmx.emotes.common.network.PacketConfig;
@@ -12,13 +8,16 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.redlance.common.CommonUtils;
 import org.redlance.common.emotecraft.KeyframeUtils;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 
-public class FastAnimationSerializer extends JsonSerializer<Animation> {
+public class FastAnimationSerializer extends ValueSerializer<Animation> {
     protected static final ByteBufAllocator ALLOC = AdaptiveByteBufAllocator.DEFAULT;
 
     public static final FastAnimationSerializer INSTANCE = new FastAnimationSerializer(false, false);
@@ -37,15 +36,14 @@ public class FastAnimationSerializer extends JsonSerializer<Animation> {
     }
 
     @Override
-    public void serialize(Animation src, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    public void serialize(Animation src, JsonGenerator gen, SerializationContext ctx) throws JacksonException {
         if (src == null) {
             gen.writeNull();
             return;
         }
 
         try {
-            byte[] bytes = serializeToBytes(src, this.downgradable, this.forcePlayerAnim);
-            gen.writeTree(BinaryNode.valueOf(bytes));
+            gen.writeBinary(serializeToBytes(src, this.downgradable, this.forcePlayerAnim));
         } catch (Throwable e) {
             CommonUtils.LOGGER.error("Failed to serialize animation {}!", src, e);
             gen.writeNull();

@@ -1,7 +1,6 @@
 package org.redlance.common.utils.requester.boosty;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.input.CharSequenceReader;
 import org.jetbrains.annotations.Nullable;
 import org.redlance.common.CommonUtils;
@@ -80,7 +79,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
             );
 
             CommonUtils.LOGGER.info("Connected to boosty! (Backend version: {})",
-                    responseObj.has("version") ? responseObj.get("version").asText() : responseObj
+                    responseObj.has("version") ? responseObj.get("version").asString() : responseObj
             );
         }).exceptionally((ex) -> {
             CommonUtils.LOGGER.error("Failed to connect!", ex);
@@ -101,8 +100,8 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
             this.webSocket.sendText(CommonUtils.OBJECT_MAPPER.writeValueAsString( // Boosty don't accept pretty gson
                     new OutboundAuthMessage(id, method, params)
             ), true);
-        } catch (JsonProcessingException e) {
-            future.completeExceptionally(e);
+        } catch (Throwable th) {
+            future.completeExceptionally(th);
         }
 
         return future;

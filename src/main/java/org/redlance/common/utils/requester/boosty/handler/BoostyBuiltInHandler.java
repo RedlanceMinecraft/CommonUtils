@@ -1,6 +1,6 @@
 package org.redlance.common.utils.requester.boosty.handler;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.redlance.common.CommonUtils;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ public class BoostyBuiltInHandler implements BiConsumer<String, ObjectNode> {
     public void accept(String channel, ObjectNode jsonObject) {
         CommonUtils.LOGGER.info("Handling {} from channel {}!", jsonObject, channel);
 
-        String type = jsonObject.get("data").get("type").textValue();
+        String type = jsonObject.get("data").get("type").stringValue();
         if (type == null) {
             return;
         }

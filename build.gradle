@@ -18,7 +18,7 @@ repositories {
 
 dependencies {
     implementation api("com.github.mizosoft.methanol:methanol:${project.methanol_version}")
-    implementation api("com.github.mizosoft.methanol:methanol-jackson:${project.methanol_version}")
+    implementation api("com.github.mizosoft.methanol:methanol-jackson3:${project.methanol_version}")
     /*implementation api("com.github.mizosoft.methanol:methanol-gson:${project.methanol_version}") {
         exclude(group: "com.google.code.gson")
     }*/
@@ -32,8 +32,8 @@ dependencies {
     runtimeOnly "com.lmax:disruptor:4.0.0"
 
     // Jackson
-    implementation "com.fasterxml.jackson.core:jackson-databind:${project.jackson_version}"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-smile:${project.jackson_version}"
+    implementation api("tools.jackson.core:jackson-databind:${project.jackson_version}")
+    implementation api("tools.jackson.dataformat:jackson-dataformat-smile:${project.jackson_version}")
 
     implementation api("commons-io:commons-io:2.21.0")
     runtimeOnly /*api*/("com.google.code.gson:gson:2.13.2") {

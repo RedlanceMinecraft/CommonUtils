@@ -1,9 +1,9 @@
 package org.redlance.common.utils;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jetbrains.annotations.Nullable;
 import org.redlance.common.utils.cache.BaseCache;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.file.Path;
 import java.util.*;

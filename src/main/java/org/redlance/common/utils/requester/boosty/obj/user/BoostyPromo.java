@@ -1,7 +1,7 @@
 package org.redlance.common.utils.requester.boosty.obj.user;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jetbrains.annotations.NotNull;
+import tools.jackson.databind.node.ObjectNode;
 
 public record BoostyPromo(ObjectNode access, ObjectNode count, String description, Object endTime, int id, boolean isFinished, String linkId, long startTime, ObjectNode trial, String type) {
     @Override

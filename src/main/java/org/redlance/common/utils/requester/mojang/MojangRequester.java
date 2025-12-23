@@ -1,7 +1,7 @@
 package org.redlance.common.utils.requester.mojang;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.github.mizosoft.methanol.CacheControl;
 import com.github.mizosoft.methanol.MutableRequest;
 import org.jetbrains.annotations.Nullable;
@@ -74,16 +74,16 @@ public class MojangRequester {
         if (obj == null) return Optional.empty();
 
         if (obj.has("errorMessage")) {
-            throw new InterruptedException(obj.get("errorMessage").textValue());
+            throw new InterruptedException(obj.get("errorMessage").stringValue());
         }
 
         for (JsonNode jsonObject : obj.get("properties")) {
-            if (!jsonObject.has("name") || !"textures".equals(jsonObject.get("name").textValue())) {
+            if (!jsonObject.has("name") || !"textures".equals(jsonObject.get("name").stringValue())) {
                 continue;
             }
 
             try (Reader reader = new InputStreamReader(new ByteArrayInputStream(
-                    Base64.getDecoder().decode(jsonObject.get("value").textValue())
+                    Base64.getDecoder().decode(jsonObject.get("value").stringValue())
             ))) {
                 return Optional.of(CommonUtils.OBJECT_MAPPER.readValue(reader, MojangProfile.class));
             }
@@ -91,7 +91,7 @@ public class MojangRequester {
 
         if (obj.has("id") && obj.has("name")) {
             return Optional.of(new MojangProfile(-1,
-                    obj.get("id").textValue(), obj.get("name").textValue(), new HashMap<>(0)
+                    obj.get("id").stringValue(), obj.get("name").stringValue(), new HashMap<>(0)
             ));
         }
 

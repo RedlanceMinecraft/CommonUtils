@@ -1,8 +1,8 @@
 package org.redlance.common.utils.cache;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.redlance.common.CommonUtils;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -124,7 +124,7 @@ public class BaseCache<T> {
         if (!Files.exists(this.path)) return this.defaultObj.get();
 
         try (Reader reader = new InputStreamReader(Files.newInputStream(this.path), StandardCharsets.UTF_8)) {
-            T loadedObj = this.mapper.readValue(reader, this.javaType);
+            T loadedObj = this.mapper.readerFor(this.javaType).readValue(reader);
             return loadedObj != null ? loadedObj : this.defaultObj.get();
         } catch (Exception e) {
             CommonUtils.LOGGER.warn("Failed to read {}!", this, e);

@@ -1,7 +1,5 @@
 package org.redlance.common.tests;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
 import io.github.kosmx.emotes.common.SerializableConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -11,6 +9,7 @@ import org.redlance.common.emotecraft.EmoteCraftInstance;
 import org.redlance.common.utils.LambdaExceptionUtils;
 import org.redlance.common.utils.requester.mojang.MojangRequester;
 import org.redlance.common.utils.requester.mojang.obj.BaseMojangProfile;
+import tools.jackson.databind.JavaType;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -24,7 +23,7 @@ public class CompletableFutureAdapterFactoryTest {
     }
 
     @Test
-    public void testNull() throws JsonProcessingException {
+    public void testNull() {
         CompletableFuture<BaseMojangProfile> profileCompletableFuture = CompletableFuture.supplyAsync(LambdaExceptionUtils.rethrowSupplier(() -> {
             Thread.sleep(10000);
             return MojangRequester.getBaseByName("dima_dencep");
@@ -36,7 +35,7 @@ public class CompletableFutureAdapterFactoryTest {
     }
 
     @Test
-    public void testThrow() throws JsonProcessingException {
+    public void testThrow() {
         CompletableFuture<BaseMojangProfile> profileCompletableFuture = CompletableFuture.supplyAsync(LambdaExceptionUtils.rethrowSupplier(() -> {
             throw new RuntimeException();
         }));
@@ -47,7 +46,7 @@ public class CompletableFutureAdapterFactoryTest {
     }
 
     @Test
-    public void test() throws ExecutionException, InterruptedException, JsonProcessingException {
+    public void test() throws ExecutionException, InterruptedException {
         CompletableFuture<BaseMojangProfile> profileCompletableFuture = CompletableFuture.supplyAsync(LambdaExceptionUtils.rethrowSupplier(
                 () -> MojangRequester.getBaseByName("dima_dencep")
         ));

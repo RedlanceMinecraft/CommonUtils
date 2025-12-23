@@ -1,10 +1,5 @@
 package org.redlance.common.jackson.animation;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.zigythebird.playeranimcore.animation.Animation;
 import io.github.kosmx.emotes.common.network.EmotePacket;
 import io.github.kosmx.emotes.common.network.PacketTask;
@@ -12,11 +7,16 @@ import io.github.kosmx.emotes.common.network.objects.NetData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.redlance.common.CommonUtils;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.exc.MismatchedInputException;
 
-import java.io.IOException;
 import java.util.Base64;
 
-public class FastAnimationDeserializer extends JsonDeserializer<Animation> {
+public class FastAnimationDeserializer extends ValueDeserializer<Animation> {
     public static final FastAnimationDeserializer INSTANCE = new FastAnimationDeserializer();
 
     private FastAnimationDeserializer() {
@@ -24,32 +24,26 @@ public class FastAnimationDeserializer extends JsonDeserializer<Animation> {
     }
 
     @Override
-    public Animation deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        JsonNode node = p.getCodec().readTree(p);
+    public Animation deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
+        JsonToken t = p.currentToken();
+        if (t == null) t = p.nextToken();
 
         byte[] bytes;
-        if (node == null || node.isNull()) {
-            return null;
-        }
-
-        if (node.isBinary() || node.isTextual()) {
-            bytes = node.binaryValue();
-        } /*else if (node.isTextual()) {
-            try {
-                bytes = Base64.getDecoder().decode(node.asText());
-            } catch (IllegalArgumentException e) {
-                throw JsonMappingException.from(p, "Expected binary or base64 string for Animation", e);
+        if (t == JsonToken.VALUE_EMBEDDED_OBJECT) {
+            Object embedded = p.getEmbeddedObject();
+            if (!(embedded instanceof byte[] b)) {
+                throw MismatchedInputException.from(
+                        p, "Expected embedded byte[] for Animation, got: " + (embedded == null ? "null" : embedded.getClass()));
             }
-        }*/ else {
-            throw JsonMappingException.from(
-                    p, "Expected binary or base64 string for Animation, got: " + node.getNodeType()
-            );
+            bytes = b;
+        } else {
+            bytes = p.getBinaryValue();
         }
 
         try {
             return serialize(bytes);
         } catch (Throwable e) {
-            CommonUtils.LOGGER.warn("Failed to deserialize animation from binary JSON node {}", node, e);
+            CommonUtils.LOGGER.warn("Failed to deserialize animation from binary JSON node {}", t, e);
             return null;
         }
     }

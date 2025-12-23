@@ -1,15 +1,15 @@
 package org.redlance.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.StreamReadFeature;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.Module;
-import com.fasterxml.jackson.databind.cfg.MapperBuilder;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.dataformat.smile.SmileGenerator;
-import com.fasterxml.jackson.dataformat.smile.databind.SmileMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.StreamReadFeature;
+import tools.jackson.databind.*;
+import tools.jackson.databind.cfg.DateTimeFeature;
+import tools.jackson.databind.cfg.MapperBuilder;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.dataformat.smile.SmileMapper;
+import tools.jackson.dataformat.smile.SmileWriteFeature;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -24,7 +24,7 @@ public class CommonUtils {
 
     public static final Logger LOGGER = LoggerFactory.getLogger("Redlance CommonUtils");
 
-    private static final List<Module> JACKSON_MODULES = ObjectMapper.findModules(CommonUtils.class.getClassLoader());
+    private static final List<JacksonModule> JACKSON_MODULES = MapperBuilder.findModules(CommonUtils.class.getClassLoader());
 
     public static final ObjectMapper OBJECT_MAPPER = configureMapper(JsonMapper.builder())
             .addModules(JACKSON_MODULES)
@@ -33,8 +33,8 @@ public class CommonUtils {
     public static final ObjectMapper SMILE_MAPPER = configureMapper(SmileMapper.builder())
             .addModules(JACKSON_MODULES)
 
-            .disable(SmileGenerator.Feature.ENCODE_BINARY_AS_7BIT)
-            .enable(SmileGenerator.Feature.CHECK_SHARED_STRING_VALUES)
+            .disable(SmileWriteFeature.ENCODE_BINARY_AS_7BIT)
+            .enable(SmileWriteFeature.CHECK_SHARED_STRING_VALUES)
             .build();
 
     @SuppressWarnings("unused")
@@ -65,9 +65,10 @@ public class CommonUtils {
                 .enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
                 .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-                .defaultPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_EMPTY, JsonInclude.Include.NON_EMPTY))
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DateTimeFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+                .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_EMPTY))
+                .changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_EMPTY))
+                .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .defaultPrettyPrinter(null);
     }
 }

@@ -1,29 +1,27 @@
 package org.redlance.common.jackson.future;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.ContextualSerializer;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.BeanProperty;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("rawtypes")
-public class CompletableFutureSerializer extends JsonSerializer<CompletableFuture> implements ContextualSerializer {
-    private final JsonSerializer<Object> valueSerializer;
+public class CompletableFutureSerializer extends ValueSerializer<CompletableFuture> {
+    private final ValueSerializer<Object> valueSerializer;
 
     public CompletableFutureSerializer() {
         this(null);
     }
 
-    public CompletableFutureSerializer(JsonSerializer<Object> valueSerializer) {
+    public CompletableFutureSerializer(ValueSerializer<Object> valueSerializer) {
         this.valueSerializer = valueSerializer;
     }
 
     @Override
-    public void serialize(CompletableFuture value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    public void serialize(CompletableFuture value, JsonGenerator gen, SerializationContext ctx) throws JacksonException {
         if (value == null) {
             gen.writeNull();
             return;
@@ -47,12 +45,12 @@ public class CompletableFutureSerializer extends JsonSerializer<CompletableFutur
             return;
         }
 
-        JsonSerializer<Object> ser = this.valueSerializer;
+        ValueSerializer<Object> ser = this.valueSerializer;
         if (ser == null) {
-            ser = serializers.findValueSerializer(inner.getClass(), null);
+            ser = ctx.findContentValueSerializer(inner.getClass(), null);
         }
 
-        ser.serialize(inner, gen, serializers);
+        ser.serialize(inner, gen, ctx);
     }
 
     @Override
@@ -61,7 +59,7 @@ public class CompletableFutureSerializer extends JsonSerializer<CompletableFutur
     }
 
     @Override
-    public JsonSerializer<?> createContextual(SerializerProvider prov, BeanProperty property) throws JsonMappingException {
+    public ValueSerializer<?> createContextual(SerializationContext prov, BeanProperty property) {
         if (property == null) {
             return this;
         }
@@ -69,7 +67,7 @@ public class CompletableFutureSerializer extends JsonSerializer<CompletableFutur
         var type = property.getType();
         if (type.hasGenericTypes()) {
             var innerType = type.containedTypeOrUnknown(0);
-            JsonSerializer<Object> ser = prov.findValueSerializer(innerType, property);
+            ValueSerializer<Object> ser = prov.findContentValueSerializer(innerType, property);
             return new CompletableFutureSerializer(ser);
         }
 
@@ -77,7 +75,7 @@ public class CompletableFutureSerializer extends JsonSerializer<CompletableFutur
     }
 
     @Override
-    public boolean isEmpty(SerializerProvider provider, CompletableFuture value) {
+    public boolean isEmpty(SerializationContext provider, CompletableFuture value) {
         if (super.isEmpty(provider, value)) return true;
         if (!value.isDone()) return true;
         if (value.isCompletedExceptionally()) return true;

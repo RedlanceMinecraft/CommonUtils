@@ -1,7 +1,7 @@
 package org.redlance.common.utils.requester;
 
 import com.github.mizosoft.methanol.*;
-import com.github.mizosoft.methanol.adapter.jackson.JacksonAdapterFactory;
+import com.github.mizosoft.methanol.adapter.jackson3.JacksonAdapterFactory;
 import com.github.mizosoft.methanol.internal.Utils;
 import io.github.kosmx.emotes.server.services.InstanceService;
 import org.redlance.common.CommonUtils;

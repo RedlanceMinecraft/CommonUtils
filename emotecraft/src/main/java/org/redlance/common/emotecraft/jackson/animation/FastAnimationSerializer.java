@@ -1,4 +1,4 @@
-package org.redlance.common.jackson.animation;
+package org.redlance.common.emotecraft.jackson.animation;
 
 import com.zigythebird.playeranimcore.animation.Animation;
 import io.github.kosmx.emotes.common.network.EmotePacket;

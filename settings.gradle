@@ -1,6 +1,8 @@
 rootProject.name = "common-utils"
 
 include(":common")
+include(":jackson")
+
 include(":emotecraft")
 
 include(":adventure")

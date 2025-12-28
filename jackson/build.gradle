@@ -1,0 +1,4 @@
+dependencies {
+    implementation api("tools.jackson.core:jackson-databind:${project.jackson_version}")
+    implementation api("tools.jackson.dataformat:jackson-dataformat-smile:${project.jackson_version}")
+}

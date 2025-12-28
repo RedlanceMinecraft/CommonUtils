@@ -3,18 +3,21 @@ package org.redlance.common.emotecraft;
 import io.github.kosmx.emotes.common.SerializableConfig;
 import io.github.kosmx.emotes.server.config.ConfigSerializer;
 import io.github.kosmx.emotes.server.config.Serializer;
-import org.redlance.common.CommonUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
 
 public class EmoteCraftInstance {
+    private static final Logger LOGGER = LoggerFactory.getLogger("EmoteCraftInstance");
+
     /*public static <T extends SerializableConfig> void tryInitializeInstance(Supplier<T> configSuppler, Class<T> configClass) {
         EmoteCraftInstance.tryInitializeInstance(configSuppler, configClass, null);
     }*/
 
     public static <T extends SerializableConfig> T tryInitializeInstance(Supplier<T> configSuppler, Class<T> configClass) {
         if (Serializer.INSTANCE != null) {
-            CommonUtils.LOGGER.warn("Emotecraft is loaded multiple times, please load it only once!");
+            EmoteCraftInstance.LOGGER.warn("Emotecraft is loaded multiple times, please load it only once!");
             return getConfigAs();
         }
 

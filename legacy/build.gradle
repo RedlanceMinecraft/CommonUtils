@@ -1,21 +1,3 @@
-plugins {
-    id 'maven-publish'
-    id 'java-library'
-    id 'java'
-}
-
-base.archivesName = rootProject.archives_base_name
-version = rootProject.mod_version
-group = rootProject.maven_group
-
-repositories {
-    maven {
-        name = "Redlance"
-        url = "https://repo.redlance.org/public"
-    }
-    mavenCentral()
-}
-
 dependencies {
     implementation api("com.github.mizosoft.methanol:methanol:${project.methanol_version}")
     implementation api("com.github.mizosoft.methanol:methanol-jackson3:${project.methanol_version}")
@@ -57,39 +39,5 @@ dependencies {
         exclude(group: "com.google.errorprone")
         exclude(group: "com.google.j2objc")
         exclude(group: "org.jspecify")
-    }
-
-    testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.1")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.1")
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = "UTF-8"
-    options.release.set 25
-}
-
-test {
-    useJUnitPlatform()
-    options {
-        systemProperties(System.getProperties())
-    }
-}
-
-java {
-    withSourcesJar()
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifactId = rootProject.archives_base_name
-
-            from components.java
-        }
-    }
-
-    repositories {
-        mavenLocal()
     }
 }

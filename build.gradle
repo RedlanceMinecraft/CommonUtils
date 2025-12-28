@@ -1,0 +1,54 @@
+allprojects {
+    apply plugin: "java"
+    apply plugin: "java-library"
+    apply plugin: "maven-publish"
+
+    base.archivesName = "${rootProject.archives_base_name}-{$project.name}"
+    version = rootProject.mod_version
+    group = rootProject.maven_group
+
+    repositories {
+        maven {
+            name = "Redlance"
+            url = "https://repo.redlance.org/public"
+        }
+        mavenCentral()
+    }
+
+    dependencies {
+        compileOnlyApi("org.jetbrains:annotations:26.0.2")
+
+        testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.1")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.1")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.1")
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = "UTF-8"
+        options.release.set 25
+    }
+
+    test {
+        useJUnitPlatform()
+        options {
+            systemProperties(System.getProperties())
+        }
+    }
+
+    java {
+        withSourcesJar()
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = base.archivesName
+                from components.java
+            }
+        }
+
+        repositories {
+            mavenLocal()
+        }
+    }
+}

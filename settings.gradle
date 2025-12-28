@@ -1,3 +1,6 @@
 rootProject.name = "common-utils"
 
+include(":common")
+
+include(":adventure")
 include(":legacy")

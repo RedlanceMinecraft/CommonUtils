@@ -7,8 +7,9 @@ import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.TranslationStore;
 import net.kyori.adventure.translation.Translator;
 import org.apache.commons.io.FilenameUtils;
-import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.ResourceUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,6 +24,8 @@ import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 public class TranslatorUtils {
+    private static final Logger LOGGER = LoggerFactory.getLogger("TranslatorUtils");
+
     public static final Map<String, List<String>> LOCALE_FALLBACK = Map.ofEntries(
             // Eastern European and Russian-speaking countries
             Map.entry("ru_ru", List.of("tt_ru", "uk_ua", "kk_kz", "be_by", "ba_ru")),
@@ -67,7 +70,7 @@ public class TranslatorUtils {
 
         try {
             ResourceUtils.visitResources(knownResource, target, path -> {
-                CommonUtils.LOGGER.info("Loading localizations...");
+                TranslatorUtils.LOGGER.info("Loading localizations...");
 
                 try (final Stream<Path> files = Files.walk(path)) {
                     files.filter(Files::isRegularFile).forEach(file -> {
@@ -75,7 +78,7 @@ public class TranslatorUtils {
                         Locale locale = localeName.equals("main") ? defaultLocale : Translator.parseLocale(localeName);
                         if (locale == null) return;
 
-                        CommonUtils.LOGGER.info("Loading {} ({}) localization...", localeName, locale);
+                        TranslatorUtils.LOGGER.info("Loading {} ({}) localization...", localeName, locale);
 
                         if (LOCALE_FALLBACK.containsKey(localeName)) {
                             for (String localeFallback : LOCALE_FALLBACK.get(localeName)) {
@@ -85,11 +88,11 @@ public class TranslatorUtils {
                         translationStore.registerAll(locale, file, false);
                     });
                 } catch (IOException e) {
-                    CommonUtils.LOGGER.error("Encountered an I/O error whilst loading translations", e);
+                    TranslatorUtils.LOGGER.error("Encountered an I/O error whilst loading translations", e);
                 }
             }, "messages");
         } catch (IOException e) {
-            CommonUtils.LOGGER.error("Encountered an I/O error whilst loading translations", e);
+            TranslatorUtils.LOGGER.error("Encountered an I/O error whilst loading translations", e);
         }
 
         return translationStore;

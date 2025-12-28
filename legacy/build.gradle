@@ -17,16 +17,8 @@ dependencies {
     implementation api("tools.jackson.core:jackson-databind:${project.jackson_version}")
     implementation api("tools.jackson.dataformat:jackson-dataformat-smile:${project.jackson_version}")
 
-    implementation api("commons-io:commons-io:2.21.0")
     runtimeOnly /*api*/("com.google.code.gson:gson:2.13.2") {
         exclude(group: "com.google.errorprone")
-    }
-    implementation api("net.kyori:adventure-api:${project.adventure_version}")
-    implementation api("net.kyori:adventure-text-serializer-legacy:${project.adventure_version}")
-    implementation api("net.kyori:adventure-text-serializer-gson:${project.adventure_version}") {
-        exclude(group: "com.google.auto.service")
-        // exclude(group: "com.google.code.gson")
-        exclude(group: "org.jspecify")
     }
 
     implementation api("io.github.kosmx.emotes:emotesAssets:${project.emotecraft_version}")

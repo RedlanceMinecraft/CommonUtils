@@ -1,0 +1,6 @@
+dependencies {
+    implementation api("net.kyori:adventure-api:${project.adventure_version}")
+    implementation api("net.kyori:adventure-text-serializer-legacy:${project.adventure_version}")
+    implementation api("net.kyori:adventure-text-serializer-gson:${project.adventure_version}")
+    implementation api(project(":common"))
+}

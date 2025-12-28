@@ -16,6 +16,9 @@ allprojects {
     }
 
     dependencies {
+        implementation api("org.slf4j:slf4j-api:2.0.17")
+        implementation api("commons-io:commons-io:2.21.0")
+
         compileOnlyApi("org.jetbrains:annotations:26.0.2")
 
         testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.1")

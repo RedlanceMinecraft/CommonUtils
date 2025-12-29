@@ -1,0 +1,12 @@
+tasks.withType(GenerateModuleMetadata).configureEach {
+    enabled = true
+}
+
+dependencies {
+    constraints {
+        for (proj in rootProject.subprojects) {
+            if (proj == project) continue
+            api(project(proj.path))
+        }
+    }
+}

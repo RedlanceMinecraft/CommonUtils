@@ -13,7 +13,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 public class JacksonMappers {
-    private static final List<JacksonModule> JACKSON_MODULES = MapperBuilder.findModules(JacksonMappers.class.getClassLoader());
+    private static final List<JacksonModule> JACKSON_MODULES = MapperBuilder.findModules();
 
     public static final ObjectMapper OBJECT_MAPPER = configureMapper(JsonMapper.builder())
             .addModules(JACKSON_MODULES)
@@ -40,6 +40,7 @@ public class JacksonMappers {
                 .changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_EMPTY))
                 .changeDefaultPropertyInclusion(incl -> incl.withContentInclusion(JsonInclude.Include.NON_EMPTY))
                 .disable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
                 .defaultPrettyPrinter(null);
     }
 }

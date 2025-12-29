@@ -1,14 +1,11 @@
 package org.redlance.common.tests;
 
-import io.github.kosmx.emotes.common.SerializableConfig;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.redlance.common.emotecraft.EmoteCraftInstance;
 import org.redlance.common.jackson.JacksonMappers;
+import org.redlance.common.requester.mojang.MojangRequester;
+import org.redlance.common.requester.mojang.obj.BaseMojangProfile;
 import org.redlance.common.utils.LambdaExceptionUtils;
-import org.redlance.common.utils.requester.mojang.MojangRequester;
-import org.redlance.common.utils.requester.mojang.obj.BaseMojangProfile;
 import tools.jackson.databind.JavaType;
 
 import java.util.concurrent.CompletableFuture;
@@ -16,11 +13,6 @@ import java.util.concurrent.ExecutionException;
 
 public class CompletableFutureAdapterFactoryTest {
     private static final JavaType TYPE = JacksonMappers.OBJECT_MAPPER.getTypeFactory().constructParametricType(CompletableFuture.class, BaseMojangProfile.class);
-
-    @BeforeAll
-    public static void init() {
-        EmoteCraftInstance.tryInitializeInstance(SerializableConfig::new, SerializableConfig.class);
-    }
 
     @Test
     public void testNull() {

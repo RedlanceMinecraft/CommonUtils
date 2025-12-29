@@ -1,0 +1,6 @@
+dependencies {
+    implementation api("commons-io:commons-io:2.21.0")
+
+    implementation api(project(":requester-base"))
+    implementation api(project(":cache"))
+}

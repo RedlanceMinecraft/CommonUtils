@@ -3,4 +3,5 @@ dependencies {
     implementation api("tools.jackson.dataformat:jackson-dataformat-smile:${project.jackson_version}")
 
     testImplementation(project(":common"))
+    testImplementation(project(":requester-mojang"))
 }

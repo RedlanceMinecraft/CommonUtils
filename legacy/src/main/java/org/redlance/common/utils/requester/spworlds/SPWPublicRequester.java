@@ -1,7 +1,6 @@
 package org.redlance.common.utils.requester.spworlds;
 
 import com.github.mizosoft.methanol.MutableRequest;
-import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.requester.Requester;
 import org.redlance.common.utils.requester.mojang.MojangRequester;
 import org.redlance.common.utils.requester.mojang.obj.BaseMojangProfile;

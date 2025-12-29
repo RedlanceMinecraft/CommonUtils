@@ -6,8 +6,8 @@ import io.github.kosmx.emotes.common.network.PacketConfig;
 import io.netty.buffer.AdaptiveByteBufAllocator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import org.redlance.common.CommonUtils;
 import org.redlance.common.emotecraft.KeyframeUtils;
+import org.redlance.common.emotecraft.jackson.EmotecraftModule;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
@@ -30,7 +30,7 @@ public class FastAnimationSerializer extends ValueSerializer<Animation> {
     private FastAnimationSerializer(boolean downgradable, boolean forcePlayerAnim) {
         this.downgradable = downgradable;
         this.forcePlayerAnim = forcePlayerAnim;
-        CommonUtils.LOGGER.debug("Serializing animations via {} (downgradable={}, forcePlayerAnim={})!",
+        EmotecraftModule.LOGGER.debug("Serializing animations via {} (downgradable={}, forcePlayerAnim={})!",
                 getClass().getName(), downgradable, forcePlayerAnim
         );
     }
@@ -45,7 +45,7 @@ public class FastAnimationSerializer extends ValueSerializer<Animation> {
         try {
             gen.writeBinary(serializeToBytes(src, this.downgradable, this.forcePlayerAnim));
         } catch (Throwable e) {
-            CommonUtils.LOGGER.error("Failed to serialize animation {}!", src, e);
+            EmotecraftModule.LOGGER.error("Failed to serialize animation {}!", src, e);
             gen.writeNull();
         }
     }

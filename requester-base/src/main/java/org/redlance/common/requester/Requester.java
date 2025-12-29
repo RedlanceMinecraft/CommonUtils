@@ -1,0 +1,138 @@
+package org.redlance.common.requester;
+
+import com.github.mizosoft.methanol.*;
+import com.github.mizosoft.methanol.adapter.jackson3.JacksonAdapterFactory;
+import com.github.mizosoft.methanol.internal.Utils;
+import org.redlance.common.jackson.JacksonMappers;
+import org.redlance.common.utils.CommonExecutors;
+import org.redlance.common.utils.LambdaExceptionUtils;
+import org.redlance.common.requester.interceptors.CacheOverrideInterceptor;
+
+import java.io.IOException;
+import java.net.CookieManager;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+@SuppressWarnings("unused")
+public class Requester {
+    public static final MediaType APPLICATION_JACKSON_SMILE = MediaType.of("application", "x-jackson-smile");
+
+    public static final Methanol HTTP_CLIENT = Methanol.newBuilder()
+            .executor(CommonExecutors.createExecutor("http-requester-"))
+            .connectTimeout(Duration.ofMinutes(1))
+            .version(HttpClient.Version.HTTP_2)
+            .proxy(UrlProxySelector.INSTANCE)
+            .followRedirects(HttpClient.Redirect.ALWAYS)
+            .cache(HttpCache.newBuilder()
+                    .executor(CommonExecutors.createExecutor("http-cache-"))
+                    .cacheOnDisk(Path.of("httpcache"), 1024 * 1024 * 1024) // 1024 MBs
+                    .listener(new HttpCache.Listener() {
+                        @Override
+                        public void onNetworkUse(HttpRequest request, TrackedResponse<?> cacheResponse) {
+                            RequesterUtils.LOGGER.debug("Network used: {}", request);
+                        }
+                    })
+                    .build()
+            )
+            // .interceptor(new CookieFixerInterceptor())
+            // .interceptor(new FallbackInterceptor())
+            .backendInterceptor(new CacheOverrideInterceptor())
+            .userAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36")
+            .cookieHandler(new CookieManager())
+            .adapterCodec(AdapterCodec.newBuilder()
+                    // Json
+                    .decoder(JacksonAdapterFactory.createJsonDecoder(JacksonMappers.OBJECT_MAPPER))
+                    .encoder(JacksonAdapterFactory.createJsonEncoder(JacksonMappers.OBJECT_MAPPER))
+
+                    // Smile
+                    .decoder(JacksonAdapterFactory.createDecoder(JacksonMappers.SMILE_MAPPER, APPLICATION_JACKSON_SMILE))
+                    .encoder(JacksonAdapterFactory.createEncoder(JacksonMappers.SMILE_MAPPER, APPLICATION_JACKSON_SMILE))
+                    .build())
+            .build();
+
+    static {
+        RequesterUtils.LOGGER.debug("Added http cache saving hook!");
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> Requester.HTTP_CLIENT.caches().forEach(
+                LambdaExceptionUtils.rethrowConsumer(HttpCache::close)
+        ), "http-cache-saver"));
+    }
+
+    public static <T> T sendRequest(HttpRequest httpRequest, Class<T> type) throws IOException, InterruptedException {
+        return Requester.HTTP_CLIENT // send request
+                .send(httpRequest, type)
+                .body();
+    }
+
+    public static <T> T sendRequest(HttpRequest httpRequest, TypeRef<T> token) throws IOException, InterruptedException {
+        return Requester.HTTP_CLIENT // send request
+                .send(httpRequest, token)
+                .body();
+    }
+
+    public static <T> T sendRequest(HttpRequest httpRequest, HttpResponse.BodyHandler<T> bodyHandler) throws IOException, InterruptedException {
+        return Requester.HTTP_CLIENT // send request
+                .send(httpRequest, bodyHandler)
+                .body();
+    }
+
+    public static <T> CompletableFuture<T> sendRequestAsync(HttpRequest httpRequest, Class<T> type) {
+        return Requester.HTTP_CLIENT // send request
+                .sendAsync(httpRequest, type)
+                .thenApply(HttpResponse::body);
+    }
+
+    public static <T> CompletableFuture<T> sendRequestAsync(HttpRequest httpRequest, TypeRef<T> token) {
+        return Requester.HTTP_CLIENT // send request
+                .sendAsync(httpRequest, token)
+                .thenApply(HttpResponse::body);
+    }
+
+    public static <T> CompletableFuture<T> sendRequestAsync(HttpRequest httpRequest, HttpResponse.BodyHandler<T> bodyHandler) {
+        return Requester.HTTP_CLIENT // send request
+                .sendAsync(httpRequest, bodyHandler)
+                .thenApply(HttpResponse::body);
+    }
+
+    public static HttpResponse<Void> sendRequestVoid(HttpRequest httpRequest) throws IOException, InterruptedException {
+        return Requester.HTTP_CLIENT.send(httpRequest, HttpResponse.BodyHandlers.discarding());
+    }
+
+    public static void sendRequestVoidAsync(HttpRequest httpRequest) {
+        Requester.HTTP_CLIENT.sendAsync(httpRequest, HttpResponse.BodyHandlers.discarding());
+    }
+
+    public static boolean invalidateRequest(HttpRequest httpRequest) {
+        try {
+            Optional<HttpCache> httpCache = Requester.HTTP_CLIENT.cache();
+
+            if (httpCache.isEmpty()) {
+                return false;
+            }
+
+            return httpCache.get().remove(httpRequest);
+        } catch (Throwable th) {
+            RequesterUtils.LOGGER.warn("Failed to remove request from cache!", th);
+            return false;
+        }
+    }
+
+    private static final ExecutorService PARALLEL_REQUESTER = CommonExecutors.createExecutor("parallel-requester-");
+    public static <R, T> Stream<R> prepareParallelRequests(Stream<T> requests, Function<? super T, R> mapper) {
+        return requests.map(request -> Requester.PARALLEL_REQUESTER.submit( // TODO rewrite with java 26
+                () -> mapper.apply(request)
+        )).map(LambdaExceptionUtils.rethrowFunction((Future::get)));
+    }
+
+    public static HttpRequest.BodyPublisher ofObject(Object object, MediaType mediaType) {
+        return HTTP_CLIENT.adapterCodec().orElseThrow().publisherOf(object, Utils.hintsOf(mediaType));
+    }
+}

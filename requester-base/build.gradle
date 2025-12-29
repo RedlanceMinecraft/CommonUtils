@@ -1,0 +1,7 @@
+dependencies {
+    implementation api("com.github.mizosoft.methanol:methanol:${project.methanol_version}")
+    implementation api("com.github.mizosoft.methanol:methanol-jackson3:${project.methanol_version}")
+
+    implementation api(project(":common"))
+    implementation api(project(":jackson"))
+}

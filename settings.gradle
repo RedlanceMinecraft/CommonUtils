@@ -1,9 +1,11 @@
 rootProject.name = "common-utils"
 
 include(":common")
+include(":log4j")
+include(":cache")
 include(":jackson")
-
 include(":emotecraft")
-
 include(":adventure")
 include(":legacy")
+
+include(":requester-base")

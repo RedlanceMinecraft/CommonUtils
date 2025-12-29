@@ -2,7 +2,6 @@ package org.redlance.common.utils.requester.boosty;
 
 import tools.jackson.databind.node.ObjectNode;
 import com.github.mizosoft.methanol.TypeRef;
-import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.requester.Chunker;
 import org.redlance.common.utils.requester.Requester;
 import org.redlance.common.utils.requester.boosty.obj.post.PostSales;

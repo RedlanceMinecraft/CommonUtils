@@ -12,4 +12,5 @@ dependencies {
     }
 
     compileOnly("tools.jackson.core:jackson-databind:${project.jackson_version}")
+    testImplementation(project(":jackson"))
 }

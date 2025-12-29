@@ -5,7 +5,6 @@ import tools.jackson.databind.node.ObjectNode;
 import com.github.mizosoft.methanol.CacheControl;
 import com.github.mizosoft.methanol.MutableRequest;
 import org.jetbrains.annotations.Nullable;
-import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.requester.Requester;
 import org.redlance.common.utils.requester.mojang.obj.BaseMojangProfile;
 import org.redlance.common.utils.requester.mojang.obj.MojangProfile;

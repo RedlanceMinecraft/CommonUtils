@@ -6,7 +6,7 @@ import io.github.kosmx.emotes.common.network.PacketTask;
 import io.github.kosmx.emotes.common.network.objects.NetData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import org.redlance.common.CommonUtils;
+import org.redlance.common.emotecraft.jackson.EmotecraftModule;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
@@ -43,7 +43,7 @@ public class FastAnimationDeserializer extends ValueDeserializer<Animation> {
         try {
             return serialize(bytes);
         } catch (Throwable e) {
-            CommonUtils.LOGGER.warn("Failed to deserialize animation from binary JSON node {}", t, e);
+            EmotecraftModule.LOGGER.warn("Failed to deserialize animation from binary JSON node {}", t, e);
             return null;
         }
     }

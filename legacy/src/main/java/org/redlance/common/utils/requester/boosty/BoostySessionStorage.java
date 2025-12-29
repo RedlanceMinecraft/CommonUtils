@@ -1,7 +1,6 @@
 package org.redlance.common.utils.requester.boosty;
 
 import tools.jackson.databind.node.ObjectNode;
-import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.cache.BaseCache;
 import org.redlance.common.utils.requester.Requester;
 

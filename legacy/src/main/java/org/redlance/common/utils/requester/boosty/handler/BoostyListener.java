@@ -1,7 +1,6 @@
 package org.redlance.common.utils.requester.boosty.handler;
 
 import org.jetbrains.annotations.Nullable;
-import org.redlance.common.CommonUtils;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.util.Objects;

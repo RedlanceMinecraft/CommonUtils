@@ -3,7 +3,6 @@ package org.redlance.common.utils.requester.boosty;
 import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.input.CharSequenceReader;
 import org.jetbrains.annotations.Nullable;
-import org.redlance.common.CommonUtils;
 import org.redlance.common.utils.requester.Requester;
 import org.redlance.common.utils.requester.boosty.handler.BoostyBuiltInHandler;
 import org.redlance.common.utils.requester.boosty.messages.auth.InboundAuthMessage;

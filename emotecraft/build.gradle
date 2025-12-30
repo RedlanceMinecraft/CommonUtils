@@ -1,7 +1,7 @@
 dependencies {
     implementation api("io.github.kosmx.emotes:emotesAssets:${project.emotecraft_version}")
     implementation api("io.github.kosmx.emotes:emotesServer:${project.emotecraft_version}") {
-        // exclude(group: "com.google.code.gson")
+        exclude(group: "com.google.code.gson")
         exclude(group: "org.jetbrains")
 
         // NoteBlockLib
@@ -12,5 +12,6 @@ dependencies {
     }
 
     compileOnly("tools.jackson.core:jackson-databind:${project.jackson_version}")
+    runtimeOnly("com.google.code.gson:gson:2.13.2")
     testImplementation(project(":jackson"))
 }

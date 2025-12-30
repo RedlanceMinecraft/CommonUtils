@@ -1,7 +1,13 @@
 dependencies {
     implementation api("net.kyori:adventure-api:${project.adventure_version}")
     implementation api("net.kyori:adventure-text-serializer-legacy:${project.adventure_version}")
-    implementation api("net.kyori:adventure-text-serializer-gson:${project.adventure_version}")
+    implementation api("net.kyori:adventure-text-serializer-gson:${project.adventure_version}") {
+        exclude(group: "com.google.auto.service")
+        exclude(group: "com.google.code.gson")
+        exclude(group: "org.jspecify")
+    }
     implementation api(project(":common"))
     implementation api("commons-io:commons-io:2.21.0")
+
+    runtimeOnly("com.google.code.gson:gson:2.13.2")
 }

@@ -3,4 +3,6 @@ dependencies {
         if (proj == project) continue
         api(project(proj.path))
     }
+
+    api(platform(rootProject))
 }

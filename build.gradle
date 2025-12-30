@@ -22,10 +22,8 @@ allprojects {
         options.release.set 25
     }
 
-    publishing {
-        repositories {
-            mavenLocal()
-        }
+    publishing.repositories {
+        mavenLocal()
     }
 }
 
@@ -52,12 +50,10 @@ subprojects {
         withSourcesJar()
     }
 
-    publishing {
-        publications {
-            mavenJava(MavenPublication) {
-                artifactId = "${rootProject.archives_base_name}-${project.name}"
-                from components.java
-            }
+    publishing.publications {
+        mavenJava(MavenPublication) {
+            artifactId = "${rootProject.archives_base_name}-${project.name}"
+            from components.java
         }
     }
 }

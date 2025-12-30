@@ -1,6 +1,6 @@
 rootProject.name = "common-utils"
 
-include(":bom")
+include(":all")
 
 include(":common")
 include(":log4j")

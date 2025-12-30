@@ -1,6 +1,8 @@
-subprojects {
-    apply plugin: "java"
-    apply plugin: "java-library"
+plugins {
+    id "java-platform"
+}
+
+allprojects {
     apply plugin: "maven-publish"
 
     base.archivesName = "${rootProject.archives_base_name}-${project.name}"
@@ -15,17 +17,28 @@ subprojects {
         mavenCentral()
     }
 
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = "UTF-8"
+        options.release.set 25
+    }
+
+    publishing {
+        repositories {
+            mavenLocal()
+        }
+    }
+}
+
+subprojects {
+    apply plugin: "java"
+    apply plugin: "java-library"
+
     dependencies {
         compileOnlyApi("org.jetbrains:annotations:26.0.2")
 
         testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.1")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.1")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.1")
-    }
-
-    tasks.withType(JavaCompile).configureEach {
-        options.encoding = "UTF-8"
-        options.release.set 25
     }
 
     test {
@@ -46,9 +59,23 @@ subprojects {
                 from components.java
             }
         }
+    }
+}
 
-        repositories {
-            mavenLocal()
+publishing.publications {
+    register('mavenJava', MavenPublication) {
+        from(components['javaPlatform'])
+    }
+}
+
+tasks.withType(GenerateModuleMetadata).configureEach {
+    enabled = true
+}
+
+dependencies {
+    constraints {
+        for (proj in rootProject.subprojects) {
+            api(project(proj.path))
         }
     }
 }

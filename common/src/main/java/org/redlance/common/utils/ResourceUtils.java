@@ -58,8 +58,7 @@ public class ResourceUtils {
         final URL knownResource = target.getClassLoader()
                 .getResource(knownResourceName);
         if (knownResource == null) {
-            throw new IllegalStateException(
-                    "default-velocity.toml does not exist, don't know where we are");
+            throw new IllegalStateException(knownResourceName + " does not exist, don't know where we are");
         }
         if (knownResource.getProtocol().equals("jar")) {
             // Running from a JAR

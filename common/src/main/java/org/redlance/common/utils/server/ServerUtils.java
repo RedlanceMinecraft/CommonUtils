@@ -1,7 +1,6 @@
-package org.redlance.common.server;
+package org.redlance.common.utils.server;
 
 import com.sun.net.httpserver.Headers;
-import org.redlance.common.adventure.TranslatorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,15 +69,15 @@ public class ServerUtils {
         return Optional.ofNullable(segments[segments.length - 1]);
     }
 
-    public static Locale findLocale(Headers headers, Supplier<Locale> fallback) {
-        return findLocale(headers::getFirst, fallback);
+    public static Locale findLocale(Headers headers, LocaleParser parser, Supplier<Locale> fallback) {
+        return findLocale(headers::getFirst, parser, fallback);
     }
 
-    public static Locale findLocale(Function<String, String> headers, Supplier<Locale> fallback) {
+    public static Locale findLocale(Function<String, String> headers, LocaleParser parser, Supplier<Locale> fallback) {
         String userLocale = headers.apply("Accept-Language");
         if (userLocale != null && !userLocale.isBlank()) {
             for (Locale.LanguageRange range : Locale.LanguageRange.parse(userLocale.replace("_", "-"))) {
-                Locale locale = TranslatorUtils.parseLocale(range.getRange(), () -> null);
+                Locale locale = parser.parseLocale(range.getRange(), () -> null);
                 if (locale != null) return locale;
             }
         }
@@ -156,7 +155,7 @@ public class ServerUtils {
                 }
             };
 
-            return TranslatorUtils.parseLocale(lang, fallback);
+            return parser.parseLocale(lang, fallback);
         }
 
         return fallback.get();

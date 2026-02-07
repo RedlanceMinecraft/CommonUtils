@@ -1,10 +1,10 @@
 package org.redlance.common.services;
 
-import java.util.Comparator;
-import java.util.Optional;
-import java.util.ServiceLoader;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class ServiceUtils {
     private static final Comparator<AdvancedService> COMPARATOR = Comparator.comparingInt(AdvancedService::getPriority);
@@ -20,9 +20,20 @@ public class ServiceUtils {
                 serviceClass.getClassLoader()
         ) : ServiceLoader.load(layer, serviceClass);
 
-        return loader.stream()
-                .map(ServiceLoader.Provider::get)
-                .filter(AdvancedService::isActive);
+        Iterator<T> it = loader.iterator();
+        return StreamSupport.stream(new Spliterators.AbstractSpliterator<T>(Long.MAX_VALUE, 0) {
+            @Override
+            public boolean tryAdvance(Consumer<? super T> action) {
+                while (true) {
+                    try {
+                        if (!it.hasNext()) return false;
+                        action.accept(it.next());
+                        return true;
+                    } catch (ServiceConfigurationError | NoClassDefFoundError ignored) {
+                    }
+                }
+            }
+        }, false).filter(AdvancedService::isActive);
     }
 
     public static <T extends AdvancedService> Stream<T> loadServicesSorted(Class<T> serviceClass) {

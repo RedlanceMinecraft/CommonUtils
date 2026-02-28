@@ -28,7 +28,9 @@ public class KeyframeUtils {
 
     public static boolean hasEasingArgs(List<Keyframe> stack) {
         for (Keyframe keyframe : stack) {
-            if (!keyframe.easingArgs().isEmpty()) return true;
+            for (List<?> inner : keyframe.easingArgs()) {
+                if (!inner.isEmpty()) return true;
+            }
         }
         return false;
     }

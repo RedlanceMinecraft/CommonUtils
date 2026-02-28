@@ -9,6 +9,8 @@ include(":cache")
 include(":jackson")
 include(":emotecraft")
 include(":adventure")
+include(":server")
+include(":reflect")
 // include(":legacy")
 
 include(":requester-base")

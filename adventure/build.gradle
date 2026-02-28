@@ -8,6 +8,7 @@ dependencies {
     }
     implementation api(project(":common"))
     implementation api("commons-io:commons-io:2.21.0")
+    implementation "org.slf4j:slf4j-api:${slf4j_api_version}"
 
     runtimeOnly("com.google.code.gson:gson:2.13.2")
 }

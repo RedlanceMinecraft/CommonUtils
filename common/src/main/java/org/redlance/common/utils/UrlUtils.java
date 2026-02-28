@@ -1,7 +1,5 @@
 package org.redlance.common.utils;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,7 +16,7 @@ public class UrlUtils {
         return URL_PATTERN.matcher(input);
     }
 
-    public static String filterUrls(@Nullable String input, String replace) {
+    public static String filterUrls(String input, String replace) {
         if (input == null) return null;
 
         String replacement = (replace != null) ? replace : "";

@@ -1,6 +1,5 @@
 package org.redlance.common.cache;
 
-import org.jetbrains.annotations.Nullable;
 import tools.jackson.databind.JavaType;
 import tools.jackson.databind.ObjectMapper;
 
@@ -71,7 +70,7 @@ public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
         return getKeyByValue(value, null);
     }
 
-    public Optional<K> getKeyByValue(Object value, @Nullable Predicate<Map.Entry<K, V>> predicate) {
+    public Optional<K> getKeyByValue(Object value, Predicate<Map.Entry<K, V>> predicate) {
         if (value == null) return Optional.empty();
         return getObj().entrySet().stream()
                 .filter(entry -> value.equals(entry.getValue()) && (predicate == null || predicate.test(entry)))

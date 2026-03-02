@@ -8,6 +8,7 @@ import java.util.stream.StreamSupport;
 
 public class ServiceUtils {
     private static final Comparator<AdvancedService> COMPARATOR = Comparator.comparingInt(AdvancedService::getPriority);
+    private static final boolean DEBUG_SERVICES = Boolean.getBoolean("commonutils.debug.services");
 
     public static final int DEFAULT_PRIORITY = 0;
     public static final int HIGHEST_PRIORITY = 1000;
@@ -29,7 +30,8 @@ public class ServiceUtils {
                         if (!it.hasNext()) return false;
                         action.accept(it.next());
                         return true;
-                    } catch (ServiceConfigurationError | NoClassDefFoundError ignored) {
+                    } catch (ServiceConfigurationError | NoClassDefFoundError ex) {
+                        if (DEBUG_SERVICES) ex.printStackTrace();
                     }
                 }
             }

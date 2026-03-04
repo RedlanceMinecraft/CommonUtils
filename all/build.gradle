@@ -14,3 +14,15 @@ jar {
 sourcesJar {
     enabled = false
 }
+
+configurations {
+    apiElements {
+        artifacts.clear()
+    }
+    runtimeElements {
+        artifacts.clear()
+    }
+    sourcesElements {
+        artifacts.clear()
+    }
+}

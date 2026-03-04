@@ -22,17 +22,9 @@ import java.util.List;
 public class FastAnimationSerializer extends ValueSerializer<Animation> {
     protected static final ByteBufAllocator ALLOC = AdaptiveByteBufAllocator.DEFAULT;
 
-    public static final FastAnimationSerializer INSTANCE = new FastAnimationSerializer(false, false);
-    public static final FastAnimationSerializer DOWNGRADABLE = new FastAnimationSerializer(true, false);
-    public static final FastAnimationSerializer LEGACY = new FastAnimationSerializer(true, true);
-
     private final PacketTask packetTask;
     private final boolean downgradable;
     private final boolean forcePlayerAnim;
-
-    private FastAnimationSerializer(boolean downgradable, boolean forcePlayerAnim) {
-        this(PacketTask.STREAM, downgradable, forcePlayerAnim);
-    }
 
     public FastAnimationSerializer(PacketTask packetTask, boolean downgradable, boolean forcePlayerAnim) {
         if (packetTask != PacketTask.FILE && packetTask != PacketTask.STREAM) throw new UnsupportedOperationException();

@@ -13,7 +13,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 public class JacksonMappers {
-    private static final List<JacksonModule> JACKSON_MODULES = MapperBuilder.findModules();
+    public static final List<JacksonModule> JACKSON_MODULES = MapperBuilder.findModules();
 
     public static final ObjectMapper OBJECT_MAPPER = configureMapper(JsonMapper.builder())
             .addModules(JACKSON_MODULES)

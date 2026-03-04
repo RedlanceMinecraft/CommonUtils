@@ -2,7 +2,6 @@ package org.redlance.common.emotecraft.jackson.animation;
 
 import com.zigythebird.playeranimcore.animation.Animation;
 import io.github.kosmx.emotes.common.network.EmotePacket;
-import io.github.kosmx.emotes.common.network.PacketTask;
 import io.github.kosmx.emotes.common.network.objects.NetData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -57,7 +56,7 @@ public class FastAnimationDeserializer extends ValueDeserializer<Animation> {
 
         try {
             NetData data = new EmotePacket(wrappedBuffer).data;
-            if (data.purpose != PacketTask.FILE) throw new IllegalStateException("Binary emote is invalid!");
+            if (data.emoteData == null) throw new IllegalStateException("Binary emote is invalid!");
             return data.emoteData;
         } finally {
             wrappedBuffer.release();

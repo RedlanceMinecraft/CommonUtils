@@ -7,10 +7,13 @@ import org.redlance.common.emotecraft.jackson.animation.FastAnimationDeserialize
 import org.redlance.common.emotecraft.jackson.animation.FastAnimationSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.module.SimpleModule;
 
 public class EmotecraftModule extends SimpleModule {
     public static final Logger LOGGER = LoggerFactory.getLogger("EmotecraftModule");
+    private static final EmotecraftModule COMPACT_MODULE = new EmotecraftModule(true);
+
 
     @SuppressWarnings("unused") // Called by ServiceLoader
     public EmotecraftModule() {
@@ -26,5 +29,9 @@ public class EmotecraftModule extends SimpleModule {
     @Override
     public Object getRegistrationId() {
         return CommonData.MOD_ID;
+    }
+
+    public static ObjectMapper rebuildWithCompact(ObjectMapper mapper) {
+        return mapper.rebuild().addModule(COMPACT_MODULE).build();
     }
 }

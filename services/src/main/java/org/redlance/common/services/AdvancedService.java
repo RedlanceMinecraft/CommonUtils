@@ -1,7 +1,7 @@
 package org.redlance.common.services;
 
 public interface AdvancedService {
-    boolean isActive();
+    boolean isServiceActive();
 
     default int getPriority() {
         return ServiceUtils.DEFAULT_PRIORITY;

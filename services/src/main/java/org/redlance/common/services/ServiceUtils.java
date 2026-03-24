@@ -35,7 +35,7 @@ public class ServiceUtils {
                     }
                 }
             }
-        }, false).filter(AdvancedService::isActive);
+        }, false).filter(AdvancedService::isServiceActive);
     }
 
     public static <T extends AdvancedService> Stream<T> loadServicesSorted(Class<T> serviceClass) {

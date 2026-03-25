@@ -29,7 +29,7 @@ public class Requester {
     public static final Methanol HTTP_CLIENT = Methanol.newBuilder()
             .executor(CommonExecutors.createExecutor("http-requester-"))
             .connectTimeout(Duration.ofMinutes(1))
-            .version(HttpClient.Version.HTTP_2)
+            .version(HttpClient.Version.HTTP_1_1)
             .proxy(UrlProxySelector.INSTANCE)
             .followRedirects(HttpClient.Redirect.ALWAYS)
             .cache(HttpCache.newBuilder()

@@ -5,7 +5,6 @@ import io.github.kosmx.emotes.common.network.EmotePacket;
 import io.github.kosmx.emotes.common.network.PacketConfig;
 import io.github.kosmx.emotes.common.network.PacketTask;
 import io.github.kosmx.emotes.common.tools.MathHelper;
-import io.netty.buffer.AdaptiveByteBufAllocator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import org.redlance.common.emotecraft.KeyframeUtils;
@@ -20,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class FastAnimationSerializer extends ValueSerializer<Animation> {
-    protected static final ByteBufAllocator ALLOC = AdaptiveByteBufAllocator.DEFAULT;
+    protected static final ByteBufAllocator ALLOC = ByteBufAllocator.DEFAULT;
 
     private final PacketTask packetTask;
     private final boolean downgradable;
@@ -65,7 +64,7 @@ public class FastAnimationSerializer extends ValueSerializer<Animation> {
                     .build(Integer.MAX_VALUE, false);
 
             packet.data.purpose = task;
-            packet.write(buf, ALLOC);
+            packet.write(buf);
             return MathHelper.readBytes(buf);
         } finally {
             buf.release();

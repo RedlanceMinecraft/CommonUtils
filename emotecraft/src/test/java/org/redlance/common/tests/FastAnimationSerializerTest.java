@@ -1,8 +1,8 @@
 package org.redlance.common.tests;
 
 import com.zigythebird.playeranimcore.animation.Animation;
-import io.github.kosmx.emotes.common.SerializableConfig;
 import io.github.kosmx.emotes.common.network.PacketTask;
+import io.github.kosmx.emotes.server.config.CommonConfig;
 import io.github.kosmx.emotes.server.serializer.UniversalEmoteSerializer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -22,7 +22,7 @@ public class FastAnimationSerializerTest {
 
     @BeforeAll
     public static void initEmotecraft() throws IOException {
-        EmoteCraftInstance.tryInitializeInstance(SerializableConfig::new, SerializableConfig.class);
+        EmoteCraftInstance.tryInitializeInstance(CommonConfig::new, CommonConfig.staticConfigVersion, CommonConfig.class);
 
         try (InputStream is = FastAnimationSerializerTest.class.getResourceAsStream("/test_test_cape_axes.json")) {
             ANIMATION_MAP.putAll(UniversalEmoteSerializer.readData(is, "emote.json"));

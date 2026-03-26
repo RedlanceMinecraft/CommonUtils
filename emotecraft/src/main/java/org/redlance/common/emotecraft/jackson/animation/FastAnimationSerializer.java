@@ -17,6 +17,7 @@ import tools.jackson.databind.ValueSerializer;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FastAnimationSerializer extends ValueSerializer<Animation> {
     protected static final ByteBufAllocator ALLOC = ByteBufAllocator.DEFAULT;
@@ -60,7 +61,7 @@ public class FastAnimationSerializer extends ValueSerializer<Animation> {
         try {
             EmotePacket packet = new EmotePacket.Builder()
                     .configureToSaveEmote(src)
-                    .setVersion(downgradable ? getDowngradedHashMap(src, forcePlayerAnim) : new HashMap<>())
+                    .setVersion(downgradable ? getDowngradedHashMap(src, forcePlayerAnim) : Map.of(PacketConfig.NEW_ANIMATION_FORMAT, (byte) 5))
                     .build(Integer.MAX_VALUE, false);
 
             packet.data.purpose = task;

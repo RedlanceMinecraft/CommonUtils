@@ -79,23 +79,23 @@ public class FastAnimationSerializer extends ValueSerializer<Animation> {
             version.remove(PacketConfig.NEW_ANIMATION_FORMAT);
 
             if (KeyframeUtils.hasEasingArgs(animation)) {
-                version.put((byte) 0, (byte) 4);
+                version.put(PacketConfig.LEGACY_ANIMATION_FORMAT, (byte) 4);
             } else if (KeyframeUtils.hasScaling(animation)) {
-                version.put((byte) 0, (byte) 3);
+                version.put(PacketConfig.LEGACY_ANIMATION_FORMAT, (byte) 3);
             } else if (KeyframeUtils.hasDynamicParts(animation)) {
-                version.put((byte) 0, (byte) 2);
+                version.put(PacketConfig.LEGACY_ANIMATION_FORMAT, (byte) 2);
             } else {
-                version.put((byte) 0, (byte) 1);
+                version.put(PacketConfig.LEGACY_ANIMATION_FORMAT, (byte) 1);
             }
         } else {
-            // TODO It may be possible to downgrade PAL versions, but for now this is not necessary.
             version.remove(PacketConfig.LEGACY_ANIMATION_FORMAT);
+            version.put(PacketConfig.NEW_ANIMATION_FORMAT, (byte) 5);
         }
 
         if (animation.data().getRaw("bages") instanceof List<?> tags && !tags.isEmpty()) {
-            version.put((byte) 0x11, (byte) 2);
+            version.put(PacketConfig.HEADER_PACKET, (byte) 2);
         } else {
-            version.put((byte) 0x11, (byte) 1);
+            version.put(PacketConfig.HEADER_PACKET, (byte) 1);
         }
 
         return version;

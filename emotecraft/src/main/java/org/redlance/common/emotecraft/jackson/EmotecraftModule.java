@@ -12,17 +12,17 @@ import tools.jackson.databind.module.SimpleModule;
 
 public class EmotecraftModule extends SimpleModule {
     public static final Logger LOGGER = LoggerFactory.getLogger("EmotecraftModule");
-    private static final EmotecraftModule COMPACT_MODULE = new EmotecraftModule(true);
+    private static final EmotecraftModule COMPACT_MODULE = new EmotecraftModule(PacketTask.STREAM, true, false);
 
 
     @SuppressWarnings("unused") // Called by ServiceLoader
     public EmotecraftModule() {
-        this(false);
+        this(PacketTask.FILE, true, false);
     }
 
-    public EmotecraftModule(boolean compact) {
+    public EmotecraftModule(PacketTask packetTask, boolean downgradable, boolean forcePlayerAnim) {
         super("Emotecraft Jackson");
-        addSerializer(Animation.class, new FastAnimationSerializer(compact ? PacketTask.STREAM : PacketTask.FILE, false, false));
+        addSerializer(Animation.class, new FastAnimationSerializer(packetTask, downgradable, forcePlayerAnim));
         addDeserializer(Animation.class, FastAnimationDeserializer.INSTANCE);
     }
 

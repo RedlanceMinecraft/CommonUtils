@@ -14,24 +14,21 @@ import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.ValueSerializer;
 
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FastAnimationSerializer extends ValueSerializer<Animation> {
     protected static final ByteBufAllocator ALLOC = ByteBufAllocator.DEFAULT;
 
     private final PacketTask packetTask;
     private final boolean downgradable;
-    private final boolean forcePlayerAnim;
+    private final PlayerAnimatorStatus playerAnimatorStatus;
 
-    public FastAnimationSerializer(PacketTask packetTask, boolean downgradable, boolean forcePlayerAnim) {
+    public FastAnimationSerializer(PacketTask packetTask, boolean downgradable, PlayerAnimatorStatus playerAnimatorStatus) {
         if (packetTask != PacketTask.FILE && packetTask != PacketTask.STREAM) throw new UnsupportedOperationException();
         this.packetTask = packetTask;
 
         this.downgradable = downgradable;
-        this.forcePlayerAnim = forcePlayerAnim;
+        this.playerAnimatorStatus = playerAnimatorStatus;
     }
 
     @Override
@@ -42,18 +39,18 @@ public class FastAnimationSerializer extends ValueSerializer<Animation> {
         }
 
         try {
-            gen.writeBinary(serializeToBytes(src, this.packetTask, this.downgradable, this.forcePlayerAnim));
+            gen.writeBinary(serializeToBytes(src, this.packetTask, this.downgradable, this.playerAnimatorStatus));
         } catch (Throwable e) {
             EmotecraftModule.LOGGER.error("Failed to serialize animation {}!", src, e);
             gen.writeNull();
         }
     }
 
-    public static String serializeToString(Animation src, PacketTask task, boolean downgradable, boolean forcePlayerAnim) {
-        return Base64.getEncoder().encodeToString(serializeToBytes(src, task, downgradable, forcePlayerAnim));
+    public static String serializeToString(Animation src, PacketTask task, boolean downgradable, PlayerAnimatorStatus playerAnimatorStatus) {
+        return Base64.getEncoder().encodeToString(serializeToBytes(src, task, downgradable, playerAnimatorStatus));
     }
 
-    public static byte[] serializeToBytes(Animation src, PacketTask task, boolean downgradable, boolean forcePlayerAnim) {
+    public static byte[] serializeToBytes(Animation src, PacketTask task, boolean downgradable, PlayerAnimatorStatus playerAnimatorStatus) {
         if (task != PacketTask.FILE && task != PacketTask.STREAM) throw new UnsupportedOperationException();
 
         ByteBuf buf = ALLOC.buffer();
@@ -61,7 +58,7 @@ public class FastAnimationSerializer extends ValueSerializer<Animation> {
         try {
             EmotePacket packet = new EmotePacket.Builder()
                     .configureToSaveEmote(src)
-                    .setVersion(downgradable ? getDowngradedHashMap(src, forcePlayerAnim) : Map.of(PacketConfig.NEW_ANIMATION_FORMAT, (byte) 5))
+                    .setVersion(downgradable ? getDowngradedHashMap(src, playerAnimatorStatus) : Collections.emptyMap())
                     .build(Integer.MAX_VALUE, false);
 
             packet.data.purpose = task;
@@ -73,10 +70,10 @@ public class FastAnimationSerializer extends ValueSerializer<Animation> {
     }
 
     @SuppressWarnings("unused")
-    public static HashMap<Byte, Byte> getDowngradedHashMap(Animation animation, boolean forcePlayerAnim) {
+    public static HashMap<Byte, Byte> getDowngradedHashMap(Animation animation, PlayerAnimatorStatus playerAnimatorStatus) {
         HashMap<Byte, Byte> version = new HashMap<>(EmotePacket.defaultVersions);
 
-        if (forcePlayerAnim || animation.data().isAnimationPlayerAnimatorFormat()) {
+        if (playerAnimatorStatus.apply(animation)) {
             version.remove(PacketConfig.NEW_ANIMATION_FORMAT);
 
             if (KeyframeUtils.hasEasingArgs(animation)) {

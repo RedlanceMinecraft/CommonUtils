@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.redlance.common.emotecraft.EmoteCraftInstance;
 import org.redlance.common.emotecraft.jackson.animation.FastAnimationDeserializer;
 import org.redlance.common.emotecraft.jackson.animation.FastAnimationSerializer;
+import org.redlance.common.emotecraft.jackson.animation.PlayerAnimatorStatus;
 import org.redlance.common.jackson.JacksonMappers;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ public class FastAnimationSerializerTest {
     public void testStream() {
         Animation animation = ANIMATION_MAP.values().iterator().next();
 
-        byte[] bytes = FastAnimationSerializer.serializeToBytes(animation, PacketTask.STREAM, false, false);
+        byte[] bytes = FastAnimationSerializer.serializeToBytes(animation, PacketTask.STREAM, false, PlayerAnimatorStatus.FALSE);
         Animation deserialized = FastAnimationDeserializer.INSTANCE.serialize(bytes);
 
         Assertions.assertEquals(animation.boneAnimations(), deserialized.boneAnimations());

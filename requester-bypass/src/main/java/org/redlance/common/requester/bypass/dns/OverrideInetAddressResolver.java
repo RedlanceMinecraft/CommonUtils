@@ -31,7 +31,6 @@ public class OverrideInetAddressResolver implements java.net.spi.InetAddressReso
     @Override
     public Stream<InetAddress> lookupByName(String host, LookupPolicy lookupPolicy) throws UnknownHostException {
         InetAddress override = OverrideInetAddressResolver.OVERRIDES.get(host);
-        System.out.println(host);
         if (override != null) return Stream.of(InetAddress.getByAddress(host, override.getAddress()));
         return this.delegate.lookupByName(host, lookupPolicy);
     }

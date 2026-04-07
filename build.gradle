@@ -32,15 +32,24 @@ subprojects {
     apply plugin: "java-library"
 
     dependencies {
-        testImplementation("org.junit.jupiter:junit-jupiter-api:6.0.3")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:6.0.3")
-        testRuntimeOnly("org.junit.platform:junit-platform-launcher:6.0.3")
+        testImplementation(platform("org.junit:junit-bom:6.0.3"))
+        testImplementation("org.junit.jupiter:junit-jupiter-api")
+        testImplementation("org.junit.jupiter:junit-jupiter-params")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+        testImplementation("org.slf4j:slf4j-api:${slf4j_api_version}")
+        testImplementation(project(":log4j"))
     }
 
     test {
         useJUnitPlatform()
         options {
             systemProperties(System.getProperties())
+        }
+        jvmArgs("--enable-native-access=ALL-UNNAMED")
+        testLogging {
+            showStandardStreams = true
         }
     }
 

@@ -14,5 +14,6 @@ include(":reflect")
 // include(":legacy")
 
 include(":requester-base")
+include(":requester-bypass")
 include(":requester-boosty")
 include(":requester-mojang")

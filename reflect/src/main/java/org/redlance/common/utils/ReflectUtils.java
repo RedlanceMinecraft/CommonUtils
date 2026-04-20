@@ -62,13 +62,27 @@ public class ReflectUtils {
     }
 
     @SuppressWarnings("removal")
+    public static void setRecordFieldFloat(Object record, String fieldName, float newValue) {
+        setRecordField(record, fieldName, newValue, ReflectUtils.UNSAFE::putFloat);
+    }
+
+    @SuppressWarnings("removal")
     public static void setRecordField(Object record, String fieldName, Object newValue) {
+        setRecordField(record, fieldName, newValue, ReflectUtils.UNSAFE::putObject);
+    }
+
+    public static <T> void setRecordField(Object record, String fieldName, T newValue, UnsafeFunction<T> put) {
         try {
             Field field = record.getClass().getDeclaredField(fieldName);
             long offset = (long) OBJECT_FIELD_OFFSET.invoke(INTERNAL_UNSAFE, field);
-            ReflectUtils.UNSAFE.putObject(record, offset, newValue);
+            put.apply(record, offset, newValue);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Failed to mutate record field " + fieldName, e);
         }
+    }
+
+    @FunctionalInterface
+    public interface UnsafeFunction<V> {
+        void apply(Object o, long offset, V value);
     }
 }

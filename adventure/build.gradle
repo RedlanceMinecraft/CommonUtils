@@ -10,5 +10,5 @@ dependencies {
     implementation api("commons-io:commons-io:2.22.0")
     implementation "org.slf4j:slf4j-api:${slf4j_api_version}"
 
-    runtimeOnly("com.google.code.gson:gson:2.13.2")
+    runtimeOnly("com.google.code.gson:gson:2.14.0")
 }

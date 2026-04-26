@@ -1,6 +1,5 @@
 package org.redlance.common.requester.boosty;
 
-import org.apache.commons.io.input.CharSequenceReader;
 import org.redlance.common.jackson.JacksonMappers;
 import org.redlance.common.requester.Requester;
 import org.redlance.common.requester.RequesterUtils;
@@ -12,6 +11,7 @@ import tools.jackson.databind.node.ObjectNode;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
+import java.io.StringReader;
 import java.net.URI;
 import java.net.http.WebSocket;
 import java.util.List;
@@ -126,7 +126,7 @@ public class BoostyWebsocketListener implements WebSocket.Listener  {
 
     @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-        try (BufferedReader reader = new BufferedReader(new CharSequenceReader(data))) {
+        try (BufferedReader reader = new BufferedReader(new StringReader(data.toString()))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 InboundAuthMessage authMessage = JacksonMappers.OBJECT_MAPPER.readValue(line, InboundAuthMessage.class);

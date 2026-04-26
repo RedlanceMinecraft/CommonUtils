@@ -6,7 +6,6 @@ import net.kyori.adventure.text.TranslatableComponent;
 import net.kyori.adventure.translation.GlobalTranslator;
 import net.kyori.adventure.translation.TranslationStore;
 import net.kyori.adventure.translation.Translator;
-import org.apache.commons.io.FilenameUtils;
 import org.redlance.common.utils.ResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +73,7 @@ public class TranslatorUtils {
 
                 try (final Stream<Path> files = Files.walk(path)) {
                     files.filter(Files::isRegularFile).forEach(file -> {
-                        final String localeName = FilenameUtils.removeExtension(file.getFileName().toString());
+                        final String localeName = TranslatorUtils.removeExtension(file.getFileName().toString());
                         Locale locale = localeName.equals("main") ? defaultLocale : Translator.parseLocale(localeName);
                         if (locale == null) return;
 
@@ -122,5 +121,10 @@ public class TranslatorUtils {
         }
 
         return null;
+    }
+
+    private static String removeExtension(String fileName) {
+        if (fileName == null || !fileName.contains(".")) return fileName;
+        return fileName.substring(0, fileName.lastIndexOf("."));
     }
 }

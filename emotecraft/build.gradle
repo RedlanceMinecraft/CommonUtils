@@ -1,6 +1,6 @@
 dependencies {
-    implementation api("io.github.kosmx.emotes:emotesAssets:${project.emotecraft_version}")
-    implementation api("io.github.kosmx.emotes:emotesServer:${project.emotecraft_version}") {
+    api("io.github.kosmx.emotes:emotesAssets:${project.emotecraft_version}")
+    api("io.github.kosmx.emotes:emotesServer:${project.emotecraft_version}") {
         exclude(group: "org.jetbrains")
 
         // NoteBlockLib
@@ -9,6 +9,7 @@ dependencies {
         exclude(group: "com.google.j2objc")
         exclude(group: "org.jspecify")
     }
+    api("com.zigythebird.playeranim:PlayerAnimationLibCore:1.2.3+mc.26.1")
 
     compileOnly("tools.jackson.core:jackson-databind:${project.jackson_version}")
     testImplementation(project(":jackson"))

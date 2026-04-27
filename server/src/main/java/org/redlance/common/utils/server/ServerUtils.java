@@ -76,7 +76,13 @@ public class ServerUtils {
     public static Locale findLocale(Function<String, String> headers, LocaleParser parser, Supplier<Locale> fallback) {
         String userLocale = headers.apply("Accept-Language");
         if (userLocale != null && !userLocale.isBlank()) {
-            for (Locale.LanguageRange range : Locale.LanguageRange.parse(userLocale.replace("_", "-"))) {
+            List<Locale.LanguageRange> ranges;
+            try {
+                ranges = Locale.LanguageRange.parse(userLocale.replace("_", "-"));
+            } catch (IllegalArgumentException e) {
+                ranges = List.of();
+            }
+            for (Locale.LanguageRange range : ranges) {
                 Locale locale = parser.parseLocale(range.getRange(), () -> null);
                 if (locale != null) return locale;
             }

@@ -13,8 +13,8 @@ import java.util.function.Supplier;
 public class EmoteCraftInstance {
     private static final Logger LOGGER = LoggerFactory.getLogger("EmoteCraftInstance");
 
-    public static <T extends CommonConfig> void tryInitializeInstance(Supplier<T> configSuppler, int version, Class<T> configClass) {
-        EmoteCraftInstance.tryInitializeInstance(configSuppler, version, configClass, InstanceService.INSTANCE.getConfigPath());
+    public static <T extends CommonConfig> T tryInitializeInstance(Supplier<T> configSuppler, int version, Class<T> configClass) {
+        return EmoteCraftInstance.tryInitializeInstance(configSuppler, version, configClass, InstanceService.INSTANCE.getConfigPath());
     }
 
     public static <T extends CommonConfig> T tryInitializeInstance(Supplier<T> configSuppler, int version, Class<T> configClass, Path configPath) {

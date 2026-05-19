@@ -22,3 +22,4 @@ config/
 httpcache/
 log.txt
 .DS_Store
+/.kotlin

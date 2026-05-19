@@ -1,6 +1,7 @@
 package org.redlance.common.requester.boosty;
 
 import org.redlance.common.cache.BaseCache;
+import org.redlance.common.cache.codecs.JacksonCodec;
 import org.redlance.common.jackson.JacksonMappers;
 import org.redlance.common.requester.Requester;
 import org.redlance.common.requester.RequesterUtils;
@@ -22,8 +23,9 @@ public class BoostySessionStorage {
     private final String deviceId;
 
     public BoostySessionStorage(Path root, String deviceId) {
-        this.storage = new BaseCache<>(root.resolve(String.format("boosty-%s.json", deviceId)), JacksonMappers.OBJECT_MAPPER,
-                () -> new Storage(null, null, 0L), JacksonMappers.constructType(Storage.class)
+        this.storage = new BaseCache<>(root.resolve(String.format("boosty-%s.json", deviceId)),
+                new JacksonCodec<>(JacksonMappers.OBJECT_MAPPER, JacksonMappers.constructType(Storage.class)),
+                () -> new Storage(null, null, 0L)
         );
 
         this.deviceId = deviceId;

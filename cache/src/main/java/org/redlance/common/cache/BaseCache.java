@@ -3,11 +3,8 @@ package org.redlance.common.cache;
 import org.redlance.common.utils.CommonExecutors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.jackson.databind.JavaType;
-import tools.jackson.databind.ObjectMapper;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -37,19 +34,17 @@ public class BaseCache<T> {
     private final List<Consumer<BaseCache<T>>> listeners = new CopyOnWriteArrayList<>();
 
     protected final Path path;
-    protected final ObjectMapper mapper;
+    protected final CacheCodec<T> codec;
 
     protected final Supplier<T> defaultObj;
-    private final JavaType javaType;
 
     protected CompletableFuture<T> obj;
     private final AtomicBoolean dirty = new AtomicBoolean(false);
 
-    public BaseCache(Path path, ObjectMapper mapper, Supplier<T> defaultObj, JavaType javaType) {
+    public BaseCache(Path path, CacheCodec<T> codec, Supplier<T> defaultObj) {
         this.path = path;
-        this.mapper = mapper;
+        this.codec = codec;
         this.defaultObj = defaultObj;
-        this.javaType = javaType;
 
         TRACKED_CACHES.put(path, this);
         BaseCache.LOGGER.debug("{} created!", path);
@@ -127,8 +122,8 @@ public class BaseCache<T> {
     public T read() {
         if (!Files.exists(this.path)) return this.defaultObj.get();
 
-        try (Reader reader = new InputStreamReader(Files.newInputStream(this.path), StandardCharsets.UTF_8)) {
-            T loadedObj = this.mapper.readerFor(this.javaType).readValue(reader);
+        try (InputStream is = Files.newInputStream(this.path)) {
+            T loadedObj = this.codec.read(is);
             return loadedObj != null ? loadedObj : this.defaultObj.get();
         } catch (Exception e) {
             BaseCache.LOGGER.warn("Failed to read {}!", this, e);
@@ -138,9 +133,9 @@ public class BaseCache<T> {
 
     public boolean save() {
         T obj = getObj(); // Block before a writer
-        try (Writer writer = new OutputStreamWriter(Files.newOutputStream(this.path), StandardCharsets.UTF_8)) {
-            this.mapper.writerFor(this.javaType).writeValue(writer, obj);
-            // writer.flush();
+        try (OutputStream os = Files.newOutputStream(this.path)) {
+            this.codec.write(os, obj);
+            os.flush();
 
             BaseCache.LOGGER.debug("{} saved!", this);
             return true;

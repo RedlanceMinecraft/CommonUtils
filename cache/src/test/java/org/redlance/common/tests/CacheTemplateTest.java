@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.redlance.common.cache.CacheTemplate;
+import org.redlance.common.cache.codecs.JacksonCodec;
 import org.redlance.common.jackson.JacksonMappers;
 
 import java.io.IOException;
@@ -16,10 +17,10 @@ public class CacheTemplateTest {
 
     private static CacheTemplate<String, CompletableFuture<String>> createTemplate() {
         return new CacheTemplate<>(
-                PATH, JacksonMappers.OBJECT_MAPPER, true,
+                PATH, true, JacksonCodec.createForMap(JacksonMappers.OBJECT_MAPPER, true,
                 JacksonMappers.OBJECT_MAPPER.getTypeFactory().constructType(String.class),
                 JacksonMappers.OBJECT_MAPPER.getTypeFactory().constructParametricType(CompletableFuture.class, String.class)
-        );
+        ));
     }
 
     @Test

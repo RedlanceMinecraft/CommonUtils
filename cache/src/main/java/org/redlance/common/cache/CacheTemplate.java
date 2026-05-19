@@ -1,8 +1,5 @@
 package org.redlance.common.cache;
 
-import tools.jackson.databind.JavaType;
-import tools.jackson.databind.ObjectMapper;
-
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,18 +11,8 @@ import java.util.stream.Stream;
 public class CacheTemplate<K, V> extends BaseCache<Map<K, V>> {
     private final boolean concurrent;
 
-    public CacheTemplate(Path path, ObjectMapper mapper, boolean concurrent, Class<K> keyClass, Class<V> valueClass) {
-        this(path, mapper, concurrent,
-                mapper.getTypeFactory().constructType(keyClass),
-                mapper.getTypeFactory().constructType(valueClass)
-        );
-    }
-
-    public CacheTemplate(Path path, ObjectMapper mapper, boolean concurrent, JavaType key, JavaType value) {
-        super(path, mapper, concurrent ? ConcurrentHashMap::new : LinkedHashMap::new, mapper.getTypeFactory().constructMapType(
-                concurrent ? ConcurrentHashMap.class : LinkedHashMap.class, key, value
-        ));
-
+    public CacheTemplate(Path path, boolean concurrent, CacheCodec<Map<K, V>> codec) {
+        super(path, codec, concurrent ? ConcurrentHashMap::new : LinkedHashMap::new);
         this.concurrent = concurrent;
     }
 

@@ -25,11 +25,11 @@ class BgpScannerTest {
         assertNotNull(ip);
         BgpScannerTest.LOGGER.info("Found: {}", ip.getHostAddress());
 
-        OverrideInetAddressResolver.override("api.constructlegacy.ru", ip);
+        OverrideInetAddressResolver.override("api.redlance.org", ip);
         ResolverInstaller.install();
         try (HttpClient client = HttpClient.newHttpClient()) {
             HttpResponse<String> response = client.send(
-                    HttpRequest.newBuilder(URI.create("https://api.constructlegacy.ru/websockets/online-emotes/verify-epa-changelog")).build(),
+                    HttpRequest.newBuilder(URI.create("https://api.redlance.org/websockets/online-emotes/verify-epa-changelog")).build(),
                     HttpResponse.BodyHandlers.ofString()
             );
 
@@ -37,7 +37,7 @@ class BgpScannerTest {
             assertTrue(response.body().length() > 16_000);
             BgpScannerTest.LOGGER.info(response.body());
         } finally {
-            OverrideInetAddressResolver.clear("api.constructlegacy.ru");
+            OverrideInetAddressResolver.clear("api.redlance.org");
         }
     }
 }

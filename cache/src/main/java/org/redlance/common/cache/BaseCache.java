@@ -39,7 +39,7 @@ public class BaseCache<T> {
 
     protected final Supplier<T> defaultObj;
 
-    protected CompletableFuture<T> obj;
+    protected volatile CompletableFuture<T> obj;
     private final AtomicBoolean dirty = new AtomicBoolean(false);
 
     public BaseCache(Path path, CacheCodec<T> codec, Supplier<T> defaultObj) {

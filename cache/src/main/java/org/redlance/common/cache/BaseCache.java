@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -133,14 +134,36 @@ public class BaseCache<T> {
 
     public boolean save() {
         T obj = getObj(); // Block before a writer
-        try (OutputStream os = Files.newOutputStream(this.path)) {
-            this.codec.write(os, obj);
-            os.flush();
+
+        Path parent = this.path.toAbsolutePath().getParent();
+        Path tmp;
+        try {
+            if (parent != null) {
+                Files.createDirectories(parent);
+                tmp = Files.createTempFile(parent, this.path.getFileName().toString() + "-", ".tmp");
+            } else {
+                tmp = Files.createTempFile(this.path.getFileName().toString() + "-", ".tmp");
+            }
+        } catch (IOException e) {
+            BaseCache.LOGGER.warn("Failed to create temp file for {}!", this, e);
+            return false;
+        }
+
+        try {
+            try (OutputStream os = Files.newOutputStream(tmp)) {
+                this.codec.write(os, obj);
+                os.flush();
+            }
+            Files.move(tmp, this.path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
 
             BaseCache.LOGGER.debug("{} saved!", this);
             return true;
         } catch (Throwable e) {
             BaseCache.LOGGER.warn("Failed to save {}!", this, e);
+            try {
+                Files.deleteIfExists(tmp);
+            } catch (IOException ignored) {
+            }
             return false;
         }
     }

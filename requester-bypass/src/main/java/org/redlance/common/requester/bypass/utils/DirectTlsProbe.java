@@ -6,13 +6,10 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.security.cert.X509Certificate;
 import java.util.List;
 
 @SuppressWarnings("unused") // API
 public class DirectTlsProbe {
-    private static final SSLContext TRUST_ALL = createTrustAllContext();
-
     public static int probe(InetAddress ip, String hostname, int port, String path) throws IOException {
         return DirectTlsProbe.probe(ip, hostname, port, path, 35000, 3000);
     }
@@ -25,9 +22,11 @@ public class DirectTlsProbe {
 
             raw.setSoTimeout(timeout);
 
-            SSLSocket ssl = (SSLSocket) TRUST_ALL.getSocketFactory().createSocket(raw, hostname, port, true);
+            SSLSocket ssl = (SSLSocket) ((SSLSocketFactory) SSLSocketFactory.getDefault())
+                    .createSocket(raw, hostname, port, true);
             SSLParameters params = ssl.getSSLParameters();
             params.setServerNames(List.of(new SNIHostName(hostname)));
+            params.setEndpointIdentificationAlgorithm("HTTPS"); // имя
             ssl.setSSLParameters(params);
             ssl.startHandshake();
             ssl.setSoTimeout(timeout);
@@ -48,25 +47,6 @@ public class DirectTlsProbe {
 
             // ssl.close();
             return total;
-        }
-    }
-
-    private static SSLContext createTrustAllContext() {
-        try {
-            SSLContext ctx = SSLContext.getInstance("TLS");
-            ctx.init(null, new TrustManager[] { new X509TrustManager() {
-                @Override
-                public void checkClientTrusted(X509Certificate[] c, String t) {}
-
-                @Override
-                public void checkServerTrusted(X509Certificate[] c, String t) {}
-
-                @Override
-                public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-            }}, null);
-            return ctx;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 }

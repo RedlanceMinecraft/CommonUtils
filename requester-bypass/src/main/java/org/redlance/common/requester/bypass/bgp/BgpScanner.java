@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class BgpScanner implements Runnable {
     private final String origin;
@@ -45,7 +46,15 @@ public class BgpScanner implements Runnable {
         } catch (IOException e) {
             if (!this.result.isDone()) this.result.completeExceptionally(e);
         } finally {
-            if (this.result.isDone()) this.executor.shutdown();
+            this.executor.shutdown();
+            try {
+                this.executor.awaitTermination(2, TimeUnit.MINUTES);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+            if (!this.result.isDone()) {
+                this.result.completeExceptionally(new IOException("No working Cloudflare IP found"));
+            }
         }
     }
 

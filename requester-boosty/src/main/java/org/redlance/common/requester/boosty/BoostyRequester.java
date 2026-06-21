@@ -18,6 +18,8 @@ import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 public class BoostyRequester {
     /**
@@ -45,7 +47,7 @@ public class BoostyRequester {
     }
 
     /**
-     * @deprecated Use {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, long)}
+     * @deprecated Use {@link BoostyRequester#requestSubscribersChunking(Chunker, String, String, long[])}
      */
     @Deprecated(forRemoval = true)
     public static List<BoostyUser> requestSubscribers(String blog, String token, long levelId) throws IOException, InterruptedException {
@@ -54,10 +56,11 @@ public class BoostyRequester {
         return boostyUsers;
     }
 
-    public static <T> T requestSubscribersChunking(Chunker<T, List<BoostyUser>> chunker, String blog, String token, long levelId) throws IOException, InterruptedException {
+    public static <T> T requestSubscribersChunking(Chunker<T, List<BoostyUser>> chunker, String blog, String token, long... levelIds) throws IOException, InterruptedException {
+        String levels = LongStream.of(levelIds).mapToObj(String::valueOf).collect(Collectors.joining(","));
         return Chunker.sendChunkingRequest(chunker, paginator -> {
             String url = String.format("https://api.boosty.to/v1/blog/%s/subscribers?sort_by=on_time&limit=300&is_active=true&level_ids=%s&offset=%s&order=gt",
-                    blog, levelId, paginator == null ? 0 : paginator.offset()
+                    blog, levels, paginator == null ? 0 : paginator.offset()
             );
 
             return HttpRequest.newBuilder()

@@ -23,9 +23,10 @@ public final class SparkCommand implements Runnable, SparkPlugin, PlatformInfo {
             Thread.ofPlatform().daemon().name("spark-", 0).factory()
     );
 
-    private final SparkPlatform platform = new SparkPlatform(this);
-    private final OnlineEmotesCommandSender sender = new OnlineEmotesCommandSender();
     private final Path profilerDir;
+
+    private final SparkPlatform platform;
+    private final OnlineEmotesCommandSender sender = new OnlineEmotesCommandSender();
 
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;
@@ -41,6 +42,7 @@ public final class SparkCommand implements Runnable, SparkPlugin, PlatformInfo {
 
     public SparkCommand(Path profilerDir) {
         this.profilerDir = profilerDir;
+        this.platform = new SparkPlatform(this);
     }
 
     @Override

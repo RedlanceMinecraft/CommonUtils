@@ -9,6 +9,6 @@ dependencies {
     }
 
     api("org.jline:jline-console:4.3.1")
-    api("org.jline:jline-reader:4.1.3")
+    api("org.jline:jline-reader:4.3.1")
     api("org.jline:jline-terminal-ffm:4.1.3")
 }

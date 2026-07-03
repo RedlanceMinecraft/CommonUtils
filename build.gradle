@@ -16,6 +16,13 @@ allprojects {
             name = "Redlance"
             url = "https://repo.redlance.org/public"
         }
+        maven {
+            url = "https://repo.lucko.me/"
+            mavenContent {
+                includeGroupAndSubgroups("me.lucko")
+                includeGroupAndSubgroups("net.kyori")
+            }
+        }
         mavenCentral()
     }
 

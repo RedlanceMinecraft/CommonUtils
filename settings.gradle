@@ -11,6 +11,7 @@ include(":emotecraft")
 include(":adventure")
 include(":server")
 include(":reflect")
+include(":commands")
 // include(":legacy")
 
 include(":requester-base")

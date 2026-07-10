@@ -2,13 +2,13 @@ package org.redlance.common.tests;
 
 import com.zigythebird.playeranimcore.animation.Animation;
 import io.github.kosmx.emotes.common.network.PacketTask;
+import io.github.kosmx.emotes.common.serializer.gson.AnimationTypeAdapter;
 import io.github.kosmx.emotes.server.config.CommonConfig;
 import io.github.kosmx.emotes.server.serializer.UniversalEmoteSerializer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.redlance.common.emotecraft.EmoteCraftInstance;
-import org.redlance.common.emotecraft.jackson.animation.FastAnimationDeserializer;
 import org.redlance.common.emotecraft.jackson.animation.FastAnimationSerializer;
 import org.redlance.common.emotecraft.jackson.animation.PlayerAnimatorStatus;
 import org.redlance.common.jackson.JacksonMappers;
@@ -48,7 +48,7 @@ public class FastAnimationSerializerTest {
         Animation animation = ANIMATION_MAP.values().iterator().next();
 
         byte[] bytes = FastAnimationSerializer.serializeToBytes(animation, PacketTask.STREAM, false, PlayerAnimatorStatus.FALSE);
-        Animation deserialized = FastAnimationDeserializer.INSTANCE.serialize(bytes);
+        Animation deserialized = AnimationTypeAdapter.fromBytes(bytes);
 
         Assertions.assertEquals(animation.boneAnimations(), deserialized.boneAnimations());
     }

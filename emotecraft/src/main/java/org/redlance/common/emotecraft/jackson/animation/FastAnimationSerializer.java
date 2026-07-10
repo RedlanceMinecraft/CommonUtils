@@ -2,6 +2,7 @@ package org.redlance.common.emotecraft.jackson.animation;
 
 import com.zigythebird.playeranimcore.animation.Animation;
 import io.github.kosmx.emotes.common.network.EmotePacket;
+import io.github.kosmx.emotes.common.network.PacketBound;
 import io.github.kosmx.emotes.common.network.PacketConfig;
 import io.github.kosmx.emotes.common.network.PacketTask;
 import io.github.kosmx.emotes.common.tools.MathHelper;
@@ -62,7 +63,7 @@ public class FastAnimationSerializer extends ValueSerializer<Animation> {
                     .build(Integer.MAX_VALUE, false);
 
             packet.data.purpose = task;
-            packet.write(buf);
+            packet.write(buf, PacketBound.CLIENT);
             return MathHelper.readBytes(buf);
         } finally {
             buf.release();

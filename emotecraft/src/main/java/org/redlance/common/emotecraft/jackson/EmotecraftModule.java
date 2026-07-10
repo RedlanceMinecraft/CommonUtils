@@ -32,6 +32,7 @@ public class EmotecraftModule extends SimpleModule {
         return CommonData.MOD_ID;
     }
 
+    @SuppressWarnings("unused") // API
     public static ObjectMapper rebuildWithCompact(ObjectMapper mapper) {
         return mapper.rebuild().addModule(COMPACT_MODULE).build();
     }

@@ -15,7 +15,6 @@ import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.redlance.common.commands.GCCommand;
 import org.redlance.common.commands.ShellCommand;
-import org.redlance.common.commands.StopCommand;
 import picocli.CommandLine;
 import picocli.shell.jline3.PicocliCommands;
 import picocli.shell.jline3.PicocliCommands.PicocliCommandsFactory;
@@ -36,12 +35,11 @@ public final class ServerConsole {
     private volatile boolean running;
     private Terminal terminal;
 
-    public ServerConsole(Supplier<Path> workDir, String name, Runnable onStop) {
+    public ServerConsole(Supplier<Path> workDir, String name) {
         this.root = new CommandLine(new RootCommand(), this.factory);
         this.workDir = workDir;
         this.name = name;
 
-        register("stop", new StopCommand(onStop));
         register("shell", new ShellCommand());
         register("gc", new GCCommand());
     }

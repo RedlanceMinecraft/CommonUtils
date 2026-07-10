@@ -4,21 +4,16 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Spec;
 
-@Command(name = "stop", aliases = {"exit", "quit"})
-public final class StopCommand implements Runnable {
-    private final Runnable onStop;
-
+@SuppressWarnings("unused") // API
+@Command(name = "stop", aliases = {"exit", "quit"}, description = "Stop the server")
+public class StopCommand implements Runnable {
     @Spec
     CommandSpec spec;
-
-    public StopCommand(Runnable onStop) {
-        this.onStop = onStop;
-    }
 
     @Override
     public void run() {
         this.spec.commandLine().getOut().println("Stopping server...");
         this.spec.commandLine().getOut().flush();
-        this.onStop.run();
+        System.exit(0);
     }
 }

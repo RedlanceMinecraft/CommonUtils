@@ -1,6 +1,8 @@
 package org.redlance.common.emotecraft.jackson.animation;
 
 import com.zigythebird.playeranimcore.animation.Animation;
+import com.zigythebird.playeranimcore.network.AnimationBinary;
+import com.zigythebird.playeranimcore.network.LegacyAnimationBinary;
 import io.github.kosmx.emotes.common.network.EmotePacket;
 import io.github.kosmx.emotes.common.network.PacketBound;
 import io.github.kosmx.emotes.common.network.PacketConfig;
@@ -77,7 +79,10 @@ public class FastAnimationSerializer extends ValueSerializer<Animation> {
         if (playerAnimatorStatus.apply(animation)) {
             version.remove(PacketConfig.NEW_ANIMATION_FORMAT);
 
-            if (KeyframeUtils.hasEasingArgs(animation)) {
+            int maxVer = LegacyAnimationBinary.getCurrentVersion();
+            if (maxVer > 4) {
+                version.put(PacketConfig.LEGACY_ANIMATION_FORMAT, (byte) maxVer);
+            } else if (KeyframeUtils.hasEasingArgs(animation)) {
                 version.put(PacketConfig.LEGACY_ANIMATION_FORMAT, (byte) 4);
             } else if (KeyframeUtils.hasScaling(animation)) {
                 version.put(PacketConfig.LEGACY_ANIMATION_FORMAT, (byte) 3);
@@ -88,7 +93,13 @@ public class FastAnimationSerializer extends ValueSerializer<Animation> {
             }
         } else {
             version.remove(PacketConfig.LEGACY_ANIMATION_FORMAT);
-            version.put(PacketConfig.NEW_ANIMATION_FORMAT, (byte) 5);
+
+            int maxVer = AnimationBinary.getCurrentVersion();
+            if (maxVer > 6) {
+                version.put(PacketConfig.NEW_ANIMATION_FORMAT, (byte) maxVer);
+            } else {
+                version.put(PacketConfig.NEW_ANIMATION_FORMAT, (byte) 5);
+            }
         }
 
         if (animation.data().getRaw("bages") instanceof List<?> tags && !tags.isEmpty()) {

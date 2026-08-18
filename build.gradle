@@ -54,8 +54,14 @@ subprojects {
     test {
         useJUnitPlatform()
         options {
-            systemProperties(System.getProperties())
+            systemProperties(System.getProperties().findAll { key, value -> key != "user.dir" })
         }
+
+        workingDir = layout.buildDirectory.dir("test-workdir").get().asFile
+        doFirst {
+            workingDir.mkdirs()
+        }
+
         jvmArgs("--enable-native-access=ALL-UNNAMED")
         testLogging {
             showStandardStreams = true

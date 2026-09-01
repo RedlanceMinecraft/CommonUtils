@@ -9,7 +9,7 @@
             </Filters>
         </Console>
         <RollingRandomAccessFile name="LogFile" fileName="log.txt" immediateFlush="false" append="false" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %msg{nolookups}%n" />
+            <PatternLayout pattern="[%d{HH\:mm\:ss}] [%t/%level]: %replace{%msg{nolookups}}{\x1B\[[0-9;?]*[ -/]*[@-~]}{}%n" disableAnsi="true" />
             <Policies>
                 <TimeBasedTriggeringPolicy />
                 <OnStartupTriggeringPolicy />

@@ -9,7 +9,7 @@
             </Filters>
         </Console>
         <RollingRandomAccessFile name="LogFile" fileName="log.txt" immediateFlush="false" append="false" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout pattern="[%d{HH\:mm\:ss}] [%t/%level]: %replace{%msg{nolookups}}{\x1B\[[0-9;?]*[ -/]*[@-~]}{}%n" disableAnsi="true" />
+            <PatternLayout pattern="%replace{[%d{HH:mm:ss}] [%t/%level]: %msg{nolookups}%n%ex}{\x1B\[[0-9;?]*[ -/]*[@-~]}{}" alwaysWriteExceptions="false" disableAnsi="true" />
             <Policies>
                 <TimeBasedTriggeringPolicy />
                 <OnStartupTriggeringPolicy />
@@ -31,6 +31,9 @@
         <Logger level="debug" name="io.netty.channel.uring.IoUring"/>
         <Logger level="debug" name="io.netty.channel.kqueue.KQueue"/>
         <Logger level="debug" name="io.netty.channel.epoll.Epoll"/>
+
+        <Logger level="info" name="com.zaxxer.hikari"/>
+        <Logger level="info" name="org.mariadb.jdbc"/>
 
         <Root level="all">
             <AppenderRef ref="Console" level="all"/>

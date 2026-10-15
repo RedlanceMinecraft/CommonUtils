@@ -4,7 +4,7 @@ dependencies {
         api(project(proj.path))
     }
 
-    api(platform(rootProject))
+    api(platform(project(":")))
 }
 
 jar {

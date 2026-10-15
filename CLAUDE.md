@@ -7,8 +7,11 @@ Shared Java libraries of the Redlance projects (EmotecraftLibrary, enhanced-play
 
 - Gradle multi-project, modules are listed in `settings.gradle` (`legacy` stays in git but is not included). Java 25
   (`options.release = 25`); configuration cache and parallel builds are on.
-- Versions: `mod_version` and library versions in `gradle.properties`, Kotlin and kotlinx in
-  `gradle/libs.versions.toml`. Renovate (`renovate.json`) bumps dependencies; the user bumps `mod_version`.
+- Versions: `mod_version` in `gradle.properties`; every dependency and plugin, with its version, in the catalog
+  `gradle/libs.versions.toml`, and build scripts refer to them only as `libs.*`. Renovate (`renovate.json`) bumps
+  dependencies; the user bumps `mod_version`.
+- `implementation api(libs.x)` fails ("Cannot convert a null value to an object of type Dependency"): `api(...)`
+  returns null for a catalog entry. Write `api(libs.x)` alone; `implementation` extends `api` anyway.
 - `./gradlew build`, `./gradlew :<module>:test`, `./gradlew :<module>:javadoc` (run it after touching Javadoc; broken
   `{@link}`s show up there).
 - Tests use JUnit 6 with the `log4j` module on the classpath and run in `<module>/build/test-workdir` (HTTP cache and

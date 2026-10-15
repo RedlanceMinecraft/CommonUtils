@@ -1,14 +1,14 @@
 dependencies {
-    implementation api("net.kyori:adventure-api:${project.adventure_version}")
-    implementation api("net.kyori:adventure-text-serializer-legacy:${project.adventure_version}")
-    implementation api("net.kyori:adventure-text-serializer-gson:${project.adventure_version}") {
+    api(libs.adventure.api)
+    api(libs.adventure.text.serializer.legacy)
+    api(libs.adventure.text.serializer.gson) {
         exclude(group: "com.google.auto.service")
         exclude(group: "com.google.code.gson")
         exclude(group: "org.jspecify")
     }
     implementation api(project(":common"))
     // implementation api("commons-io:commons-io:2.22.0")
-    implementation "org.slf4j:slf4j-api:${slf4j_api_version}"
+    implementation libs.slf4j.api
 
-    runtimeOnly("com.google.code.gson:gson:2.14.0")
+    runtimeOnly(libs.gson)
 }

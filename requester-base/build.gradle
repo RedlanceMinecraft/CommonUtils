@@ -1,9 +1,9 @@
 dependencies {
-    implementation api("com.github.mizosoft.methanol:methanol:${project.methanol_version}")
-    implementation api("com.github.mizosoft.methanol:methanol-jackson3:${project.methanol_version}")
+    api(libs.methanol)
+    api(libs.methanol.jackson3)
 
-    compileOnlyApi "org.jetbrains:annotations:26.1.0"
-    api "org.slf4j:slf4j-api:${slf4j_api_version}"
+    compileOnlyApi libs.jetbrains.annotations
+    api libs.slf4j.api
 
     implementation api(project(":common"))
     implementation api(project(":jackson"))

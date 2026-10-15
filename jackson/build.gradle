@@ -1,6 +1,6 @@
 dependencies {
-    implementation api("tools.jackson.core:jackson-databind:${project.jackson_version}")
-    implementation api("tools.jackson.dataformat:jackson-dataformat-smile:${project.jackson_version}")
+    api(libs.jackson.databind)
+    api(libs.jackson.dataformat.smile)
 
     testImplementation(project(":common"))
     testImplementation(project(":requester-mojang"))

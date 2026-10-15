@@ -1,0 +1,46 @@
+{
+  "data": {
+    "profile": {
+      "user": {
+        "id": 1005,
+        "name": "Profile User",
+        "email": "profile@example.com",
+        "avatarUrl": "https://images.boosty.to/user/1005/avatar",
+        "hasAvatar": true,
+        "isOfficial": false,
+        "isBlogger": true,
+        "blogUrl": "profileblog",
+        "externalApps": {
+          "discord": {"id": "680078558781243454", "username": "profileuser", "hasAccount": true},
+          "telegram": {"id": "", "username": "", "hasAccount": false, "isJoined": false},
+          "max": {"id": "", "username": "", "hasAccount": false, "isJoined": false}
+        }
+      },
+      "subscription": {
+        "subscriptionLevel": {
+          "id": 2452741,
+          "name": "Beta versions",
+          "price": 150,
+          "currencyPrices": {"RUB": 150, "USD": 1.9, "EUR": 1.7},
+          "deleted": false,
+          "isArchived": false,
+          "externalApps": {
+            "discord": {"isConfigured": true, "data": {"role": {"id": "1183840198040232088", "name": "Beta"}}},
+            "telegram": {"isConfigured": false},
+            "max": {"isConfigured": false}
+          }
+        },
+        "status": "renewal_canceled",
+        "onTime": 1728142462,
+        "offTime": 1792942462,
+        "nextPayTime": null,
+        "lastPayTime": 1790350462
+      },
+      "finance": {"payments": 3431.1, "refunds": 132.45},
+      "note": "Translator",
+      "isBlackListed": false,
+      "isBlackListedByUser": true,
+      "canWrite": true
+    }
+  }
+}

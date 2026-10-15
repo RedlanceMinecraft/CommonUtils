@@ -3,7 +3,6 @@ package org.redlance.common.requester.boosty;
 import org.redlance.common.cache.BaseCache;
 import org.redlance.common.cache.codecs.JacksonCodec;
 import org.redlance.common.jackson.JacksonMappers;
-import org.redlance.common.requester.Requester;
 import org.redlance.common.requester.RequesterUtils;
 import org.redlance.common.utils.CommonExecutors;
 import tools.jackson.databind.node.ObjectNode;
@@ -46,10 +45,11 @@ public class BoostySessionStorage {
                 .POST(HttpRequest.BodyPublishers.ofString(
                         String.format("device_id=%s&device_os=web&grant_type=refresh_token&refresh_token=%s", this.deviceId, getRefreshToken())
                 ))
+                .timeout(BoostyRequester.TIMEOUT)
                 .build();
 
         try {
-            ObjectNode object = Requester.sendRequest(request, ObjectNode.class);
+            ObjectNode object = BoostyRequester.HTTP_CLIENT.send(request, ObjectNode.class).body();
             if (!object.has("access_token")) {
                 throw new NullPointerException(object.toString());
             }

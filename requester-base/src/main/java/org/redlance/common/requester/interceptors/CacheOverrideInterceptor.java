@@ -14,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * <a href="https://github.com/mizosoft/methanol/issues/94">methanol#94</a>
  */
+@SuppressWarnings("unused")
 public final class CacheOverrideInterceptor implements Methanol.Interceptor {
     private static final String CACHE_CONTROL_HEADER = "Cache-Control";
 

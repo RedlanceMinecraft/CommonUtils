@@ -1,6 +1,8 @@
 package org.redlance.common.requester;
 
+import com.github.mizosoft.methanol.Methanol;
 import com.github.mizosoft.methanol.ProgressTracker;
+import org.redlance.common.requester.interceptors.CacheOverrideInterceptor;
 
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
@@ -19,6 +21,12 @@ public class Downloader {
             .bytesTransferredThreshold(1024 * 1024) // 1024 kB
             .build();
 
+    // Keeps the forced caching downloads had with the shared client
+    private static final Methanol HTTP_CLIENT = HttpClients.newBuilder("http-downloader")
+            .cache(HttpClients.CACHE)
+            .backendInterceptor(new CacheOverrideInterceptor())
+            .build();
+
     public static InputStream download(URI uri) throws IOException, InterruptedException {
         return Downloader.download(uri, Downloader::onProgress);
     }
@@ -30,7 +38,7 @@ public class Downloader {
                 .uri(uri)
                 .build();
 
-        HttpResponse<InputStream> response = Requester.HTTP_CLIENT.send(request, TRACKER.tracking(HttpResponse.BodyHandlers.ofInputStream(), listener));
+        HttpResponse<InputStream> response = HTTP_CLIENT.send(request, TRACKER.tracking(HttpResponse.BodyHandlers.ofInputStream(), listener));
         if (response.statusCode() != 200) {
             throw new IllegalStateException(String.valueOf(response.statusCode()));
         }

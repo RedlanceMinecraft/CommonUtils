@@ -1,0 +1,39 @@
+{
+  "data": {
+    "postsSales": [
+      {
+        "amount": 529.8,
+        "isFeePaid": false,
+        "createdAt": 1791544066,
+        "bloggerId": 2121837,
+        "post": {"id": "dc190730-9e52-41bd-934d-61a935870045", "title": "Paid post", "promo": null},
+        "user": {
+          "id": 1001,
+          "name": "Buyer",
+          "email": "buyer@example.com",
+          "avatarUrl": "",
+          "hasAvatar": false,
+          "isOfficial": false,
+          "canWrite": true
+        }
+      },
+      {
+        "amount": 600,
+        "isFeePaid": true,
+        "createdAt": 1782024981,
+        "bloggerId": 2121837,
+        "post": {"id": "dc190730-9e52-41bd-934d-61a935870045", "title": "Paid post", "promo": null},
+        "user": {
+          "id": 1006,
+          "name": "Generous Buyer",
+          "email": "generous@example.com",
+          "avatarUrl": "https://images.boosty.to/user/1006/avatar",
+          "hasAvatar": true,
+          "isOfficial": false,
+          "canWrite": true
+        }
+      }
+    ]
+  },
+  "extra": {"offset": "300", "total": 2}
+}

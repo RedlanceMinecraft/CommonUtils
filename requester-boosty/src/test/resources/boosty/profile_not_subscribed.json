@@ -1,0 +1,25 @@
+{
+  "data": {
+    "profile": {
+      "user": {
+        "id": 1007,
+        "name": "Stranger",
+        "email": "stranger@example.com",
+        "avatarUrl": "https://images.boosty.to/user/1007/avatar",
+        "hasAvatar": true,
+        "isOfficial": false,
+        "isBlogger": false,
+        "externalApps": {
+          "discord": {"id": "", "username": "", "hasAccount": false},
+          "telegram": {"id": "", "username": "", "hasAccount": false, "isJoined": false},
+          "max": {"id": "", "username": "", "hasAccount": false, "isJoined": false}
+        }
+      },
+      "finance": {"payments": 0, "refunds": 0},
+      "note": null,
+      "isBlackListed": false,
+      "isBlackListedByUser": false,
+      "canWrite": true
+    }
+  }
+}

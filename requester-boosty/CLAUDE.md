@@ -163,9 +163,12 @@ profiles, dialogs, the pubsub websocket and token refresh. Built on `requester-b
 
 ## Consumers
 
-- EmotecraftLibrary (`../EmotecraftLibrary`, module `server`, `data/supporters/`): `SupporterService.kt` walks
-  subscribers and checks `isSubscribed`/`isPaidSubscriber`; `BoostyRealtimeSync.kt` listens to the websocket (its
-  `SupervisedSocket` and watchdog are obsolete since the listener reconnects itself). Check it with
+- EmotecraftLibrary (`../EmotecraftLibrary`, module `server`, `data/supporters/`): `SupporterService.kt` walks the
+  subscribers (`isPaidSubscriber`) and the donations (`requestDonationsChunking`); a donation to the author, to a goal
+  or in a dialog brings studio credits, one on a post none, and only one made after the server began counting them.
+  Its `SupportEvents`, the listener `startRealtime` hands `BoostyWebsocketListener`, calls for that walk on
+  `subscribers_change_count` and `blog_subscriber_stat`, and on a `standalone_notify_count` whose `subscriber_new` or
+  `donation_new` counter grew, read from `counters_by_type` through `BoostyListener.payload`. Check it with
   `cd ../EmotecraftLibrary && ./gradlew :server:compileKotlin --rerun --include-build ../CommonUtils --offline`.
 - enhanced-player-animations (`~/Desktop/git/dima-dencep/enhanced-player-animations`) is pinned to 1.3.9 and relies on
   the old semantics (post buyers counted as subscribed, `getKeyByValue(user)` with id-only equality). The user ports it.

@@ -71,7 +71,7 @@ Conventions below: ids and times are numbers, times in Unix seconds; `T?` may be
 
 Listed among this channel's events, but the frontend registers no handler for it, and the 2024 and 2025 builds kept by
 the Wayback Machine hold no websocket code at all, so only a live push or a log can show its payload. EmotecraftLibrary
-walks the subscribers on it without reading its payload. Which channel brings it is unconfirmed too: it may be the
+walks its supporters on it without reading its payload. Which channel brings it is unconfirmed too: it may be the
 public `blogger:` one. `GET /v1/blog/stat/<blog>/current` returns the counters of the statistics page
 (`paidCount`, `followersCount`, `income`, `balance`, `hold`, `payoutSum`, `commissionFee`, `hasReferralDiscount`); whether
 this event carries them is unknown.
@@ -81,6 +81,8 @@ this event carries them is unknown.
 ```ts
 Flat<{ count: number }>   // the blog's subscriber count; the frontend stores it as blog.count.subscribers
 ```
+
+EmotecraftLibrary walks its supporters on it without reading the count.
 
 ### `standalone_notify_count` — flat, handler + REST
 
@@ -102,8 +104,10 @@ type NotificationType =
 
 A donation raises the `donation_new` counter: no other event announces one. The snake_case `counters_by_type` is a
 key nothing else in Boosty's camelCase API uses, so the frontend must have taken it from real pushes; whether its
-entries carry `total` as well is unconfirmed. EmotecraftLibrary reads `event.data.data.byEventType`, modelled on the
-REST twin, which most likely never matches.
+entries carry `total` as well is unconfirmed. EmotecraftLibrary reads `counters_by_type` through
+`BoostyListener.payload` and walks its supporters when `subscriber_new` or `donation_new` grew, by `total` where an
+entry has it and by `unread` otherwise; it used to read `event.data.data.byEventType`, the REST twin's shape, which
+never matched.
 
 ### `dialog_message_counters` — nested, handler
 

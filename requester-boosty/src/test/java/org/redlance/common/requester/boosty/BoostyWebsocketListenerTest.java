@@ -27,6 +27,9 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 class BoostyWebsocketListenerTest {
+    // The authorization and a subscription to every channel
+    private static final int HANDSHAKE = 1 + BoostyWebsocketListener.KNOWN_CHANNEL_PREFIXES.size();
+
     private static final String PUBLICATION = """
             {"result": {"channel": "users#42", "data": {"data": {"type": "subscriber_new", "data": {}}}}}""";
 
@@ -68,7 +71,7 @@ class BoostyWebsocketListenerTest {
 
         socket.receive("{\"id\": " + FakeWebSocket.id(auth) + ", \"result\": {\"version\": \"5.0\"}}");
 
-        List<String> subscriptions = socket.awaitSent(4).subList(1, 4);
+        List<String> subscriptions = socket.awaitSent(HANDSHAKE).subList(1, HANDSHAKE);
         Assertions.assertEquals(List.of("users#42", "dialogs#42", "blogger:42"), subscriptions.stream()
                 .map(text -> JacksonMappers.OBJECT_MAPPER.readTree(text).path("params").path("channel").asString())
                 .toList());
@@ -207,7 +210,7 @@ class BoostyWebsocketListenerTest {
     void reconnectsWhenPingGoesUnanswered() throws Exception {
         FakeWebSocket first = connected(PINGING);
 
-        first.awaitSent(5); // the handshake and a ping
+        first.awaitSent(HANDSHAKE + 1); // the handshake and a ping
         FakeWebSocket second = nextSocket();
 
         Assertions.assertTrue(first.aborted, "A connection that does not answer is dropped");
@@ -225,7 +228,7 @@ class BoostyWebsocketListenerTest {
 
         Thread.sleep(700);
 
-        Assertions.assertTrue(socket.sent.size() > 5, "Pinged");
+        Assertions.assertTrue(socket.sent.size() > HANDSHAKE + 1, "Pinged more than once");
         Assertions.assertTrue(this.listener.isConnected());
         Assertions.assertEquals(List.of(), this.disconnects);
         Assertions.assertNull(this.opened.poll());
@@ -380,7 +383,7 @@ class BoostyWebsocketListenerTest {
         String auth = socket.awaitSent(1).getFirst();
         socket.receive("{\"id\": " + FakeWebSocket.id(auth) + ", \"result\": {\"version\": \"5.0\"}}");
 
-        for (String subscription : socket.awaitSent(4).subList(1, 4)) {
+        for (String subscription : socket.awaitSent(HANDSHAKE).subList(1, HANDSHAKE)) {
             socket.receive("{\"id\": " + FakeWebSocket.id(subscription) + "}");
         }
     }

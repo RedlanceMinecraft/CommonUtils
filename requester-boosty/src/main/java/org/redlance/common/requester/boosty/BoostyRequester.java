@@ -4,6 +4,7 @@ import com.github.mizosoft.methanol.Methanol;
 import org.jetbrains.annotations.Nullable;
 import org.redlance.common.requester.Chunker;
 import org.redlance.common.requester.HttpClients;
+import org.redlance.common.requester.boosty.obj.donation.Donation;
 import org.redlance.common.requester.boosty.obj.post.PostSale;
 import org.redlance.common.requester.boosty.obj.post.PostSales;
 import org.redlance.common.requester.boosty.obj.user.BoostyProfileDeserializer;
@@ -18,7 +19,9 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -70,6 +73,46 @@ public class BoostyRequester {
                     .timeout(TIMEOUT)
                     .build();
         }, new TypeRef<BoostyPaginator<PostSales>>() {});
+    }
+
+    /**
+     * Walks the donations to the blog, up to 300 per page, the latest first.
+     */
+    public static <T> T requestDonationsChunking(Chunker<T, List<Donation>> chunker, String blog, String token) throws IOException, InterruptedException {
+        return requestDonationsChunking(chunker, blog, token, null, 0);
+    }
+
+    /**
+     * Walks the donations to the blog that went to one kind of target or to one goal or post, up to 300 per page, the
+     * latest first.
+     *
+     * @param type     Kind of the donations; every kind when {@code null}.
+     * @param targetId Only the donations to this goal or post, see {@link Donation#targetId()}; all of them when
+     *                 {@code 0}.
+     * @throws IllegalArgumentException If {@code type} is {@link Donation.Type#UNKNOWN}, which Boosty cannot filter by.
+     */
+    public static <T> T requestDonationsChunking(Chunker<T, List<Donation>> chunker, String blog, String token,
+                                                 Donation.@Nullable Type type, long targetId) throws IOException, InterruptedException {
+        if (type == Donation.Type.UNKNOWN) {
+            throw new IllegalArgumentException("Boosty filters donations only by the kinds it knows");
+        }
+
+        // Boosty rejects a kind it does not know with invalid_param
+        String filter = (type == null ? "" : "&type=" + type.name().toLowerCase(Locale.ROOT))
+                + (targetId == 0 ? "" : "&target_id=" + targetId);
+
+        return Chunker.sendChunkingRequest(HTTP_CLIENT, (Donations page) -> chunker.apply(page.donationsSales()), paginator -> {
+            String url = String.format("https://api.boosty.to/v1/blog/%s/sales/donation/?limit=300&offset=%s&sort_by=time&order=gt%s",
+                    blog, paginator == null ? 0 : paginator.offset(), filter
+            );
+
+            return HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Authorization", "Bearer " + token)
+                    .GET()
+                    .timeout(TIMEOUT)
+                    .build();
+        }, new TypeRef<BoostyPaginator<Donations>>() {});
     }
 
     /**
@@ -184,6 +227,17 @@ public class BoostyRequester {
      */
     private static BoostyRequestException failure(@Nullable BoostyErrorResponse response, String missing) {
         return response == null ? new BoostyRequestException(missing, null, null) : response.failure(missing);
+    }
+
+    /**
+     * Content of a donations page: {@code {"donationsSales": [...]}}.
+     *
+     * @param donationsSales Donations on the page.
+     */
+    record Donations(List<Donation> donationsSales) {
+        Donations {
+            donationsSales = donationsSales == null ? List.of() : Collections.unmodifiableList(donationsSales);
+        }
     }
 
     /**

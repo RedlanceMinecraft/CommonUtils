@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.redlance.common.requester.Chunker;
 import org.redlance.common.requester.Paginator;
+import org.redlance.common.requester.boosty.obj.donation.Donation;
 import org.redlance.common.requester.boosty.obj.post.PostSales;
 import org.redlance.common.requester.boosty.obj.user.BoostyUser;
 import org.redlance.common.requester.boosty.paginators.BoostyLegacyPaginator;
@@ -107,6 +108,13 @@ class BoostyPagingTest {
         Assertions.assertThrows(BoostyRequestException.class,
                 () -> walk(new TypeRef<BoostyLegacyPaginator<List<BoostyUser>>>() {}));
         Assertions.assertEquals(List.of(0, 300), this.requested);
+    }
+
+    @Test
+    void rejectsDonationsOfUnknownKind() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> BoostyRequester.requestDonationsChunking(
+                page -> null, "blog", "token", Donation.Type.UNKNOWN, 0
+        ));
     }
 
     @Test

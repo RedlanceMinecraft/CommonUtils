@@ -1,0 +1,79 @@
+{
+  "data": {
+    "donationsSales": [
+      {
+        "id": 9104,
+        "type": "author",
+        "targetId": 0,
+        "amount": 471.9,
+        "isFeePaid": false,
+        "createdAt": 1792072044,
+        "bloggerId": 2121837,
+        "user": {
+          "id": 1001,
+          "name": "Donor",
+          "email": "donor@example.com",
+          "avatarUrl": "",
+          "hasAvatar": false,
+          "isOfficial": false,
+          "canWrite": true
+        }
+      },
+      {
+        "id": 9103,
+        "type": "target",
+        "targetId": 77,
+        "amount": 1000,
+        "isFeePaid": true,
+        "createdAt": 1791902044,
+        "bloggerId": 2121837,
+        "user": {
+          "id": 1006,
+          "name": "Goal Donor",
+          "email": "goal@example.com",
+          "avatarUrl": "https://images.boosty.to/user/1006/avatar",
+          "hasAvatar": true,
+          "isOfficial": false,
+          "canWrite": false
+        }
+      },
+      {
+        "id": 9102,
+        "type": "post",
+        "targetId": 5550123,
+        "amount": 94.38,
+        "isFeePaid": false,
+        "createdAt": 1791812044,
+        "bloggerId": 2121837,
+        "user": {
+          "id": 1007,
+          "name": "Reader",
+          "email": "reader@example.com",
+          "avatarUrl": "",
+          "hasAvatar": false,
+          "isOfficial": false,
+          "canWrite": true
+        }
+      },
+      {
+        "id": 9101,
+        "type": "stream",
+        "targetId": 31,
+        "amount": 47.19,
+        "isFeePaid": false,
+        "createdAt": 1791722044,
+        "bloggerId": 2121837,
+        "user": {
+          "id": 1008,
+          "name": "Viewer",
+          "email": "viewer@example.com",
+          "avatarUrl": "",
+          "hasAvatar": false,
+          "isOfficial": false,
+          "canWrite": true
+        }
+      }
+    ]
+  },
+  "extra": {"offset": "300", "total": 4}
+}

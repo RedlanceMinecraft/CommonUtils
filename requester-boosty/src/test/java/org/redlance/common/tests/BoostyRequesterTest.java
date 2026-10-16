@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.redlance.common.requester.boosty.BoostyRequestException;
 import org.redlance.common.requester.boosty.BoostyRequester;
+import org.redlance.common.requester.boosty.obj.donation.Donation;
 import org.redlance.common.requester.boosty.obj.post.PostSale;
 import org.redlance.common.requester.boosty.obj.user.BoostyUser;
 import org.redlance.common.requester.boosty.obj.user.SubscriptionStatus;
@@ -59,6 +60,35 @@ public class BoostyRequesterTest {
             Assertions.assertTrue(sale.amount() > 0, "sale " + i);
             Assertions.assertNotNull(sale.post().id(), "sale " + i);
         }
+    }
+
+    @Test
+    public void testDonations() throws IOException, InterruptedException {
+        List<Donation> donations = new ArrayList<>();
+        BoostyRequester.requestDonationsChunking(page -> {
+            donations.addAll(page);
+            return null;
+        }, BLOG, TOKEN);
+
+        Assertions.assertFalse(donations.isEmpty());
+        for (int i = 0; i < donations.size(); i++) {
+            Donation donation = donations.get(i);
+            Assertions.assertTrue(donation.amount() > 0, "donation " + i);
+            Assertions.assertNotEquals(Donation.Type.UNKNOWN, donation.type(), "donation " + i);
+            Assertions.assertTrue(donation.createdAt() > 0, "donation " + i);
+            Assertions.assertTrue(donation.user().id() > 0, "donation " + i);
+        }
+
+        Donation latest = donations.getFirst();
+        List<Donation> alike = new ArrayList<>();
+        BoostyRequester.requestDonationsChunking(page -> {
+            alike.addAll(page);
+            return null;
+        }, BLOG, TOKEN, latest.type(), latest.targetId());
+
+        Assertions.assertTrue(alike.contains(latest), "The filter keeps the donation it was made from");
+        Assertions.assertTrue(alike.stream().allMatch(donation -> donation.type() == latest.type()
+                && (latest.targetId() == 0 || donation.targetId() == latest.targetId())));
     }
 
     @Test

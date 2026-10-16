@@ -1,7 +1,7 @@
 # requester-boosty
 
-Wrapper of the Boosty API (boosty.to) on behalf of a blog owner: subscribers, post sales, subscriber profiles, dialogs,
-the pubsub websocket and token refresh. Built on `requester-base` (`HttpClients`, `Chunker`, `Paginator`) and `cache`.
+Wrapper of the Boosty API (boosty.to) on behalf of a blog owner: subscribers, post sales, donations, subscriber
+profiles, dialogs, the pubsub websocket and token refresh. Built on `requester-base` (`HttpClients`, `Chunker`, `Paginator`) and `cache`.
 
 ## Layout
 
@@ -14,10 +14,12 @@ the pubsub websocket and token refresh. Built on `requester-base` (`HttpClients`
 - `BoostyErrorResponse` (`error`, `error_description`, `failure(...)`) is implemented by every response envelope and
   paginator; `BoostyRequestException extends IOException` carries `error()`/`errorDescription()`.
 - `paginators/` — `BoostyLegacyPaginator` (subscriber list: `data, limit, offset, total`) and `BoostyPaginator` (post
-  sales: `data, extra{offset, total, isLast}`).
-- `obj/user` — `BoostyUser` (one flat record for list rows, profiles and post buyers), `SubscriptionStatus`,
+  sales and donations: `data, extra{offset, total, isLast}`).
+- `obj/user` — `BoostyUser` (one flat record for list rows, profiles, post buyers and donors), `SubscriptionStatus`,
   `SubscriptionLevel`, `Currency`, `BoostyPromo`, `ExternalApp`, `BoostyProfileDeserializer`.
 - `obj/post` — `PostSales`, `PostSale` (`double amount`), `PostObj`, `ContentBlock`.
+- `obj/donation` — `Donation` (`double amount`, `type`, `targetId`). Its pages are the package-private
+  `BoostyRequester.Donations`, and `requestDonationsChunking` hands the chunker the list itself.
 - `obj/BoostyValues` (`@ApiStatus.Internal`: `parse(enum)`, `nullIfEmpty`), `obj/LenientDeserializer`.
 - `BoostyWebsocketListener` — the pubsub connection; `messages/` — its protocol records; `handler/BoostyBuiltInHandler`
   implements `BoostyWebsocketListener.Listener` and hands events to `BoostyListener`s by event type.
@@ -37,6 +39,16 @@ the pubsub websocket and token refresh. Built on `requester-base` (`HttpClients`
     ends mid-walk (a row may repeat or be missed until the next walk).
 - Post sales: `GET /v1/blog/<blog>/sales/post/?limit=300&offset=N&sort_by=time&order=gt`; `extra.offset` is a JSON
   string.
+- Donations: `GET /v1/blog/<blog>/sales/donation/?limit=300&offset=N&sort_by=time&order=gt[&type=…][&target_id=…]` →
+  `{"data": {"donationsSales": [{id, type, targetId, amount, isFeePaid, createdAt, bloggerId, user}]},
+  "extra": {offset, total}}`, with `extra.offset` a string (requested offset plus limit) and no `isLast`.
+  - `type` is `author` (from the profile), `target` (a goal), `post` or `dialog`, as in the frontend's enum. An
+    unknown `type` or a `limit` above 300 gets 400 `invalid_param`; `target_id` filters alone or with `type`.
+  - `targetId` is the goal for `target` and `0` for `author`; the frontend lists a post's donations with
+    `type=post&target_id=<post id>`. The blog has only `author` and `target` donations, so `post`/`dialog` rows are
+    unseen.
+  - Amounts are rubles after Boosty's commission, as the statistics page states for every payment; `user` is the
+    donor's identity like a post buyer's. Goals themselves (`/v1/target/<blog>/`, `/v1/target/<id>`) are not wrapped.
 - Profile: `GET /v1/blog/<blog>/subscriber/<userId>/profile` → `{"data": {"profile": {...}}}` with `user`, `note`,
   `canWrite`, `isBlackListed`, `isBlackListedByUser`, `finance{payments, refunds}` and `subscription{subscriptionLevel,
   status, onTime, offTime, nextPayTime, lastPayTime}`. Works for any user id; `subscription` is absent for users who
@@ -48,6 +60,26 @@ the pubsub websocket and token refresh. Built on `requester-base` (`HttpClients`
 - Blog `dima_dencep` levels: free 421849, "Beta versions" 2452741 (150 ₽), "Supporter" 4126895 (399 ₽), archived
   "Beta" 2310700 (125 ₽, `parent` 2452741). EmotecraftLibrary accepts `boostyLevelIds: [2452741]`.
 
+## More endpoints (from the frontend's API map of 322 entries, not wrapped)
+
+- `GET /v1/blog/stat/<blog>/events?limit=…&offset=…` — the statistics page's event feed, the latest first, paged by
+  `extra{offset (string), total, isLast}`. Each row names the `user` (with e-mail) and carries `eventType`, `amount`,
+  `createdAt`, `levelId`/`oldLevelId`, `period`, `isFeePaid`. Types: `subscribe`, `recurrent`, `unsubscribe`,
+  `unsubscribe_cancel`, `up_subscription`, `donation_author`/`donation_target`/`donation_post`/`donation_dialog`,
+  `buy_post`, `buy_message`, `buy_bundle`, `buy_gift`, `get_gift`, `hold`, `hold_approve`, `hold_cancel`, `refund`,
+  `payout`, `payout_error`, `commission_compensation`, `referal`, `referal_out`. Unlike the websocket counters it says
+  who did what, so a sync can read it from the last seen event instead of walking every subscriber.
+- `GET /v1/blog/stat/<blog>/search` finds users in the blog's statistics (parameters unchecked);
+  `GET /v1/blog/stat/<blog>/current` gives balance, income, hold, `paidCount` and `followersCount`.
+- `GET /v1/blog/<blog>/subscription_level/?show_deleted=true&show_free_level=true` lists every level, archived ones
+  included.
+- `GET /v1/notification/standalone/event/` lists the notifications behind the `standalone_notify_count` counters,
+  with the subscriber and level of a `subscriber_new` and the donation (with `currencyAmounts`) of a `donation_new`.
+- Boosty runs an OAuth server and developer apps (`/oauth/server/*`, `/client/register`, `/dev/v1/user/token`, docs
+  under `/doc/*`). They are gated: this account has `hasAccessToDevApi: false` and `/v1/doc/index/` answers 403 until
+  access is requested through `/doc/request_access/`.
+- `/int/self/*` (users, sessions, mailer, admin actions, …) belongs to Boosty staff: never call it.
+
 ## Websocket
 
 - `wss://pubsub.boosty.to/connection/websocket` with `Origin: https://boosty.to`; Centrifugo-style JSON commands
@@ -55,9 +87,14 @@ the pubsub websocket and token refresh. Built on `requester-base` (`HttpClients`
   2 unsubscribe, 7 ping. Replies are `{"id", "result"}` or `{"id", "error"}`; publications have no id:
   `{"result": {"channel", "data": {"data": {"type", "data"}}}}`.
 - One frame may hold several newline-separated messages, and one message may span several frames.
-- Channels: `users#<id>`, `dialogs#<id>`, `blogger:<id>` (`$dialog:` is not subscribed). Known event types:
-  `dialog_message_counters`, `dialog_message_read`, `dialog_message`, `standalone_notify_count`,
-  `blog_subscriber_stat`, `upload`.
+- Channels: `users#<id>`, `dialogs#<id>` and `blogger:<id>`, the blog's public channel that `GET /v1/blog/<blog>`
+  names as `publicWebSocketChannel`. The web frontend never subscribes to `blogger:` and nothing was seen on it, but
+  keep it: it is a real public namespace, and `blog_subscriber_stat`, which EmotecraftLibrary acts on, may come there.
+- `WEBSOCKET.md` holds the full shape of every event on every channel, each marked with where it comes from (the
+  frontend's handlers or the REST object it stores). Keep it updated when a live push shows more.
+- Per event, Boosty nests the payload (`event.data.data`) or puts its fields next to `type` (`event.data`);
+  `BoostyListener.payload(event)` takes whichever is there. No event announces a donation: the `donation_new`
+  counter of `standalone_notify_count` grows instead.
 - The JDK `WebSocket` fails `sendText` while a previous send is pending, so sends are chained per connection.
 - `BoostyWebsocketListener` is final and composition-only: `new BoostyWebsocketListener(socketTokenSupplier, userId,
   listener)`, `start()`, `close()`, `isConnected()`, `sendMessage(method, params)`. `Listener` has
@@ -111,10 +148,18 @@ the pubsub websocket and token refresh. Built on `requester-base` (`HttpClients`
 
 ## Researching the API
 
-- Use Claude in Chrome on `https://boosty.to/<blog>/blog/statistics` (tabs "Подписчики" and "Продажи постов"; a
-  subscriber's profile opens by clicking their name) and read the network requests. Pages are rendered on the server,
-  so the first view may come without API calls; navigate inside the app to trigger them.
+- Use Claude in Chrome on `https://boosty.to/<blog>/blog/statistics` (tabs "Подписчики", "Донаты" and "Продажи
+  постов"; a subscriber's profile opens by clicking their name) and read the network requests. Pages are rendered on
+  the server, so the first view may come without API calls; navigate inside the app to trigger them, or list what the
+  page already loaded with `performance.getEntriesByType('resource')`.
 - For ad-hoc GETs, read the page's own token from `localStorage.auth` inside `javascript_tool` and use it there only.
+- The frontend's scripts (fetch them in-page and search the text) hold the API path map (`BLOG_DONATIONS_SALES:
+  "/blog/:blogUrl/sales/donation/"`), the parameters every fetch sends, and the enums of event types and kinds. The
+  websocket service is the class with `static subscribe(` and `register({channel:…,message:…,handler:…})` calls.
+- A websocket opened in the page (token from `/v1/ws/connect`, channels from `/v1/user/current` → `webSocket`) shows
+  real pushes; record their shapes only. `history` answers with no publications.
+- The extension withholds output that looks like a query string, a token or a "sensitive" key (even a key named
+  `author`): print paths, parameter names, shapes and counts instead.
 
 ## Consumers
 

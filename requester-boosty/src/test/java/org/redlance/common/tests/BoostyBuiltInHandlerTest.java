@@ -50,8 +50,41 @@ public class BoostyBuiltInHandlerTest {
         Assertions.assertEquals(List.of("blog_subscriber_stat"), untyped.types);
     }
 
+    @Test
+    public void testPayloadLayouts() {
+        Counting listener = new Counting();
+        this.handler.addListener("subscribers_change_count", listener);
+
+        // Boosty sends this event with its fields next to the type, most others nested
+        this.handler.onEvent("users#1", event("{\"data\": {\"type\": \"subscribers_change_count\", \"count\": 52}}"));
+        this.handler.onEvent("users#1", event("{\"data\": {\"type\": \"subscribers_change_count\", \"data\": {\"count\": 53}}}"));
+
+        Assertions.assertEquals(List.of(new Count(52), new Count(53)), listener.counts);
+        Assertions.assertNull(BoostyListener.payload(event("{}")));
+        Assertions.assertEquals("stream_start", BoostyListener.payload(event("""
+                {"data": {"type": "stream_start", "data": null}}
+                """)).path("type").asString(), "A nested event without a payload leaves the event itself");
+    }
+
     private static ObjectNode event(String json) {
         return (ObjectNode) JacksonMappers.OBJECT_MAPPER.readTree(json);
+    }
+
+    public record Count(long count) {
+    }
+
+    private static final class Counting implements BoostyListener<Count> {
+        private final List<Count> counts = new CopyOnWriteArrayList<>();
+
+        @Override
+        public void handle(String channel, Count count) {
+            this.counts.add(count);
+        }
+
+        @Override
+        public Class<Count> parseObject() {
+            return Count.class;
+        }
     }
 
     private static final class Recording implements BoostyListener<ObjectNode> {

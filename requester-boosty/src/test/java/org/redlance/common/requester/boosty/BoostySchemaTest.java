@@ -3,6 +3,7 @@ package org.redlance.common.requester.boosty;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.redlance.common.jackson.JacksonMappers;
+import org.redlance.common.requester.boosty.obj.donation.Donation;
 import org.redlance.common.requester.boosty.obj.post.ContentBlock;
 import org.redlance.common.requester.boosty.obj.post.PostSale;
 import org.redlance.common.requester.boosty.obj.post.PostSales;
@@ -31,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 class BoostySchemaTest {
     private static final TypeReference<BoostyLegacyPaginator<List<BoostyUser>>> SUBSCRIBERS = new TypeReference<>() {};
     private static final TypeReference<BoostyPaginator<PostSales>> POST_SALES = new TypeReference<>() {};
+    private static final TypeReference<BoostyPaginator<BoostyRequester.Donations>> DONATIONS = new TypeReference<>() {};
     private static final TypeReference<BoostyPaginator<JsonNode>> ANY_PAGE = new TypeReference<>() {};
     private static final TypeReference<BoostyRequester.ProfileResponse> PROFILE = new TypeReference<>() {};
 
@@ -185,6 +187,57 @@ class BoostySchemaTest {
         Assertions.assertEquals(600, generous.amount());
         Assertions.assertTrue(generous.isFeePaid());
         Assertions.assertEquals(sale.post(), generous.post());
+    }
+
+    @Test
+    void testDonations() throws IOException {
+        BoostyPaginator<BoostyRequester.Donations> page = read("donations.json", DONATIONS);
+        Assertions.assertNull(page.error());
+        Assertions.assertEquals(300, page.offset());
+        Assertions.assertTrue(page.done());
+
+        BoostyRequester.Donations data = page.data();
+        Assertions.assertNotNull(data);
+        List<Donation> donations = data.donationsSales();
+        Assertions.assertEquals(4, donations.size());
+
+        Donation profile = donations.getFirst();
+        Assertions.assertEquals(9104, profile.id());
+        Assertions.assertEquals(Donation.Type.AUTHOR, profile.type());
+        Assertions.assertEquals(0, profile.targetId());
+        Assertions.assertEquals(471.9, profile.amount());
+        Assertions.assertFalse(profile.isFeePaid());
+        Assertions.assertEquals(1792072044L, profile.createdAt());
+        Assertions.assertEquals(2121837L, profile.bloggerId());
+
+        BoostyUser donor = profile.user();
+        Assertions.assertEquals(1001, donor.id());
+        Assertions.assertEquals("donor@example.com", donor.email());
+        Assertions.assertNull(donor.avatarUrl());
+        Assertions.assertTrue(donor.canWrite());
+        Assertions.assertNull(donor.status());
+        Assertions.assertFalse(donor.isSubscribed(), "A donor without a subscription");
+
+        Donation goal = donations.get(1);
+        Assertions.assertEquals(Donation.Type.TARGET, goal.type());
+        Assertions.assertEquals(77, goal.targetId());
+        Assertions.assertEquals(1000, goal.amount());
+        Assertions.assertTrue(goal.isFeePaid());
+        Assertions.assertFalse(goal.user().canWrite());
+
+        Donation post = donations.get(2);
+        Assertions.assertEquals(Donation.Type.POST, post.type());
+        Assertions.assertEquals(5550123, post.targetId());
+
+        Assertions.assertEquals(Donation.Type.UNKNOWN, donations.get(3).type(), "A kind Boosty may add later");
+        Assertions.assertEquals(Donation.Type.DIALOG, Donation.Type.of("dialog"));
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> donations.add(profile));
+
+        BoostyPaginator<BoostyRequester.Donations> empty = parse("""
+                {"data": {}, "extra": {"offset": "300", "total": 0}}
+                """, DONATIONS);
+        Assertions.assertNotNull(empty.data());
+        Assertions.assertEquals(List.of(), empty.data().donationsSales());
     }
 
     @Test

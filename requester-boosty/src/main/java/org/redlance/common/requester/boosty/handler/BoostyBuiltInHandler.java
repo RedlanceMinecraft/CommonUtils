@@ -54,7 +54,8 @@ public class BoostyBuiltInHandler implements BoostyWebsocketListener.Listener {
     }
 
     /**
-     * @param type Event type, known: dialog_message_counters, dialog_message_read, dialog_message, standalone_notify_count, blog_subscriber_stat, upload
+     * @param type Event type, e.g. {@code standalone_notify_count} or {@code dialog_message}; {@code WEBSOCKET.md} in
+     *             this module lists every event Boosty sends.
      */
     public boolean addListener(String type, BoostyListener<?> listener) {
         RequesterUtils.LOGGER.debug("Subscribed listener ({}) for type '{}'!",

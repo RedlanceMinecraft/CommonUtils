@@ -8,6 +8,7 @@ import org.redlance.common.requester.Chunker;
 import org.redlance.common.requester.boosty.BoostyRequester;
 import org.redlance.common.requester.boosty.obj.BoostyValues;
 import org.redlance.common.requester.boosty.obj.LenientDeserializer;
+import org.redlance.common.requester.boosty.obj.donation.Donation;
 import org.redlance.common.requester.boosty.obj.post.PostSale;
 import tools.jackson.databind.annotation.JsonDeserialize;
 
@@ -27,7 +28,7 @@ import java.util.stream.LongStream;
  *     <li>subscriber profile ({@link BoostyRequester#requestUserProfile(String, String, long)}): the user with their
  *     blog and linked accounts, the subscription with its last payment, refunds, the note and both blacklists,
  *     parsed by {@link BoostyProfileDeserializer};</li>
- *     <li>post sale ({@link PostSale#user()}): the user alone.</li>
+ *     <li>post sale ({@link PostSale#user()}) and donation ({@link Donation#user()}): the user alone.</li>
  * </ul>
  * Components their source does not send are {@code 0}, {@code false}, {@code null} or empty; an empty text is
  * {@code null} too. Times are Unix seconds, money is in rubles. Two instances are equal when all their components

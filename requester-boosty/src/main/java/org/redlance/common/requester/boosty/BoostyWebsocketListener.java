@@ -36,9 +36,12 @@ public final class BoostyWebsocketListener implements AutoCloseable {
     // The token supplier usually sends a request, which must not hold up the pings
     private static final ExecutorService TOKEN_EXECUTOR = CommonExecutors.createExecutor("boosty-websocket-token-");
 
-    public static final List<String> KNOWN_CHANNEL_PREFIXES = List.of(
-            "users#", "dialogs#", "blogger:"//, "$dialog:"
-    );
+    /**
+     * Channels a connection subscribes to, each followed by the user id: the user's own events, their dialogs and the
+     * public channel of their blog, which {@code GET /v1/blog/<blog>} names as {@code publicWebSocketChannel}. See
+     * {@code WEBSOCKET.md} in this module.
+     */
+    public static final List<String> KNOWN_CHANNEL_PREFIXES = List.of("users#", "dialogs#", "blogger:");
 
     private final Supplier<String> token;
     private final int userId;

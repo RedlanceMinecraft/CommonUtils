@@ -91,77 +91,86 @@ public class ServerUtils {
         String country = headers.apply("CF-IPCountry");
         if (country != null && !country.isBlank()) {
             String countryInLower = country.toLowerCase(Locale.ROOT);
+            // Cloudflare's code for a visitor it has no country for, and for one coming through Tor
+            if (countryInLower.equals("xx") || countryInLower.equals("t1")) return fallback.get();
 
-            String lang = switch (countryInLower) {
-                // Eastern European and Russian-speaking countries
-                case "ru" -> "ru_ru";
-                case "by" -> "be_by";
-                case "kz" -> "kk_kz";
-                case "ua" -> "uk_ua";
-                case "rs" -> "sr_rs";
-                case "bg" -> "bg_bg";
-                case "ge" -> "ka_ge";
-
-                // English-speaking countries
-                case "us", "gb", "au", "nz", "ca", "sg", "za", "ie" -> "en_" + countryInLower;
-
-                // Spanish-speaking countries
-                case "es", "mx", "ar", "co", "pe", "ve", "cl", "do", "uy", "bo", "cr" -> "es_" + countryInLower;
-
-                // Portuguese-speaking countries
-                case "pt", "br", "ao", "mz" -> "pt_" + countryInLower;
-
-                // Asian countries
-                case "id" -> "id_id";
-                case "vn" -> "vi_vn";
-                case "jp" -> "ja_jp";
-                case "kr" -> "ko_kr";
-                case "cn", "tw", "hk" -> "zh_" + countryInLower;
-                case "th" -> "th_th";
-                case "my" -> "ms_my";
-                case "in" -> "hi_in";
-                case "pk" -> "ur_pk";
-                case "bd" -> "bn_bd";
-                case "il" -> "he_il";
-                case "ph" -> "fil_ph";
-
-                // Middle Eastern and North African countries (Arabic-speaking)
-                case "ae", "eg", "tn", "sa", "ma", "dz", "lb" -> "ar_" + countryInLower;
-
-                // European countries
-                case "fr", "be", "lu", "mc" -> "fr_" + countryInLower;
-                case "ch" -> "de_ch";
-                case "de", "at" -> "de_" + countryInLower;
-                case "it" -> "it_it";
-                case "nl" -> "nl_nl";
-                case "pl" -> "pl_pl";
-                case "tr" -> "tr_tr";
-                case "cz" -> "cs_cz";
-                case "hu" -> "hu_hu";
-                case "ro" -> "ro_ro";
-                case "el" -> "el_gr";
-                case "sk" -> "sk_sk";
-                case "si" -> "sl_si";
-                case "lv" -> "lv_lv";
-                case "lt" -> "lt_lt";
-
-                // Nordic countries
-                case "se" -> "sv_se";
-                case "no" -> "no_no";
-                case "dk" -> "da_dk";
-                case "fi" -> "fi_fi";
-                case "is" -> "is_is";
-
-                // Additional countries
-                case "ir" -> "fa_ir";
-
-                default -> {
-                    ServerUtils.LOGGER.warn("Country code not explicitly mapped: {}, using English as fallback", country);
-                    yield "en_" + countryInLower;
-                }
+            // The language a visitor from each country gets, by its ISO 3166-1 code; English for a country not listed
+            String language = switch (countryInLower) {
+                case "et" -> "am";
+                case "ae", "bh", "dz", "eg", "eh", "iq", "jo", "kw", "lb", "ly", "ma", "mr", "om", "ps", "qa", "sa", "sd",
+                     "sy", "tn", "ye" -> "ar";
+                case "az" -> "az";
+                case "by" -> "be";
+                case "bg" -> "bg";
+                case "bd" -> "bn";
+                case "ba" -> "bs";
+                case "ad" -> "ca";
+                case "cz" -> "cs";
+                case "dk", "gl" -> "da";
+                case "at", "ch", "de", "li" -> "de";
+                case "cy", "gr" -> "el";
+                case "ar", "bo", "cl", "co", "cr", "cu", "do", "ec", "es", "gq", "gt", "hn", "mx", "ni", "pa", "pe", "pr",
+                     "py", "sv", "uy", "ve" -> "es";
+                case "ee" -> "et";
+                case "af", "ir" -> "fa";
+                case "fi" -> "fi";
+                case "ph" -> "fil";
+                case "fo" -> "fo";
+                case "be", "bf", "bi", "bj", "bl", "cd", "cf", "cg", "ci", "cm", "dj", "fr", "ga", "gf", "gn", "gp", "ht",
+                     "km", "lu", "mc", "mf", "mg", "ml", "mq", "nc", "ne", "pf", "pm", "re", "sn", "td", "tg", "wf",
+                     "yt" -> "fr";
+                case "il" -> "he";
+                case "in" -> "hi";
+                case "hr" -> "hr";
+                case "hu" -> "hu";
+                case "am" -> "hy";
+                case "id" -> "id";
+                case "is" -> "is";
+                case "it", "sm", "va" -> "it";
+                case "jp" -> "ja";
+                case "ge" -> "ka";
+                case "kz" -> "kk";
+                case "kh" -> "km";
+                case "kp", "kr" -> "ko";
+                case "kg" -> "ky";
+                case "la" -> "lo";
+                case "lt" -> "lt";
+                case "lv" -> "lv";
+                case "mk" -> "mk";
+                case "mn" -> "mn";
+                case "bn", "my" -> "ms";
+                case "mt" -> "mt";
+                case "mm" -> "my";
+                case "np" -> "ne";
+                case "aw", "bq", "cw", "nl", "sr" -> "nl";
+                case "no" -> "no";
+                case "pl" -> "pl";
+                case "ao", "br", "cv", "gw", "mz", "pt", "st", "tl" -> "pt";
+                case "md", "ro" -> "ro";
+                case "ru" -> "ru";
+                case "rw" -> "rw";
+                case "lk" -> "si";
+                case "sk" -> "sk";
+                case "si" -> "sl";
+                case "so" -> "so";
+                case "al", "xk" -> "sq";
+                case "me", "rs" -> "sr";
+                case "ax", "se" -> "sv";
+                case "tz" -> "sw";
+                case "tj" -> "tg";
+                case "th" -> "th";
+                case "er" -> "ti";
+                case "tm" -> "tk";
+                case "tr" -> "tr";
+                case "ua" -> "uk";
+                case "pk" -> "ur";
+                case "uz" -> "uz";
+                case "vn" -> "vi";
+                case "cn", "hk", "mo", "tw" -> "zh";
+                default -> "en";
             };
 
-            return parser.parseLocale(lang, fallback);
+            return parser.parseLocale(language + "_" + countryInLower, fallback);
         }
 
         return fallback.get();

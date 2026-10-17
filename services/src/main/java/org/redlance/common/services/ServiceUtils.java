@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+@SuppressWarnings("unused")
 public class ServiceUtils {
     private static final Comparator<AdvancedService> COMPARATOR = Comparator.comparingInt(AdvancedService::getPriority);
     private static final boolean DEBUG_SERVICES = Boolean.getBoolean("commonutils.debug.services");

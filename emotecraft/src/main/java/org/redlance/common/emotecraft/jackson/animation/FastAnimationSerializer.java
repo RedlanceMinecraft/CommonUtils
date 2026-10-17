@@ -49,6 +49,7 @@ public class FastAnimationSerializer extends ValueSerializer<Animation> {
         }
     }
 
+    @SuppressWarnings("unused")
     public static String serializeToString(Animation src, PacketTask task, boolean downgradable, PlayerAnimatorStatus playerAnimatorStatus) {
         return Base64.getEncoder().encodeToString(serializeToBytes(src, task, downgradable, playerAnimatorStatus));
     }
@@ -102,7 +103,10 @@ public class FastAnimationSerializer extends ValueSerializer<Animation> {
             }
         }
 
-        if (animation.data().getRaw("bages") instanceof List<?> tags && !tags.isEmpty()) {
+        byte headerVersion = EmotePacket.defaultVersions.get(PacketConfig.HEADER_PACKET);
+        if (headerVersion > 2) {
+            version.put(PacketConfig.HEADER_PACKET, headerVersion);
+        } else if (animation.data().getRaw("bages") instanceof List<?> tags && !tags.isEmpty()) {
             version.put(PacketConfig.HEADER_PACKET, (byte) 2);
         } else {
             version.put(PacketConfig.HEADER_PACKET, (byte) 1);

@@ -7,8 +7,8 @@ plugins {
 allprojects {
     apply plugin: "maven-publish"
 
-    version = rootProject.mod_version
-    group = rootProject.maven_group
+    version = "1.4.2"
+    group = "org.redlance.common-utils"
 
     repositories {
         maven {
@@ -39,7 +39,7 @@ subprojects {
     apply plugin: "java"
     apply plugin: "java-library"
 
-    base.archivesName = "${rootProject.archives_base_name}-${project.name}"
+    base.archivesName = "common-utils-${project.name}"
 
     dependencies {
         testImplementation(platform(rootProject.libs.junit.bom))

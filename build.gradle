@@ -30,8 +30,13 @@ allprojects {
         options.release.set 25
     }
 
+    // credentials(PasswordCredentials) reads the Gradle properties RedlanceMinecraftUsername and RedlanceMinecraftPassword.
     publishing.repositories {
-        mavenLocal()
+        maven {
+            name = "RedlanceMinecraft"
+            url = "https://repo.redlance.org/public"
+            credentials(PasswordCredentials)
+        }
     }
 }
 

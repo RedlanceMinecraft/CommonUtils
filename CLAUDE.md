@@ -10,6 +10,10 @@ Shared Java libraries of the Redlance projects (EmotecraftLibrary, enhanced-play
 - Versions: the release version is `version` in the root `build.gradle` (`allprojects`); every dependency and plugin,
   with its version, in the catalog `gradle/libs.versions.toml`, and build scripts refer to them only as `libs.*`.
   Renovate (`renovate.json`) bumps dependencies; the user bumps the release version.
+- Releases: pushing a `v<version>` tag runs `.github/workflows/publish.yml`, which builds with tests and then publishes
+  every module and the BOM to the `RedlanceMinecraft` repository (`https://repo.redlance.org/public`) with the
+  repository secrets `RELEASE_REPO_USERNAME`/`RELEASE_REPO_PASSWORD`. A local `./gradlew publish` needs the Gradle
+  properties `RedlanceMinecraftUsername`/`RedlanceMinecraftPassword`; `publishToMavenLocal` needs none.
 - `implementation api(libs.x)` fails ("Cannot convert a null value to an object of type Dependency"): `api(...)`
   returns null for a catalog entry. Write `api(libs.x)` alone; `implementation` extends `api` anyway.
 - `./gradlew build`, `./gradlew :<module>:test`, `./gradlew :<module>:javadoc` (run it after touching Javadoc; broken

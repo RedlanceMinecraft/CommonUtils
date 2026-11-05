@@ -7,9 +7,9 @@ Shared Java libraries of the Redlance projects (EmotecraftLibrary, enhanced-play
 
 - Gradle multi-project, modules are listed in `settings.gradle` (`legacy` stays in git but is not included). Java 25
   (`options.release = 25`); configuration cache and parallel builds are on.
-- Versions: `mod_version` in `gradle.properties`; every dependency and plugin, with its version, in the catalog
-  `gradle/libs.versions.toml`, and build scripts refer to them only as `libs.*`. Renovate (`renovate.json`) bumps
-  dependencies; the user bumps `mod_version`.
+- Versions: the release version is `version` in the root `build.gradle` (`allprojects`); every dependency and plugin,
+  with its version, in the catalog `gradle/libs.versions.toml`, and build scripts refer to them only as `libs.*`.
+  Renovate (`renovate.json`) bumps dependencies; the user bumps the release version.
 - `implementation api(libs.x)` fails ("Cannot convert a null value to an object of type Dependency"): `api(...)`
   returns null for a catalog entry. Write `api(libs.x)` alone; `implementation` extends `api` anyway.
 - `./gradlew build`, `./gradlew :<module>:test`, `./gradlew :<module>:javadoc` (run it after touching Javadoc; broken
@@ -45,11 +45,13 @@ Shared Java libraries of the Redlance projects (EmotecraftLibrary, enhanced-play
 
 ## Consumers
 
-- EmotecraftLibrary (`../EmotecraftLibrary`) builds against this checkout, e.g.
-  `cd ../EmotecraftLibrary && ./gradlew :server:compileKotlin --rerun --include-build ../CommonUtils --offline`.
+- EmotecraftLibrary (`../EmotecraftLibrary`) pins a published release (`common-utils` in its
+  `gradle/libs.versions.toml`); check it against this checkout with
+  `cd ../EmotecraftLibrary && ./gradlew :server:compileKotlin --rerun --include-build ../CommonUtils --offline`. Its
+  docs describe the pinned release, so update them when it moves to a new one, not before.
 - enhanced-player-animations (`~/Desktop/git/dima-dencep/enhanced-player-animations`) uses the published 1.3.9.
 
 ## Module notes
 
-`requester-base/CLAUDE.md` and `requester-boosty/CLAUDE.md` hold the details of those modules; the other modules have
-no notes yet.
+`requester-base/CLAUDE.md`, `requester-boosty/CLAUDE.md` and `requester-openpanel/CLAUDE.md` hold the details of
+those modules; the other modules have no notes yet.

@@ -17,8 +17,8 @@ import java.nio.file.Path;
 import java.time.Duration;
 
 /**
- * What every HTTP client shares: proxies, redirects, the user agent, cookies, and the JSON and Smile codecs; the cache
- * on disk for the clients that add it.
+ * What every HTTP client shares: proxies, redirects, cookies, the JSON and Smile codecs, and a browser user agent
+ * unless the client sets its own; the cache on disk for the clients that add it.
  * <p>
  * Each requester builds a client of its own from {@link #newBuilder(String)}, with its own executor, and adds only what
  * it needs, so that one requester's needs, like the {@link #CACHE} or

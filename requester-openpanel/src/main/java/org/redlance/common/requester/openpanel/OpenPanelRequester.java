@@ -1,17 +1,19 @@
 package org.redlance.common.requester.openpanel;
 
 import com.github.mizosoft.methanol.MediaType;
+import com.github.mizosoft.methanol.Methanol;
+import com.github.mizosoft.methanol.MutableRequest;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.jetbrains.annotations.Nullable;
-import org.redlance.common.requester.Requester;
+import org.redlance.common.requester.HttpClients;
 import org.redlance.common.requester.RequesterUtils;
+import org.redlance.common.requester.openpanel.payload.AiPayload;
 import org.redlance.common.requester.openpanel.payload.IdentifyPayload;
 import org.redlance.common.requester.openpanel.payload.IncrementPayload;
 import org.redlance.common.requester.openpanel.payload.TrackPayload;
 
 import java.net.URI;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -36,6 +38,16 @@ import java.util.function.Supplier;
 @SuppressWarnings("unused")
 public final class OpenPanelRequester {
     public static final String DEFAULT_API_URL = "https://api.openpanel.dev";
+
+    /**
+     * Client of the OpenPanel API: the shared settings without the cache on disk, which keeps only answers to GET,
+     * while every request here is a POST. Its own User-Agent goes with requests that forward none: OpenPanel takes it
+     * for the visitor's device and files a {@code name/version} one as a server, whereas the shared browser one would
+     * make every such event a desktop Chrome.
+     */
+    private static final Methanol HTTP_CLIENT = HttpClients.newBuilder("http-openpanel")
+            .userAgent("common-utils-requester-openpanel/1.0.0")
+            .build();
 
     private static final String CLIENT_ID_HEADER = "openpanel-client-id";
     private static final String CLIENT_SECRET_HEADER = "openpanel-client-secret";
@@ -84,7 +96,7 @@ public final class OpenPanelRequester {
 
     public OpenPanelRequester(String clientId, String clientSecret, String apiUrl) {
         this(clientId, clientSecret, apiUrl,
-                Requester.HTTP_CLIENT.executor().orElseThrow(), DEFAULT_MAX_IN_FLIGHT);
+                HTTP_CLIENT.executor().orElseThrow(), DEFAULT_MAX_IN_FLIGHT);
     }
 
     public OpenPanelRequester(
@@ -145,13 +157,9 @@ public final class OpenPanelRequester {
     ) {
         return submit("track", () -> {
             Objects.requireNonNull(payload, "payload");
-            if (payload.profileId() != null) {
-                return ensureIdentifiedAsync(
-                        payload.profileId(), profileSupplier, clientIp, userAgent
-                )
-                        .thenCompose(ignored -> send("track", payload, clientIp, userAgent));
-            }
-            return send("track", payload, clientIp, userAgent);
+            return sendIdentified(
+                    "track", payload, payload.profileId(), profileSupplier, clientIp, userAgent
+            );
         });
     }
 
@@ -192,10 +200,39 @@ public final class OpenPanelRequester {
     ) {
         return submit("increment", () -> {
             Objects.requireNonNull(payload, "payload");
-            return ensureIdentifiedAsync(
-                    payload.profileId(), profileSupplier, clientIp, userAgent
-            )
-                    .thenCompose(ignored -> send("increment", payload, clientIp, userAgent));
+            return sendIdentified(
+                    "increment", payload, payload.profileId(), profileSupplier, clientIp, userAgent
+            );
+        });
+    }
+
+    public CompletableFuture<Void> ai(AiPayload payload) {
+        return ai(payload, null, null);
+    }
+
+    public CompletableFuture<Void> ai(
+            AiPayload payload,
+            @Nullable String clientIp,
+            @Nullable String userAgent
+    ) {
+        return ai(payload, null, clientIp, userAgent);
+    }
+
+    /**
+     * Sends an AI observability event, see {@link AiPayload}; like a {@code track}, one with a profile waits for its
+     * identification.
+     */
+    public CompletableFuture<Void> ai(
+            AiPayload payload,
+            @Nullable OpenPanelProfileSupplier profileSupplier,
+            @Nullable String clientIp,
+            @Nullable String userAgent
+    ) {
+        return submit("ai", () -> {
+            Objects.requireNonNull(payload, "payload");
+            return sendIdentified(
+                    "ai", payload, payload.profileId(), profileSupplier, clientIp, userAgent
+            );
         });
     }
 
@@ -266,6 +303,24 @@ public final class OpenPanelRequester {
             }
         });
         return result;
+    }
+
+    /**
+     * Sends an event; one with a {@code profileId} waits for the identification attempt of that profile.
+     */
+    private CompletableFuture<Void> sendIdentified(
+            String type,
+            Object payload,
+            @Nullable String profileId,
+            @Nullable OpenPanelProfileSupplier profileSupplier,
+            @Nullable String clientIp,
+            @Nullable String userAgent
+    ) {
+        if (profileId == null) {
+            return send(type, payload, clientIp, userAgent);
+        }
+        return ensureIdentifiedAsync(profileId, profileSupplier, clientIp, userAgent)
+                .thenCompose(ignored -> send(type, payload, clientIp, userAgent));
     }
 
     private CompletableFuture<Void> ensureIdentifiedAsync(
@@ -345,22 +400,21 @@ public final class OpenPanelRequester {
             @Nullable String clientIp,
             @Nullable String userAgent
     ) {
-        var requestBody = new OpenPanelRequest<>(type, payload);
-        var builder = HttpRequest.newBuilder(this.trackUri)
+        var request = MutableRequest.POST(
+                        this.trackUri, new OpenPanelRequest<>(type, payload), MediaType.APPLICATION_JSON
+                )
                 .timeout(REQUEST_TIMEOUT)
-                .header("Content-Type", MediaType.APPLICATION_JSON.toString())
                 .header(CLIENT_ID_HEADER, this.clientId)
-                .header(CLIENT_SECRET_HEADER, this.clientSecret)
-                .POST(Requester.ofObject(requestBody, MediaType.APPLICATION_JSON));
+                .header(CLIENT_SECRET_HEADER, this.clientSecret);
 
         if (clientIp != null && !clientIp.isBlank()) {
-            builder.header(CLIENT_IP_HEADER, clientIp);
+            request.header(CLIENT_IP_HEADER, clientIp);
         }
         if (userAgent != null && !userAgent.isBlank()) {
-            builder.header("User-Agent", userAgent);
+            request.header("User-Agent", userAgent);
         }
 
-        return Requester.HTTP_CLIENT.sendAsync(builder.build(), ERROR_BODY_HANDLER)
+        return HTTP_CLIENT.sendAsync(request.build(), ERROR_BODY_HANDLER)
                 .thenAccept(response -> {
                     if (response.statusCode() >= 300) {
                         throw new OpenPanelRequestException(response.statusCode(), response.body());

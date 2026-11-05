@@ -44,6 +44,9 @@ and slf4j-api are `api` dependencies, so consumers get them too.
   adds neither: every Boosty answer is the current state and holds personal data.
 - The browser user agent (`Chrome/155.0.0.0`) was set deliberately by the user; keep it. It is a default header, so a
   request that sets its own `User-Agent` keeps that one (requester-openpanel forwards the end user's).
+- requester-openpanel replaces it on its client with `common-utils-requester-openpanel/1.0.0`, a fixed version the user
+  chose: OpenPanel takes the user agent for the visitor's device and files a `name/version` one as a server, while the
+  shared browser one would make a desktop Chrome whose track events open sessions of their own.
 - No request timeout is set, only the connect timeout: give requests `.timeout(...)` (requester-openpanel uses 15 s).
 - Let the codec map bodies: `client.send(request, Type.class or TypeRef)`, `MutableRequest.POST(object, mediaType)`.
   `JacksonMappers` ignores unknown properties and leaves null and empty values out when encoding.
@@ -64,8 +67,7 @@ and slf4j-api are `api` dependencies, so consumers get them too.
 - `Requester` (not for removal). Its static `HTTP_CLIENT` is `HttpClients.newBuilder("http-requester")` plus
   `CacheOverrideInterceptor`. Each member's `@deprecated` Javadoc names its replacement: a client of your own with
   `send`/`sendAsync`, `HttpClients.CACHE.remove(request)`, `MutableRequest.POST(object, mediaType)`.
-- Still used by requester-mojang (`MojangRequester` calls `Requester.sendRequest`) and requester-openpanel
-  (`OpenPanelRequester` uses `HTTP_CLIENT`, its executor as the default profile-lookup executor, and `ofObject`).
+- Still used by requester-mojang (`MojangRequester` calls `Requester.sendRequest`).
 - `Chunker.sendChunkingRequest(chunker, builder, type)` without a client sends through `Requester.HTTP_CLIENT`, so its
   pages are force-cached; pass a client.
 
@@ -92,4 +94,4 @@ and slf4j-api are `api` dependencies, so consumers get them too.
 ## Consumers
 
 - requester-boosty (`HttpClients`, `Chunker`, `Paginator`), requester-mojang (`Requester`, `Downloader`),
-  requester-openpanel (`Requester`), and `all`, which re-exports every module. requester-bypass does not use it.
+  requester-openpanel (`HttpClients`), and `all`, which re-exports every module. requester-bypass does not use it.

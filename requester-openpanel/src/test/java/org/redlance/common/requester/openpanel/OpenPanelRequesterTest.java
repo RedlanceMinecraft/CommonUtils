@@ -7,16 +7,21 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.redlance.common.jackson.JacksonMappers;
+import org.redlance.common.requester.openpanel.payload.AiError;
+import org.redlance.common.requester.openpanel.payload.AiPayload;
+import org.redlance.common.requester.openpanel.payload.AiUsage;
 import org.redlance.common.requester.openpanel.payload.IdentifyPayload;
 import org.redlance.common.requester.openpanel.payload.IncrementPayload;
 import org.redlance.common.requester.openpanel.payload.TrackPayload;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -62,6 +67,7 @@ class OpenPanelRequesterTest {
         ).join();
 
         CapturedRequest track = this.requests.take();
+        Assertions.assertEquals("application/json", track.contentType());
         Assertions.assertEquals("client-id", track.clientId());
         Assertions.assertEquals("client-secret", track.clientSecret());
         Assertions.assertEquals("203.0.113.10", track.clientIp());
@@ -76,6 +82,7 @@ class OpenPanelRequesterTest {
                 JsonNodeFactory.instance.objectNode().put("is_public", true)
         )).join();
         CapturedRequest identify = this.requests.take();
+        Assertions.assertEquals("common-utils-requester-openpanel/1.0.0", identify.userAgent());
         Assertions.assertEquals("identify", identify.body().get("type").stringValue());
         Assertions.assertEquals("42", identify.body().get("payload").get("profileId").stringValue());
         Assertions.assertEquals("Dima", identify.body().get("payload").get("firstName").stringValue());
@@ -87,6 +94,68 @@ class OpenPanelRequesterTest {
         Assertions.assertEquals("emotes_downloaded", increment.body().get("payload").get("property").stringValue());
         Assertions.assertEquals(2, increment.body().get("payload").get("value").longValue());
         Assertions.assertFalse(increment.body().get("payload").has("name"));
+    }
+
+    @Test
+    void sendsAiPayloadAfterIdentifyingItsProfile() throws Exception {
+        ArrayNode input = JsonNodeFactory.instance.arrayNode();
+        input.addObject().put("role", "user").put("content", "Summarize my inbox");
+        AiPayload payload = AiPayload.generation(
+                        "trace_01", "gpt-5-mini", "openai", new AiUsage(812L, 140L, 0L, null, null)
+                )
+                .name("summarize")
+                .input(input)
+                .latencyMs(1840)
+                .stream(false)
+                .error(new AiError("Rate limited", "rate_limit_error", 429))
+                .profileId("42")
+                .timestamp(Instant.parse("2026-11-05T10:15:30.123Z"))
+                .build();
+        input.addObject().put("role", "assistant").put("content", "added after build");
+
+        this.requester.ai(
+                payload, () -> new IdentifyPayload("42"), "203.0.113.10", "Emotecraft/1.0"
+        ).join();
+
+        Assertions.assertEquals("identify", this.requests.take().body().get("type").stringValue());
+        CapturedRequest ai = this.requests.take();
+        Assertions.assertEquals("203.0.113.10", ai.clientIp());
+        Assertions.assertEquals("Emotecraft/1.0", ai.userAgent());
+        Assertions.assertEquals("ai", ai.body().get("type").stringValue());
+
+        JsonNode sent = ai.body().get("payload");
+        Assertions.assertEquals("generation", sent.get("kind").stringValue());
+        Assertions.assertEquals("trace_01", sent.get("traceId").stringValue());
+        Assertions.assertEquals("summarize", sent.get("name").stringValue());
+        Assertions.assertEquals("42", sent.get("profileId").stringValue());
+        Assertions.assertEquals(1, sent.get("input").size());
+        Assertions.assertEquals(812, sent.get("usage").get("inputTokens").longValue());
+        Assertions.assertEquals(0, sent.get("usage").get("cacheReadTokens").longValue());
+        Assertions.assertFalse(sent.get("usage").has("cacheWriteTokens"));
+        Assertions.assertEquals(1840, sent.get("latencyMs").longValue());
+        Assertions.assertEquals(JsonNodeFactory.instance.booleanNode(false), sent.get("stream"));
+        Assertions.assertEquals("Rate limited", sent.get("error").get("message").stringValue());
+        Assertions.assertEquals(429, sent.get("error").get("httpStatus").intValue());
+        Assertions.assertEquals("2026-11-05T10:15:30.123Z", sent.get("timestamp").stringValue());
+        Assertions.assertFalse(sent.has("spanId"));
+        Assertions.assertFalse(sent.has("properties"));
+        Assertions.assertFalse(sent.has("groups"));
+    }
+
+    @Test
+    void sendsEmptyAiContentAsJson() throws Exception {
+        this.requester.ai(AiPayload.span("trace_01")
+                .input(JsonNodeFactory.instance.objectNode())
+                .output(JsonNodeFactory.instance.arrayNode())
+                .error(new AiError(""))
+                .build()
+        ).join();
+
+        JsonNode sent = this.requests.take().body().get("payload");
+        Assertions.assertEquals(JsonNodeFactory.instance.objectNode(), sent.get("input"));
+        Assertions.assertEquals(JsonNodeFactory.instance.arrayNode(), sent.get("output"));
+        Assertions.assertFalse(sent.has("tools"));
+        Assertions.assertEquals(JsonNodeFactory.instance.objectNode().put("message", ""), sent.get("error"));
     }
 
     @Test
@@ -266,6 +335,7 @@ class OpenPanelRequesterTest {
     private static CapturedRequest capture(HttpExchange exchange) throws IOException {
         return new CapturedRequest(
                 JacksonMappers.OBJECT_MAPPER.readTree(exchange.getRequestBody()),
+                exchange.getRequestHeaders().getFirst("Content-Type"),
                 exchange.getRequestHeaders().getFirst("openpanel-client-id"),
                 exchange.getRequestHeaders().getFirst("openpanel-client-secret"),
                 exchange.getRequestHeaders().getFirst("x-client-ip"),
@@ -283,6 +353,7 @@ class OpenPanelRequesterTest {
 
     private record CapturedRequest(
             JsonNode body,
+            String contentType,
             String clientId,
             String clientSecret,
             String clientIp,

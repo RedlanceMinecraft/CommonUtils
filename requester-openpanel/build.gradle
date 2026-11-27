@@ -1,4 +1,6 @@
 dependencies {
     api project(":requester-base")
     implementation libs.guava
+
+    testImplementation libs.log4j.core // the tests read the warnings through an appender
 }

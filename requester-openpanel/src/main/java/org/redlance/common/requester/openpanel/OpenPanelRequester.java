@@ -56,8 +56,8 @@ public final class OpenPanelRequester {
     private static final Duration IDENTIFIED_TTL = Duration.ofHours(6);
     private static final Duration IDENTIFY_RETRY_COOLDOWN = Duration.ofMinutes(5);
     private static final int MAX_IDENTIFIED = 100_000;
-    private static final int DEFAULT_MAX_IN_FLIGHT = 64;
-    private static final long FAILURE_WARN_THROTTLE_NANOS = Duration.ofMinutes(1).toNanos();
+    private static final int DEFAULT_MAX_IN_FLIGHT = 512;
+    private static final long WARN_THROTTLE_NANOS = Duration.ofMinutes(1).toNanos();
 
     /**
      * Successful responses have no useful body, so only rejected responses are materialized.
@@ -72,6 +72,7 @@ public final class OpenPanelRequester {
     private final URI trackUri;
     private final boolean enabled;
     private final Executor profileLookupExecutor;
+    private final int maxInFlight;
     private final Semaphore inFlightPermits;
     private final Object lifecycleLock = new Object();
     private int pendingOperations;
@@ -87,7 +88,11 @@ public final class OpenPanelRequester {
     private final ConcurrentHashMap<String, CompletableFuture<Void>> identificationsInFlight =
             new ConcurrentHashMap<>();
     private final AtomicLong lastFailureWarnNanos = new AtomicLong(
-            System.nanoTime() - FAILURE_WARN_THROTTLE_NANOS
+            System.nanoTime() - WARN_THROTTLE_NANOS
+    );
+    private final AtomicLong dropped = new AtomicLong();
+    private final AtomicLong lastDropWarnNanos = new AtomicLong(
+            System.nanoTime() - WARN_THROTTLE_NANOS
     );
 
     public OpenPanelRequester(String clientId, String clientSecret) {
@@ -95,8 +100,11 @@ public final class OpenPanelRequester {
     }
 
     public OpenPanelRequester(String clientId, String clientSecret, String apiUrl) {
-        this(clientId, clientSecret, apiUrl,
-                HTTP_CLIENT.executor().orElseThrow(), DEFAULT_MAX_IN_FLIGHT);
+        this(clientId, clientSecret, apiUrl, DEFAULT_MAX_IN_FLIGHT);
+    }
+
+    public OpenPanelRequester(String clientId, String clientSecret, String apiUrl, int maxInFlight) {
+        this(clientId, clientSecret, apiUrl, HTTP_CLIENT.executor().orElseThrow(), maxInFlight);
     }
 
     public OpenPanelRequester(
@@ -124,6 +132,7 @@ public final class OpenPanelRequester {
         if (maxInFlight <= 0) {
             throw new IllegalArgumentException("maxInFlight must be positive");
         }
+        this.maxInFlight = maxInFlight;
         this.inFlightPermits = new Semaphore(maxInFlight);
 
         if (!this.clientId.isEmpty() && this.clientSecret.isEmpty()) {
@@ -155,7 +164,7 @@ public final class OpenPanelRequester {
             @Nullable String clientIp,
             @Nullable String userAgent
     ) {
-        return submit("track", () -> {
+        return submit(() -> {
             Objects.requireNonNull(payload, "payload");
             return sendIdentified(
                     "track", payload, payload.profileId(), profileSupplier, clientIp, userAgent
@@ -172,7 +181,7 @@ public final class OpenPanelRequester {
             @Nullable String clientIp,
             @Nullable String userAgent
     ) {
-        return submit("identify", () -> {
+        return submit(() -> {
             Objects.requireNonNull(payload, "payload");
             this.identifyCooldown.put(payload.profileId(), true);
             return send("identify", payload, clientIp, userAgent)
@@ -198,7 +207,7 @@ public final class OpenPanelRequester {
             @Nullable String clientIp,
             @Nullable String userAgent
     ) {
-        return submit("increment", () -> {
+        return submit(() -> {
             Objects.requireNonNull(payload, "payload");
             return sendIdentified(
                     "increment", payload, payload.profileId(), profileSupplier, clientIp, userAgent
@@ -228,7 +237,7 @@ public final class OpenPanelRequester {
             @Nullable String clientIp,
             @Nullable String userAgent
     ) {
-        return submit("ai", () -> {
+        return submit(() -> {
             Objects.requireNonNull(payload, "payload");
             return sendIdentified(
                     "ai", payload, payload.profileId(), profileSupplier, clientIp, userAgent
@@ -252,10 +261,7 @@ public final class OpenPanelRequester {
         }
     }
 
-    private CompletableFuture<Void> submit(
-            String operationName,
-            Supplier<CompletableFuture<Void>> operation
-    ) {
+    private CompletableFuture<Void> submit(Supplier<CompletableFuture<Void>> operation) {
         if (!this.enabled) {
             return CompletableFuture.completedFuture(null);
         }
@@ -267,11 +273,10 @@ public final class OpenPanelRequester {
                 );
             }
             if (!this.inFlightPermits.tryAcquire()) {
-                var exception = new RejectedExecutionException(
+                this.dropped.incrementAndGet(); // logged once an operation finishes
+                return CompletableFuture.failedFuture(new RejectedExecutionException(
                         "OpenPanel max in-flight operations exceeded"
-                );
-                logDeliveryFailure(operationName, exception.getMessage());
-                return CompletableFuture.failedFuture(exception);
+                ));
             }
             this.pendingOperations++;
         }
@@ -296,6 +301,7 @@ public final class OpenPanelRequester {
             if (completedShutdown != null) {
                 completedShutdown.complete(null);
             }
+            logDropped();
             if (throwable == null) {
                 result.complete(null);
             } else {
@@ -437,15 +443,35 @@ public final class OpenPanelRequester {
                 });
     }
 
+    /**
+     * Warns how many operations were dropped over the limit since the last such warning, at most once a minute. It is
+     * called when an operation finishes, so the first warning of a burst holds what was dropped until then and the
+     * rest comes with a later one. Nothing is said while no operation finishes.
+     */
+    private void logDropped() {
+        if (this.dropped.get() != 0 && warnIsDue(this.lastDropWarnNanos)) {
+            RequesterUtils.LOGGER.warn(
+                    "OpenPanel operations dropped over the limit of {} in flight: {}",
+                    this.maxInFlight, this.dropped.getAndSet(0)
+            );
+        }
+    }
+
     private void logDeliveryFailure(String type, String detail) {
-        long now = System.nanoTime();
-        long last = this.lastFailureWarnNanos.get();
-        if (now - last >= FAILURE_WARN_THROTTLE_NANOS
-                && this.lastFailureWarnNanos.compareAndSet(last, now)) {
+        if (warnIsDue(this.lastFailureWarnNanos)) {
             RequesterUtils.LOGGER.warn("OpenPanel delivery failed ({}): {}", type, detail);
         } else {
             RequesterUtils.LOGGER.debug("OpenPanel delivery failed ({}): {}", type, detail);
         }
+    }
+
+    /**
+     * Whether a minute has passed since the last warning of a kind, which then starts the next minute.
+     */
+    private static boolean warnIsDue(AtomicLong lastWarnNanos) {
+        long now = System.nanoTime();
+        long last = lastWarnNanos.get();
+        return now - last >= WARN_THROTTLE_NANOS && lastWarnNanos.compareAndSet(last, now);
     }
 
     private static Throwable unwrap(Throwable throwable) {

@@ -9,8 +9,8 @@ visitors: each call can forward its visitor's IP and User-Agent. Built on `reque
 - `OpenPanelRequester` — the requester. Constructors take `clientId`, `clientSecret`, `apiUrl` (default
   `DEFAULT_API_URL`, `https://api.openpanel.dev`; trimmed, trailing slashes cut, `/track` appended), the executor that
   runs `OpenPanelProfileSupplier`s (default: the client's own virtual-thread pool, so a supplier may block) and
-  `maxInFlight` (default 64). A blank id or secret disables it: `enabled()` is false and every call completes at once
-  without a request.
+  `maxInFlight` (default 512), which can also be given without the executor. A blank id or secret disables it:
+  `enabled()` is false and every call completes at once without a request.
 - Calls: `track`, `identify`, `increment` and `ai`, each as `(payload)` and `(payload, clientIp, userAgent)`, and all
   but `identify` as `(payload, profileSupplier, clientIp, userAgent)`. They return a `CompletableFuture<Void>` and never
   throw: a null payload, a rejection and a delivery failure all fail the future.
@@ -29,7 +29,12 @@ visitors: each call can forward its visitor's IP and User-Agent. Built on `reque
   retry: a retried event is a duplicate.
 - At most `maxInFlight` operations run at once; more fail with `RejectedExecutionException`. `shutdown()` stops
   accepting (later calls fail with `IllegalStateException`) and completes once the accepted ones finish.
-- Failures are logged through `RequesterUtils.LOGGER`: a warning at most once a minute, debug otherwise.
+- Operations dropped over `maxInFlight` are counted, and a warning says how many were dropped since the last such
+  warning (`OpenPanel operations dropped over the limit of 512 in flight: 1936`), at most once a minute on a clock
+  apart from the one of delivery failures. It is written when an operation finishes: the first warning of a burst
+  holds what was dropped until then, the rest comes with a later one, and the counts add up. Nothing is logged while
+  no operation finishes, and a count left when the process stops is lost.
+- Delivery failures are logged through `RequesterUtils.LOGGER`: a warning at most once a minute, debug otherwise.
 
 ## Identification
 
@@ -84,6 +89,11 @@ Node SDK's `packages/sdks/sdk/src/index.ts`.
 
 - `./gradlew :requester-openpanel:test`: `OpenPanelRequesterTest` serves `/track` from a local `HttpServer` and checks
   the bodies and headers that arrive; `payload/AiPayloadTest` checks the per-kind validation. There are no live tests.
+- The server runs its handlers on virtual threads: a test holds a request to keep an operation in flight, and on the
+  dispatcher thread a request still held when a test fails would hang `stop()`.
+- The warnings are read through a Log4j `WriterAppender` that every test adds to the `Requester` logger, which is why
+  `log4j-core` is a test dependency here. That a count held back within the minute comes with a later warning is not
+  tested: it would take a minute of waiting.
 
 ## Consumers
 

@@ -2,11 +2,17 @@ package org.redlance.common.requester.openpanel;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.redlance.common.jackson.JacksonMappers;
+import org.redlance.common.requester.RequesterUtils;
 import org.redlance.common.requester.openpanel.payload.AiError;
 import org.redlance.common.requester.openpanel.payload.AiPayload;
 import org.redlance.common.requester.openpanel.payload.AiUsage;
@@ -19,13 +25,16 @@ import tools.jackson.databind.node.JsonNodeFactory;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -34,12 +43,21 @@ import java.util.stream.Collectors;
 
 class OpenPanelRequesterTest {
     private final LinkedBlockingQueue<CapturedRequest> requests = new LinkedBlockingQueue<>();
+    private final StringWriter log = new StringWriter();
+    private final Appender logAppender = WriterAppender.createAppender(
+            PatternLayout.createDefaultLayout(), null, this.log, "requester-test", false, true
+    );
     private HttpServer server;
     private OpenPanelRequester requester;
 
     @BeforeEach
     void setUp() throws IOException {
+        this.logAppender.start();
+        requesterLogger().addAppender(this.logAppender);
+
         this.server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        // off the dispatcher thread: a request that a failed test still holds must not hang stop()
+        this.server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
         this.server.createContext("/track", this::handleSuccess);
         this.server.start();
         this.requester = new OpenPanelRequester(
@@ -52,6 +70,7 @@ class OpenPanelRequesterTest {
     @AfterEach
     void tearDown() {
         this.server.stop(0);
+        requesterLogger().removeAppender(this.logAppender);
     }
 
     @Test
@@ -286,17 +305,7 @@ class OpenPanelRequesterTest {
     void boundsPendingOperationsAndDrainsOnShutdown() throws Exception {
         CountDownLatch requestStarted = new CountDownLatch(1);
         CountDownLatch releaseRequest = new CountDownLatch(1);
-        this.server.removeContext("/track");
-        this.server.createContext("/track", exchange -> {
-            requestStarted.countDown();
-            try {
-                releaseRequest.await();
-                handleSuccess(exchange);
-            } catch (InterruptedException exception) {
-                Thread.currentThread().interrupt();
-                respond(exchange, 500, "interrupted");
-            }
-        });
+        holdRequests(requestStarted, releaseRequest);
         this.requester = new OpenPanelRequester(
                 "client-id",
                 "client-secret",
@@ -325,6 +334,88 @@ class OpenPanelRequesterTest {
                 () -> this.requester.track(new TrackPayload("after-shutdown")).join()
         );
         Assertions.assertInstanceOf(IllegalStateException.class, stopped.getCause());
+    }
+
+    @Test
+    void warnsHowManyOperationsItDropped() throws Exception {
+        this.requester = new OpenPanelRequester(
+                "client-id",
+                "client-secret",
+                "http://127.0.0.1:" + this.server.getAddress().getPort(),
+                1
+        );
+
+        dropWhileOneIsInFlight(3);
+        List<String> warning = List.of("OpenPanel operations dropped over the limit of 1 in flight: 3");
+        Assertions.assertEquals(warning, droppedWarnings());
+
+        dropWhileOneIsInFlight(2); // within the same minute: counted for a later warning
+        Assertions.assertEquals(warning, droppedWarnings());
+    }
+
+    @Test
+    void warnsOfDroppedOperationsRightAfterAFailedDelivery() throws Exception {
+        this.server.removeContext("/track");
+        this.server.createContext("/track", exchange -> respond(exchange, 500, "failed"));
+        this.requester = new OpenPanelRequester(
+                "client-id",
+                "client-secret",
+                "http://127.0.0.1:" + this.server.getAddress().getPort(),
+                1
+        );
+        Assertions.assertThrows(
+                CompletionException.class,
+                () -> this.requester.track(new TrackPayload("failed")).join()
+        );
+        Assertions.assertTrue(this.log.toString().contains("OpenPanel delivery failed"), this.log::toString);
+
+        dropWhileOneIsInFlight(1); // the failure warned of a moment ago does not hold this warning back
+        Assertions.assertEquals(
+                List.of("OpenPanel operations dropped over the limit of 1 in flight: 1"),
+                droppedWarnings()
+        );
+    }
+
+    /**
+     * Holds one request in flight, has {@code dropped} more refused meanwhile, then lets the held one finish.
+     */
+    private void dropWhileOneIsInFlight(int dropped) throws InterruptedException {
+        CountDownLatch requestStarted = new CountDownLatch(1);
+        CountDownLatch releaseRequest = new CountDownLatch(1);
+        holdRequests(requestStarted, releaseRequest);
+
+        CompletableFuture<Void> held = this.requester.track(new TrackPayload("held"));
+        Assertions.assertTrue(requestStarted.await(5, TimeUnit.SECONDS));
+        for (int refused = 0; refused < dropped; refused++) {
+            Assertions.assertTrue(this.requester.track(new TrackPayload("overflow")).isCompletedExceptionally());
+        }
+        releaseRequest.countDown();
+        held.join();
+    }
+
+    private List<String> droppedWarnings() {
+        return this.log.toString().lines().filter(line -> line.contains("dropped")).toList();
+    }
+
+    private static Logger requesterLogger() {
+        return (Logger) LogManager.getLogger(RequesterUtils.LOGGER.getName());
+    }
+
+    /**
+     * Makes {@code /track} answer only once {@code release} is counted down, counting {@code started} down first.
+     */
+    private void holdRequests(CountDownLatch started, CountDownLatch release) {
+        this.server.removeContext("/track");
+        this.server.createContext("/track", exchange -> {
+            started.countDown();
+            try {
+                release.await();
+                handleSuccess(exchange);
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+                respond(exchange, 500, "interrupted");
+            }
+        });
     }
 
     private void handleSuccess(HttpExchange exchange) throws IOException {

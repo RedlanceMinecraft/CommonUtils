@@ -36,6 +36,7 @@ public class BoostySessionStorage {
     }
 
     public void refreshTokens() {
+        if (getRefreshToken() == null) return;
         RequesterUtils.LOGGER.info("Refreshing boosty tokens for device {}...", this.deviceId);
 
         HttpRequest request = HttpRequest.newBuilder()
